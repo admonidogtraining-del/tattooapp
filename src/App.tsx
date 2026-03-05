@@ -988,26 +988,24 @@ export default function App() {
                     }`}
                   >
                     <div className="aspect-[4/3] relative overflow-hidden">
-                      {stylePreviewImages[style.id] ? (
+                      {/* SVG illustration always shown as base layer */}
+                      <img
+                        src={style.imgSrc}
+                        alt={style.name}
+                        className="w-full h-full object-cover"
+                      />
+                      {/* AI-generated photo fades in on top once ready */}
+                      {stylePreviewImages[style.id] && (
                         <img
                           src={stylePreviewImages[style.id]}
                           alt={style.name}
-                          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                          className="absolute inset-0 w-full h-full object-cover transition-opacity duration-700 group-hover:scale-105"
                         />
-                      ) : (
-                        <div className="w-full h-full flex flex-col items-center justify-center bg-zinc-900 gap-3">
-                          {generatingPreviews.has(style.id) ? (
-                            <>
-                              <div className="w-6 h-6 border-2 border-zinc-600 border-t-zinc-200 rounded-full animate-spin" />
-                              <span className="text-xs text-zinc-500">Generating preview…</span>
-                            </>
-                          ) : (
-                            <img
-                              src={style.imgSrc}
-                              alt={style.name}
-                              className="w-full h-full object-cover opacity-60"
-                            />
-                          )}
+                      )}
+                      {/* Small spinner badge while generating */}
+                      {generatingPreviews.has(style.id) && (
+                        <div className="absolute top-2 right-2 z-10 w-6 h-6 rounded-full bg-black/50 flex items-center justify-center">
+                          <div className="w-3.5 h-3.5 border border-zinc-500 border-t-zinc-200 rounded-full animate-spin" />
                         </div>
                       )}
                       <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent" />
