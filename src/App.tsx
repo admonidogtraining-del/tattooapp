@@ -387,7 +387,14 @@ export default function App() {
   const [isGeneratingImage, setIsGeneratingImage] = useState(false);
   const [showTryOn, setShowTryOn] = useState(false);
   const [tattooScale, setTattooScale] = useState(1);
-  const [stylePreviewImages, setStylePreviewImages] = useState<Record<string, string>>({});
+  const [stylePreviewImages, setStylePreviewImages] = useState<Record<string, string>>(() => {
+    try {
+      const cached = localStorage.getItem('inksight_style_previews');
+      return cached ? JSON.parse(cached) : {};
+    } catch {
+      return {};
+    }
+  });
   const [generatingPreviews, setGeneratingPreviews] = useState<Set<string>>(new Set());
   const fileInputRef = useRef<HTMLInputElement>(null);
   const tattooX = useMotionValue(0);
@@ -398,20 +405,38 @@ export default function App() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, [step]);
 
-  // Generate style preview images when the style selection page first loads
+  // Generate style preview images when the style selection page first loads (batched, cached in localStorage)
   useEffect(() => {
     if (step !== 'style_selection') return;
     const stylesToGenerate = TATTOO_STYLES.filter(s => !stylePreviewImages[s.id] && !generatingPreviews.has(s.id));
     if (stylesToGenerate.length === 0) return;
 
     setGeneratingPreviews(prev => new Set([...prev, ...stylesToGenerate.map(s => s.id)]));
-    stylesToGenerate.forEach(style => {
-      const prompt = STYLE_PREVIEW_PROMPTS[style.id] ?? `${style.name} tattoo example, white background.`;
-      generateTattooImage(prompt)
-        .then(img => setStylePreviewImages(prev => ({ ...prev, [style.id]: img })))
-        .catch(() => {/* leave placeholder on error */})
-        .finally(() => setGeneratingPreviews(prev => { const next = new Set(prev); next.delete(style.id); return next; }));
-    });
+
+    // Process in batches of 3 to avoid rate limits
+    const BATCH = 3;
+    const runBatch = async (batch: typeof stylesToGenerate) => {
+      await Promise.allSettled(batch.map(async style => {
+        const prompt = STYLE_PREVIEW_PROMPTS[style.id] ?? `${style.name} tattoo example, white background.`;
+        try {
+          const img = await generateTattooImage(prompt);
+          setStylePreviewImages(prev => {
+            const next = { ...prev, [style.id]: img };
+            try { localStorage.setItem('inksight_style_previews', JSON.stringify(next)); } catch { /* storage full */ }
+            return next;
+          });
+        } catch { /* leave SVG placeholder */ }
+        finally {
+          setGeneratingPreviews(prev => { const next = new Set(prev); next.delete(style.id); return next; });
+        }
+      }));
+    };
+
+    (async () => {
+      for (let i = 0; i < stylesToGenerate.length; i += BATCH) {
+        await runBatch(stylesToGenerate.slice(i, i + BATCH));
+      }
+    })();
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [step]);
 
