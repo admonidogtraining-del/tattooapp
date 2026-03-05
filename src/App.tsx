@@ -123,7 +123,8 @@ const STYLE_IMAGE_PROMPTS: Record<string, string> = {
 
 const buildStylePrompt = (dallePrompt: string, style: string): string => {
   const prefix = STYLE_IMAGE_PROMPTS[style] ?? '';
-  return prefix ? `${prefix} The tattoo design subject: ${dallePrompt}` : dallePrompt;
+  const suffix = ' Complete standalone tattoo design, full subject visible, not cropped, perfectly centered on pure white background, tattoo flash sheet presentation.';
+  return prefix ? `${prefix} The tattoo design subject: ${dallePrompt}${suffix}` : `${dallePrompt}${suffix}`;
 };
 
 function BodyPartPreview({ placement, skinHex }: { placement: string; skinHex: string }) {
@@ -369,6 +370,7 @@ export default function App() {
   const [customImagePrompt, setCustomImagePrompt] = useState<string>('');
   const [isGeneratingImage, setIsGeneratingImage] = useState(false);
   const [showTryOn, setShowTryOn] = useState(false);
+  const [tattooScale, setTattooScale] = useState(1);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Scroll to top whenever the user moves to a new step
@@ -1090,94 +1092,112 @@ export default function App() {
                 </div>
               </div>
 
-              {/* ── SUMMARY ROW ── */}
-              <div className="grid sm:grid-cols-2 gap-6">
-                {/* Your Design */}
-                <div className="bg-zinc-900/30 border border-zinc-800 rounded-2xl p-6 space-y-5">
-                  <h3 className="text-sm font-medium text-zinc-400 uppercase tracking-wider pb-3 border-b border-zinc-800/50">
-                    Your Design
-                  </h3>
-                  <div>
-                    <p className="text-xs font-medium text-zinc-500 uppercase tracking-wider mb-1">Style</p>
-                    <p className="text-base font-medium text-zinc-100">
-                      {result.user_profile_analysis.interpreted_style}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-xs font-medium text-zinc-500 uppercase tracking-wider mb-2">Themes</p>
-                    <div className="flex flex-wrap gap-2">
-                      {result.user_profile_analysis.symbolic_metaphors.map((m, i) => (
-                        <span
-                          key={i}
-                          className="px-2.5 py-1 bg-zinc-800 text-zinc-200 text-xs rounded-lg border border-zinc-700"
-                        >
-                          {m}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                  <div>
-                    <p className="text-xs font-medium text-zinc-500 uppercase tracking-wider mb-1">Placement Tip</p>
-                    <p className="text-sm text-zinc-300 leading-relaxed">
-                      {result.user_profile_analysis.suggested_placement_logic}
-                    </p>
+              {/* ── YOUR DESIGN ── */}
+              <div className="bg-zinc-900/30 border border-zinc-800 rounded-2xl p-6 space-y-5">
+                <h3 className="text-sm font-medium text-zinc-400 uppercase tracking-wider pb-3 border-b border-zinc-800/50">
+                  Your Design
+                </h3>
+
+                {/* Style picker */}
+                <div>
+                  <p className="text-xs font-medium text-zinc-500 uppercase tracking-wider mb-2">Style — tap to change</p>
+                  <div className="flex flex-wrap gap-2">
+                    {TATTOO_STYLES.map((s) => (
+                      <button
+                        key={s.id}
+                        onClick={() => {
+                          setQuestionnaire(q => ({ ...q, style: s.id }));
+                          setCustomImagePrompt('');
+                          setIsGeneratingImage(true);
+                          setGeneratedImage(null);
+                          generateTattooImage(buildStylePrompt(result.image_generation.dalle_prompt, s.id))
+                            .then(img => setGeneratedImage(img))
+                            .catch(err => { console.error(err); setError('Image generation failed.'); })
+                            .finally(() => setIsGeneratingImage(false));
+                        }}
+                        className={`px-3 py-1 text-xs rounded-full border transition-colors ${
+                          questionnaire.style === s.id
+                            ? 'bg-zinc-100 text-zinc-900 border-zinc-100'
+                            : 'bg-zinc-900 text-zinc-300 border-zinc-700 hover:border-zinc-500 hover:text-zinc-100'
+                        }`}
+                      >
+                        {s.name}
+                      </button>
+                    ))}
                   </div>
                 </div>
 
-                {/* Quick Stats */}
-                <div className="bg-zinc-900/30 border border-zinc-800 rounded-2xl p-6 space-y-5">
-                  <h3 className="text-sm font-medium text-zinc-400 uppercase tracking-wider pb-3 border-b border-zinc-800/50">
-                    At a Glance
-                  </h3>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="bg-zinc-950 p-4 rounded-xl border border-zinc-800/50">
-                      <p className="text-xs font-medium text-zinc-500 uppercase tracking-wider mb-1">Complexity</p>
-                      <p className="text-2xl font-light text-zinc-100">
-                        {result.technical_brief.design_complexity}
-                        <span className="text-sm text-zinc-600">/10</span>
-                      </p>
-                    </div>
-                    <div className="bg-zinc-950 p-4 rounded-xl border border-zinc-800/50">
-                      <p className="text-xs font-medium text-zinc-500 uppercase tracking-wider mb-1">Healing</p>
-                      <div className="flex items-center gap-2 mt-1">
-                        <div
-                          className={`w-2 h-2 rounded-full shrink-0 ${
-                            result.aftercare_preview.healing_difficulty.toLowerCase().includes('high')
-                              ? 'bg-red-500'
-                              : result.aftercare_preview.healing_difficulty.toLowerCase().includes('med')
-                                ? 'bg-yellow-500'
-                                : 'bg-emerald-500'
-                          }`}
-                        />
-                        <span className="text-sm text-zinc-200 leading-tight">
-                          {result.aftercare_preview.healing_difficulty}
-                        </span>
-                      </div>
-                    </div>
+                <div>
+                  <p className="text-xs font-medium text-zinc-500 uppercase tracking-wider mb-1">Interpretation</p>
+                  <p className="text-base font-medium text-zinc-100">
+                    {result.user_profile_analysis.interpreted_style}
+                  </p>
+                </div>
+
+                <div>
+                  <p className="text-xs font-medium text-zinc-500 uppercase tracking-wider mb-2">Themes</p>
+                  <div className="flex flex-wrap gap-2">
+                    {result.user_profile_analysis.symbolic_metaphors.map((m, i) => (
+                      <span
+                        key={i}
+                        className="px-2.5 py-1 bg-zinc-800 text-zinc-200 text-xs rounded-lg border border-zinc-700"
+                      >
+                        {m}
+                      </span>
+                    ))}
                   </div>
+                </div>
+
+                <div>
+                  <p className="text-xs font-medium text-zinc-500 uppercase tracking-wider mb-1">Placement Tip</p>
+                  <p className="text-sm text-zinc-300 leading-relaxed">
+                    {result.user_profile_analysis.suggested_placement_logic}
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4 pt-1">
                   <div>
                     <p className="text-xs font-medium text-zinc-500 uppercase tracking-wider mb-1">Longevity</p>
                     <p className="text-sm text-zinc-300">{result.technical_brief.estimated_longevity}</p>
                   </div>
                   <div>
-                    <p className="text-xs font-medium text-zinc-500 uppercase tracking-wider mb-2">Color Palette</p>
-                    <div className="flex gap-2 flex-wrap">
-                      {result.technical_brief.artist_notes.color_palette_hex.map((hex, i) => (
-                        <div
-                          key={i}
-                          className="w-7 h-7 rounded-full border-2 border-zinc-700 shadow-sm"
-                          style={{ backgroundColor: hex }}
-                          title={hex}
-                        />
-                      ))}
+                    <p className="text-xs font-medium text-zinc-500 uppercase tracking-wider mb-1">Healing</p>
+                    <div className="flex items-center gap-2 mt-1">
+                      <div
+                        className={`w-2 h-2 rounded-full shrink-0 ${
+                          result.aftercare_preview.healing_difficulty.toLowerCase().includes('high')
+                            ? 'bg-red-500'
+                            : result.aftercare_preview.healing_difficulty.toLowerCase().includes('med')
+                              ? 'bg-yellow-500'
+                              : 'bg-emerald-500'
+                        }`}
+                      />
+                      <span className="text-sm text-zinc-200 leading-tight">
+                        {result.aftercare_preview.healing_difficulty}
+                      </span>
                     </div>
                   </div>
-                  <div>
-                    <p className="text-xs font-medium text-zinc-500 uppercase tracking-wider mb-1">Aftercare</p>
-                    <p className="text-sm text-zinc-300 leading-relaxed">
-                      {result.aftercare_preview.lifestyle_warning}
-                    </p>
+                </div>
+
+                <div>
+                  <p className="text-xs font-medium text-zinc-500 uppercase tracking-wider mb-2">Color Palette</p>
+                  <div className="flex gap-2 flex-wrap">
+                    {result.technical_brief.artist_notes.color_palette_hex.map((hex, i) => (
+                      <div
+                        key={i}
+                        className="w-7 h-7 rounded-full border-2 border-zinc-700 shadow-sm"
+                        style={{ backgroundColor: hex }}
+                        title={hex}
+                      />
+                    ))}
                   </div>
+                </div>
+
+                <div>
+                  <p className="text-xs font-medium text-zinc-500 uppercase tracking-wider mb-1">Aftercare</p>
+                  <p className="text-sm text-zinc-300 leading-relaxed">
+                    {result.aftercare_preview.lifestyle_warning}
+                  </p>
                 </div>
               </div>
 
@@ -1261,8 +1281,12 @@ export default function App() {
                         drag
                         dragConstraints={{ left: -200, right: 200, top: -200, bottom: 200 }}
                         src={generatedImage!}
-                        className={`w-48 h-48 sm:w-64 sm:h-64 object-contain cursor-grab active:cursor-grabbing z-10 drop-shadow-2xl ${isLightSkin ? 'mix-blend-multiply' : ''}`}
-                        style={{ opacity: isLightSkin ? 0.92 : 0.78 }}
+                        className={`object-contain cursor-grab active:cursor-grabbing z-10 drop-shadow-2xl ${isLightSkin ? 'mix-blend-multiply' : ''}`}
+                        style={{
+                          opacity: isLightSkin ? 0.92 : 0.78,
+                          width: `${Math.round(192 * tattooScale)}px`,
+                          height: `${Math.round(192 * tattooScale)}px`,
+                        }}
                         alt="Tattoo Try On"
                       />
                     </div>
@@ -1270,8 +1294,30 @@ export default function App() {
                 );
               })()}
 
+              {/* Scale control */}
+              <div className="w-full max-w-2xl flex items-center gap-3">
+                <button
+                  onClick={() => setTattooScale(s => Math.max(0.3, +(s - 0.1).toFixed(1)))}
+                  className="w-8 h-8 rounded-full bg-zinc-800 text-white text-lg flex items-center justify-center hover:bg-zinc-700 transition-colors shrink-0"
+                >−</button>
+                <input
+                  type="range"
+                  min="0.3"
+                  max="2.5"
+                  step="0.05"
+                  value={tattooScale}
+                  onChange={e => setTattooScale(parseFloat(e.target.value))}
+                  className="flex-1 accent-zinc-400"
+                />
+                <button
+                  onClick={() => setTattooScale(s => Math.min(2.5, +(s + 0.1).toFixed(1)))}
+                  className="w-8 h-8 rounded-full bg-zinc-800 text-white text-lg flex items-center justify-center hover:bg-zinc-700 transition-colors shrink-0"
+                >+</button>
+                <span className="text-zinc-500 text-xs w-10 text-right">{Math.round(tattooScale * 100)}%</span>
+              </div>
+
               <p className="text-zinc-600 text-xs text-center">
-                Showing placement on <span className="text-zinc-400">{questionnaire.placement || 'body'}</span> — drag to fine-tune position
+                Drag to position · Use slider to resize
               </p>
             </motion.div>
           )}
