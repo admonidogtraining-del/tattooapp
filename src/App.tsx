@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import {
   Upload, PenTool, Sparkles, AlertTriangle, Image as ImageIcon,
@@ -20,90 +20,79 @@ const BODY_SHAPES = [
   { id: 'Apple', name: 'Apple', desc: 'Broader upper body & midsection' },
 ];
 
+// Each style uses pure CSS backgrounds — no external images, loads instantly
 const TATTOO_STYLES = [
   {
     id: 'American Traditional',
     name: 'American Traditional',
     desc: 'Bold lines, solid colors (red, yellow, green, black).',
-    img: 'https://image.pollinations.ai/prompt/American+Traditional+Tattoo+Flash+Art+eagle+anchor+bold+lines+red+yellow?width=400&height=300&nologo=true&model=flux&seed=101',
-    gradient: 'linear-gradient(135deg, #7f1d1d 0%, #b45309 100%)',
+    cardStyle: 'repeating-linear-gradient(45deg, rgba(0,0,0,0.25) 0px, rgba(0,0,0,0.25) 10px, transparent 10px, transparent 20px), linear-gradient(135deg, #7f1d1d 0%, #c2410c 50%, #b45309 100%)',
   },
   {
     id: 'Neo-Traditional',
     name: 'Neo-Traditional',
     desc: 'Varying line weights, jewel tones, filigree.',
-    img: 'https://image.pollinations.ai/prompt/Neo-Traditional+Tattoo+Art+Design+jewel+tones+filigree+ornate?width=400&height=300&nologo=true&model=flux&seed=102',
-    gradient: 'linear-gradient(135deg, #312e81 0%, #7c3aed 100%)',
+    cardStyle: 'repeating-linear-gradient(120deg, rgba(255,255,255,0.12) 0px, rgba(255,255,255,0.12) 1px, transparent 1px, transparent 14px), linear-gradient(135deg, #312e81 0%, #6d28d9 60%, #7c3aed 100%)',
   },
   {
     id: 'Japanese (Irezumi)',
     name: 'Japanese (Irezumi)',
     desc: 'Flowing backgrounds, mythological motifs.',
-    img: 'https://image.pollinations.ai/prompt/Japanese+Irezumi+Tattoo+koi+dragon+waves+flowing+traditional?width=400&height=300&nologo=true&model=flux&seed=103',
-    gradient: 'linear-gradient(135deg, #881337 0%, #be123c 100%)',
+    cardStyle: 'repeating-linear-gradient(180deg, rgba(255,255,255,0.07) 0px, rgba(255,255,255,0.07) 1px, transparent 1px, transparent 22px), linear-gradient(160deg, #881337 0%, #be123c 45%, #1e1b4b 100%)',
   },
   {
     id: 'Black & Grey Realism',
     name: 'Black & Grey Realism',
     desc: 'Smooth shading, no outlines, highly detailed.',
-    img: 'https://image.pollinations.ai/prompt/Black+and+Grey+Realism+Tattoo+Portrait+smooth+shading+highly+detailed?width=400&height=300&nologo=true&model=flux&seed=104',
-    gradient: 'linear-gradient(135deg, #18181b 0%, #52525b 100%)',
+    cardStyle: 'radial-gradient(ellipse at 40% 40%, #71717a 0%, #3f3f46 40%, #09090b 100%)',
   },
   {
     id: 'Micro-Realism',
     name: 'Micro-Realism',
     desc: 'Tiny, intricate details using single needle.',
-    img: 'https://image.pollinations.ai/prompt/Micro-Realism+Tiny+Tattoo+single+needle+intricate+fine+line?width=400&height=300&nologo=true&model=flux&seed=105',
-    gradient: 'linear-gradient(135deg, #0c4a6e 0%, #0891b2 100%)',
+    cardStyle: 'repeating-linear-gradient(0deg, rgba(255,255,255,0.06) 0px, rgba(255,255,255,0.06) 1px, transparent 1px, transparent 8px), repeating-linear-gradient(90deg, rgba(255,255,255,0.06) 0px, rgba(255,255,255,0.06) 1px, transparent 1px, transparent 8px), linear-gradient(135deg, #0c4a6e 0%, #0369a1 100%)',
   },
   {
     id: 'Color Realism',
     name: 'Color Realism',
     desc: 'Painterly, vibrant, no black outlines.',
-    img: 'https://image.pollinations.ai/prompt/Color+Realism+Tattoo+Art+painterly+vibrant+flowers+portrait?width=400&height=300&nologo=true&model=flux&seed=106',
-    gradient: 'linear-gradient(135deg, #14532d 0%, #16a34a 100%)',
+    cardStyle: 'linear-gradient(135deg, #16a34a 0%, #0891b2 25%, #7c3aed 50%, #dc2626 75%, #ea580c 100%)',
   },
   {
     id: 'Blackwork',
     name: 'Blackwork',
     desc: 'Heavy black saturation, negative space.',
-    img: 'https://image.pollinations.ai/prompt/Heavy+Blackwork+Tattoo+Mandala+geometric+negative+space+bold?width=400&height=300&nologo=true&model=flux&seed=107',
-    gradient: 'linear-gradient(135deg, #09090b 0%, #3f3f46 100%)',
+    cardStyle: 'repeating-linear-gradient(0deg, rgba(255,255,255,0.09) 0px, rgba(255,255,255,0.09) 1px, transparent 1px, transparent 32px), repeating-linear-gradient(90deg, rgba(255,255,255,0.09) 0px, rgba(255,255,255,0.09) 1px, transparent 1px, transparent 32px), radial-gradient(ellipse at 50% 50%, #27272a, #09090b)',
   },
   {
     id: 'Cybersigilism',
     name: 'Cybersigilism',
     desc: 'Sharp, aggressive, wire-like thin lines.',
-    img: 'https://image.pollinations.ai/prompt/Cybersigilism+Tattoo+Design+thin+wire+sharp+cyber+angular?width=400&height=300&nologo=true&model=flux&seed=108',
-    gradient: 'linear-gradient(135deg, #020617 0%, #1e3a5f 100%)',
+    cardStyle: 'repeating-linear-gradient(60deg, rgba(96,165,250,0.18) 0px, rgba(96,165,250,0.18) 1px, transparent 1px, transparent 12px), repeating-linear-gradient(-60deg, rgba(96,165,250,0.18) 0px, rgba(96,165,250,0.18) 1px, transparent 1px, transparent 12px), linear-gradient(135deg, #020617 0%, #1e3a5f 100%)',
   },
   {
     id: 'Dotwork',
     name: 'Dotwork',
     desc: 'Images created entirely with stippled dots.',
-    img: 'https://image.pollinations.ai/prompt/Dotwork+Pointillism+Tattoo+Art+stippled+dots+geometric+mandala?width=400&height=300&nologo=true&model=flux&seed=109',
-    gradient: 'linear-gradient(135deg, #292524 0%, #78716c 100%)',
+    cardStyle: 'radial-gradient(circle, rgba(255,255,255,0.5) 1.5px, transparent 1.5px) 0 0 / 14px 14px, radial-gradient(circle, rgba(255,255,255,0.25) 1.5px, transparent 1.5px) 7px 7px / 14px 14px, linear-gradient(135deg, #292524 0%, #44403c 100%)',
   },
   {
     id: 'Trash Polka',
     name: 'Trash Polka',
     desc: 'Collage style, black and red, chaotic.',
-    img: 'https://image.pollinations.ai/prompt/Trash+Polka+Tattoo+Red+and+Black+collage+chaotic+splatter?width=400&height=300&nologo=true&model=flux&seed=110',
-    gradient: 'linear-gradient(135deg, #450a0a 0%, #dc2626 100%)',
+    cardStyle: 'repeating-linear-gradient(135deg, #dc2626 0px, #dc2626 4px, transparent 4px, transparent 22px), linear-gradient(135deg, #09090b 0%, #1c0000 100%)',
   },
   {
     id: 'Ignorant Style',
     name: 'Ignorant Style',
     desc: 'Intentional amateurism, simple line drawings.',
-    img: 'https://image.pollinations.ai/prompt/Ignorant+Style+Tattoo+Simple+Line+Art+naive+raw+childlike?width=400&height=300&nologo=true&model=flux&seed=111',
-    gradient: 'linear-gradient(135deg, #1c1917 0%, #57534e 100%)',
+    cardStyle: 'repeating-linear-gradient(22deg, rgba(255,255,255,0.1) 0px, rgba(255,255,255,0.1) 2px, transparent 2px, transparent 18px), linear-gradient(135deg, #44403c 0%, #78716c 100%)',
   },
   {
     id: 'Patchwork',
     name: 'Patchwork',
     desc: 'Collection of small, unrelated tattoos.',
-    img: 'https://image.pollinations.ai/prompt/Patchwork+Tattoo+Sleeve+Collection+small+individual+mixed+styles?width=400&height=300&nologo=true&model=flux&seed=112',
-    gradient: 'linear-gradient(135deg, #1e1b4b 0%, #6d28d9 100%)',
+    cardStyle: 'repeating-linear-gradient(0deg, rgba(255,255,255,0.1) 0px, rgba(255,255,255,0.1) 1px, transparent 1px, transparent 44px), repeating-linear-gradient(90deg, rgba(255,255,255,0.1) 0px, rgba(255,255,255,0.1) 1px, transparent 1px, transparent 44px), linear-gradient(135deg, #1e1b4b 0%, #3730a3 50%, #6d28d9 100%)',
   },
 ];
 
@@ -131,6 +120,11 @@ export default function App() {
   const [isGeneratingImage, setIsGeneratingImage] = useState(false);
   const [showTryOn, setShowTryOn] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Scroll to top whenever the user moves to a new step
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [step]);
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []) as File[];
@@ -228,6 +222,22 @@ export default function App() {
     setShowTryOn(false);
   };
 
+  const getPlacementBg = (placement: string) => {
+    const p = placement.toLowerCase();
+    if (p.includes('back')) return { color: '#c4a882', label: 'Back' };
+    if (p.includes('chest')) return { color: '#d2a87c', label: 'Chest' };
+    if (p.includes('shoulder')) return { color: '#ccab85', label: 'Shoulder' };
+    if (p.includes('rib')) return { color: '#c9a06e', label: 'Ribs' };
+    if (p.includes('thigh') || (p.includes('leg') && !p.includes('foreleg'))) return { color: '#caa880', label: 'Thigh' };
+    if (p.includes('forearm') || p.includes('arm')) return { color: '#c8a882', label: 'Forearm' };
+    if (p.includes('wrist')) return { color: '#c2a07a', label: 'Wrist' };
+    if (p.includes('ankle') || p.includes('foot')) return { color: '#be9e6e', label: 'Ankle' };
+    if (p.includes('neck')) return { color: '#d5ae8a', label: 'Neck' };
+    if (p.includes('calf')) return { color: '#c6a47e', label: 'Calf' };
+    if (p.includes('hand') || p.includes('finger')) return { color: '#c0a07a', label: 'Hand' };
+    return { color: '#c8a882', label: placement };
+  };
+
   const handleGenerateImage = async () => {
     if (!result) return;
     setIsGeneratingImage(true);
@@ -255,7 +265,7 @@ export default function App() {
             </div>
             <div>
               <h1 className="text-lg font-semibold tracking-tight leading-none">InkSight AI</h1>
-              <p className="text-xs text-zinc-500 font-mono mt-1 uppercase tracking-widest">
+              <p className="text-xs text-zinc-500 mt-1 uppercase tracking-widest">
                 Art Director & Prompt Architect
               </p>
             </div>
@@ -325,7 +335,7 @@ export default function App() {
 
                 <div className="relative flex items-center py-4">
                   <div className="flex-grow border-t border-zinc-900"></div>
-                  <span className="flex-shrink-0 mx-4 text-xs font-mono uppercase tracking-widest text-zinc-600">
+                  <span className="flex-shrink-0 mx-4 text-xs uppercase tracking-widest text-zinc-600">
                     And / Or
                   </span>
                   <div className="flex-grow border-t border-zinc-900"></div>
@@ -386,7 +396,7 @@ export default function App() {
                       required
                       value={questionnaire.gender}
                       onChange={(e) => setQuestionnaire({ ...questionnaire, gender: e.target.value })}
-                      className="w-full bg-zinc-900/50 border border-zinc-800 rounded-xl p-4 text-base font-sans text-zinc-100 focus:outline-none focus:ring-1 focus:ring-zinc-500"
+                      className="w-full bg-zinc-900/50 border border-zinc-800 rounded-xl p-4 text-base text-zinc-100 focus:outline-none focus:ring-1 focus:ring-zinc-500"
                     >
                       <option value="" disabled>
                         Select...
@@ -432,8 +442,8 @@ export default function App() {
                               : 'bg-zinc-900/50 border-zinc-800 hover:border-zinc-700'
                           }`}
                         >
-                          <p className="text-base font-sans text-zinc-100 mb-1">{shape.name}</p>
-                          <p className="text-sm font-sans text-zinc-400">{shape.desc}</p>
+                          <p className="text-base text-zinc-100 mb-1">{shape.name}</p>
+                          <p className="text-sm text-zinc-400">{shape.desc}</p>
                         </div>
                       ))}
                     </div>
@@ -449,7 +459,7 @@ export default function App() {
                       onChange={(e) =>
                         setQuestionnaire({ ...questionnaire, skinColor: e.target.value })
                       }
-                      className="w-full bg-zinc-900/50 border border-zinc-800 rounded-xl p-4 text-base font-sans text-zinc-100 focus:outline-none focus:ring-1 focus:ring-zinc-500"
+                      className="w-full bg-zinc-900/50 border border-zinc-800 rounded-xl p-4 text-base text-zinc-100 focus:outline-none focus:ring-1 focus:ring-zinc-500"
                     >
                       <option value="" disabled>
                         Select...
@@ -474,7 +484,7 @@ export default function App() {
                       onChange={(e) =>
                         setQuestionnaire({ ...questionnaire, placement: e.target.value })
                       }
-                      className="w-full bg-zinc-900/50 border border-zinc-800 rounded-xl p-4 text-base font-sans text-zinc-100 focus:outline-none focus:ring-1 focus:ring-zinc-500 placeholder:text-zinc-600"
+                      className="w-full bg-zinc-900/50 border border-zinc-800 rounded-xl p-4 text-base text-zinc-100 focus:outline-none focus:ring-1 focus:ring-zinc-500 placeholder:text-zinc-600"
                     />
                   </div>
 
@@ -488,7 +498,7 @@ export default function App() {
                       onChange={(e) =>
                         setQuestionnaire({ ...questionnaire, colorPreference: e.target.value })
                       }
-                      className="w-full bg-zinc-900/50 border border-zinc-800 rounded-xl p-4 text-base font-sans text-zinc-100 focus:outline-none focus:ring-1 focus:ring-zinc-500"
+                      className="w-full bg-zinc-900/50 border border-zinc-800 rounded-xl p-4 text-base text-zinc-100 focus:outline-none focus:ring-1 focus:ring-zinc-500"
                     >
                       <option value="" disabled>
                         Select...
@@ -509,7 +519,7 @@ export default function App() {
                       onChange={(e) =>
                         setQuestionnaire({ ...questionnaire, size: e.target.value })
                       }
-                      className="w-full bg-zinc-900/50 border border-zinc-800 rounded-xl p-4 text-base font-sans text-zinc-100 focus:outline-none focus:ring-1 focus:ring-zinc-500"
+                      className="w-full bg-zinc-900/50 border border-zinc-800 rounded-xl p-4 text-base text-zinc-100 focus:outline-none focus:ring-1 focus:ring-zinc-500"
                     >
                       <option value="" disabled>
                         Select...
@@ -576,21 +586,15 @@ export default function App() {
                     onClick={() => setQuestionnaire({ ...questionnaire, style: style.id })}
                     className={`cursor-pointer group relative rounded-2xl overflow-hidden border-2 transition-all ${
                       questionnaire.style === style.id
-                        ? 'border-zinc-300'
+                        ? 'border-zinc-300 ring-2 ring-zinc-300/20'
                         : 'border-zinc-800 hover:border-zinc-600'
                     }`}
                   >
                     <div
-                      className="aspect-[4/3] relative"
-                      style={{ background: style.gradient }}
+                      className="aspect-[4/3] relative transition-transform duration-500 group-hover:scale-105"
+                      style={{ background: style.cardStyle }}
                     >
-                      <img
-                        src={style.img}
-                        alt={style.name}
-                        className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                        onError={(e) => { e.currentTarget.style.display = 'none'; }}
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent" />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent" />
                       <div className="absolute bottom-0 left-0 right-0 p-5">
                         <h3 className="text-base font-medium text-white mb-1">
                           {style.name}
@@ -639,7 +643,7 @@ export default function App() {
                   </span>
                 </div>
                 <h2 className="text-3xl font-light tracking-tight mb-2">Clarify Your Concept</h2>
-                <p className="text-base font-sans text-zinc-400 leading-relaxed">
+                <p className="text-base text-zinc-400 leading-relaxed">
                   Your prompt is a bit ambiguous. To give you the best technical blueprint, please
                   clarify the following:
                 </p>
@@ -662,7 +666,7 @@ export default function App() {
                               : 'bg-zinc-900/50 border-zinc-800 text-zinc-400 hover:border-zinc-700 hover:text-zinc-200'
                           }`}
                         >
-                          <span className="text-base font-sans">{opt}</span>
+                          <span className="text-base">{opt}</span>
                         </button>
                       ))}
                     </div>
@@ -709,7 +713,7 @@ export default function App() {
                 </div>
               </div>
               <div className="text-center space-y-3">
-                <p className="text-base font-sans font-medium text-zinc-300">
+                <p className="text-base font-medium text-zinc-300">
                   Consulting Art Director...
                 </p>
                 <p className="text-sm font-medium text-zinc-500 uppercase tracking-wider">
@@ -969,30 +973,42 @@ export default function App() {
                 </button>
               </div>
 
-              <div className="relative w-full max-w-2xl aspect-[3/4] sm:aspect-square rounded-[40px] sm:rounded-[60px] overflow-hidden shadow-inner flex items-center justify-center border-4 border-zinc-800 bg-[#c8a882]">
-                <div
-                  className="absolute inset-0 bg-cover bg-center opacity-90"
-                  style={{
-                    backgroundImage:
-                      "url('https://images.unsplash.com/photo-1535295972055-1c762f4483e5?auto=format&fit=crop&q=80&w=800')",
-                  }}
-                />
+              {(() => {
+                const pb = getPlacementBg(questionnaire.placement || '');
+                return (
+                  <div
+                    className="relative w-full max-w-2xl aspect-[3/4] sm:aspect-square rounded-[40px] sm:rounded-[60px] overflow-hidden shadow-inner flex items-center justify-center border-4 border-zinc-800"
+                    style={{ backgroundColor: pb.color }}
+                  >
+                    {/* Subtle skin texture overlay */}
+                    <div
+                      className="absolute inset-0 opacity-60"
+                      style={{
+                        backgroundImage: `radial-gradient(ellipse at 30% 20%, rgba(255,220,180,0.4) 0%, transparent 60%), radial-gradient(ellipse at 70% 80%, rgba(180,120,60,0.3) 0%, transparent 50%)`,
+                      }}
+                    />
 
-                <p className="absolute top-4 left-4 text-black/60 text-xs font-medium uppercase tracking-wider z-20 bg-white/40 px-2.5 py-1 rounded-full backdrop-blur-sm">
-                  Drag to position
-                </p>
+                    {/* Placement area badge */}
+                    <div className="absolute top-4 left-4 z-20 flex items-center gap-2 bg-black/30 backdrop-blur-sm px-3 py-1.5 rounded-full">
+                      <div className="w-1.5 h-1.5 rounded-full bg-white/80" />
+                      <p className="text-white/80 text-xs font-medium uppercase tracking-wider">
+                        {pb.label} · Drag to position
+                      </p>
+                    </div>
 
-                <motion.img
-                  drag
-                  dragConstraints={{ left: -200, right: 200, top: -200, bottom: 200 }}
-                  src={generatedImage}
-                  className="w-48 h-48 sm:w-64 sm:h-64 object-contain mix-blend-multiply opacity-90 cursor-grab active:cursor-grabbing z-10 drop-shadow-2xl"
-                  alt="Tattoo Try On"
-                />
-              </div>
+                    <motion.img
+                      drag
+                      dragConstraints={{ left: -200, right: 200, top: -200, bottom: 200 }}
+                      src={generatedImage!}
+                      className="w-48 h-48 sm:w-64 sm:h-64 object-contain mix-blend-multiply opacity-90 cursor-grab active:cursor-grabbing z-10 drop-shadow-2xl"
+                      alt="Tattoo Try On"
+                    />
+                  </div>
+                );
+              })()}
 
               <p className="text-zinc-600 text-xs text-center">
-                Drag the tattoo to position it on the{questionnaire.placement ? ` ${questionnaire.placement.toLowerCase()}` : ' body'}
+                Showing placement on <span className="text-zinc-400">{questionnaire.placement || 'body'}</span> — drag to fine-tune position
               </p>
             </motion.div>
           )}
