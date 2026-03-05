@@ -20,79 +20,88 @@ const BODY_SHAPES = [
   { id: 'Apple', name: 'Apple', desc: 'Broader upper body & midsection' },
 ];
 
-// Each style uses pure CSS backgrounds — no external images, loads instantly
+const SKIN_TONES = [
+  { label: 'Very Light', value: 'Very Light', color: '#FDDBB4' },
+  { label: 'Light', value: 'Light', color: '#E8B078' },
+  { label: 'Medium', value: 'Medium', color: '#C68642' },
+  { label: 'Dark', value: 'Dark', color: '#8D5524' },
+  { label: 'Very Dark', value: 'Very Dark', color: '#3D1A0A' },
+];
+
+const mkSvg = (svg: string) => `data:image/svg+xml,${encodeURIComponent(svg)}`;
+
 const TATTOO_STYLES = [
   {
     id: 'American Traditional',
     name: 'American Traditional',
     desc: 'Bold lines, solid colors (red, yellow, green, black).',
-    cardStyle: 'repeating-linear-gradient(45deg, rgba(0,0,0,0.25) 0px, rgba(0,0,0,0.25) 10px, transparent 10px, transparent 20px), linear-gradient(135deg, #7f1d1d 0%, #c2410c 50%, #b45309 100%)',
+    imgSrc: mkSvg(`<svg viewBox="0 0 200 150" xmlns="http://www.w3.org/2000/svg"><rect width="200" height="150" fill="#0f0002"/><circle cx="100" cy="32" r="15" fill="none" stroke="#dc2626" stroke-width="8"/><rect x="94" y="47" width="12" height="70" rx="3" fill="#dc2626"/><rect x="58" y="73" width="84" height="11" rx="5" fill="#eab308"/><path d="M58,78 Q38,96 47,114 Q65,124 79,110 L74,84Z" fill="#dc2626"/><path d="M142,78 Q162,96 153,114 Q135,124 121,110 L126,84Z" fill="#dc2626"/><circle cx="100" cy="117" r="7" fill="#eab308"/><path d="M96,50 Q104,56 96,62 Q104,68 96,74" fill="none" stroke="#eab308" stroke-width="2.5" stroke-linecap="round"/><text x="20" y="38" font-size="22" fill="#eab308" font-family="serif">&#9733;</text><text x="158" y="38" font-size="22" fill="#eab308" font-family="serif">&#9733;</text></svg>`),
   },
   {
     id: 'Neo-Traditional',
     name: 'Neo-Traditional',
     desc: 'Varying line weights, jewel tones, filigree.',
-    cardStyle: 'repeating-linear-gradient(120deg, rgba(255,255,255,0.12) 0px, rgba(255,255,255,0.12) 1px, transparent 1px, transparent 14px), linear-gradient(135deg, #312e81 0%, #6d28d9 60%, #7c3aed 100%)',
+    imgSrc: mkSvg(`<svg viewBox="0 0 200 150" xmlns="http://www.w3.org/2000/svg"><rect width="200" height="150" fill="#0f0a1e"/><path d="M100,145 Q98,120 100,100 Q102,80 100,62" stroke="#166534" stroke-width="4" fill="none"/><path d="M100,115 Q80,108 75,96 Q87,95 100,110" fill="#166534" stroke="#0a0518" stroke-width="1.5"/><path d="M100,100 Q122,93 127,80 Q115,80 100,96" fill="#14532d" stroke="#0a0518" stroke-width="1.5"/><path d="M80,48 Q78,30 90,26 Q100,24 100,36" fill="#581c87" stroke="#09090b" stroke-width="3"/><path d="M120,48 Q122,30 110,26 Q100,24 100,36" fill="#6d28d9" stroke="#09090b" stroke-width="3"/><path d="M72,58 Q56,50 58,36 Q68,40 74,52" fill="#4c1d95" stroke="#09090b" stroke-width="2.5"/><path d="M128,58 Q144,50 142,36 Q132,40 126,52" fill="#5b21b6" stroke="#09090b" stroke-width="2.5"/><ellipse cx="100" cy="62" rx="32" ry="28" fill="#7c3aed" stroke="#09090b" stroke-width="4"/><ellipse cx="100" cy="60" rx="20" ry="18" fill="#6d28d9"/><path d="M100,50 Q108,52 106,60 Q104,68 96,66 Q88,64 90,56 Q92,48 100,50" fill="none" stroke="#a78bfa" stroke-width="2"/><ellipse cx="88" cy="52" rx="7" ry="10" fill="rgba(255,255,255,0.22)" transform="rotate(-20,88,52)"/><path d="M72,65 Q60,80 64,95 Q68,82 75,72Z" fill="#4c1d95" stroke="#09090b" stroke-width="2"/><path d="M128,65 Q140,80 136,95 Q132,82 125,72Z" fill="#5b21b6" stroke="#09090b" stroke-width="2"/></svg>`),
   },
   {
     id: 'Japanese (Irezumi)',
     name: 'Japanese (Irezumi)',
     desc: 'Flowing backgrounds, mythological motifs.',
-    cardStyle: 'repeating-linear-gradient(180deg, rgba(255,255,255,0.07) 0px, rgba(255,255,255,0.07) 1px, transparent 1px, transparent 22px), linear-gradient(160deg, #881337 0%, #be123c 45%, #1e1b4b 100%)',
+    imgSrc: mkSvg(`<svg viewBox="0 0 200 150" xmlns="http://www.w3.org/2000/svg"><rect width="200" height="150" fill="#050010"/><path d="M0,90 Q25,70 50,90 Q75,110 100,90 Q125,70 150,90 Q175,110 200,90 L200,150 L0,150Z" fill="#1e1b4b"/><path d="M0,105 Q25,88 50,105 Q75,122 100,105 Q125,88 150,105 Q175,122 200,105 L200,150 L0,150Z" fill="#1e3a8a" opacity="0.7"/><path d="M45,85 Q28,98 18,82 Q26,65 45,75Z" fill="#dc2626" stroke="#111" stroke-width="2.5"/><ellipse cx="100" cy="72" rx="55" ry="24" fill="#dc2626" stroke="#111" stroke-width="3.5" transform="rotate(-15,100,72)"/><ellipse cx="148" cy="52" rx="20" ry="15" fill="#b91c1c" stroke="#111" stroke-width="3"/><path d="M85,67 Q90,59 95,67" fill="none" stroke="#7f1d1d" stroke-width="1.5"/><path d="M96,67 Q101,59 106,67" fill="none" stroke="#7f1d1d" stroke-width="1.5"/><path d="M107,67 Q112,59 117,67" fill="none" stroke="#7f1d1d" stroke-width="1.5"/><path d="M90,76 Q95,68 100,76" fill="none" stroke="#7f1d1d" stroke-width="1.5"/><path d="M101,76 Q106,68 111,76" fill="none" stroke="#7f1d1d" stroke-width="1.5"/><path d="M113,58 Q120,38 132,52" fill="#f87171" stroke="#111" stroke-width="2"/><circle cx="150" cy="50" r="5" fill="#0a0010"/><circle cx="151" cy="49" r="2" fill="#fff"/><path d="M160,48 Q175,38 183,43" stroke="#eab308" stroke-width="2" fill="none" stroke-linecap="round"/><path d="M160,52 Q175,55 182,50" stroke="#eab308" stroke-width="1.5" fill="none" stroke-linecap="round"/></svg>`),
   },
   {
     id: 'Black & Grey Realism',
     name: 'Black & Grey Realism',
     desc: 'Smooth shading, no outlines, highly detailed.',
-    cardStyle: 'radial-gradient(ellipse at 40% 40%, #71717a 0%, #3f3f46 40%, #09090b 100%)',
+    imgSrc: mkSvg(`<svg viewBox="0 0 200 150" xmlns="http://www.w3.org/2000/svg"><defs><radialGradient id="sg" cx="40%" cy="30%"><stop offset="0%" stop-color="#e4e4e7"/><stop offset="55%" stop-color="#a1a1aa"/><stop offset="100%" stop-color="#27272a"/></radialGradient><radialGradient id="ey" cx="30%" cy="25%"><stop offset="0%" stop-color="#52525b"/><stop offset="100%" stop-color="#09090b"/></radialGradient></defs><rect width="200" height="150" fill="#09090b"/><ellipse cx="100" cy="64" rx="50" ry="52" fill="url(#sg)"/><rect x="54" y="95" width="92" height="22" rx="11" fill="#71717a"/><rect x="64" y="106" width="72" height="30" rx="8" fill="#52525b"/><rect x="74" y="122" width="10" height="15" rx="2" fill="#d4d4d8"/><rect x="88" y="122" width="10" height="17" rx="2" fill="#d4d4d8"/><rect x="102" y="122" width="10" height="17" rx="2" fill="#d4d4d8"/><rect x="116" y="122" width="10" height="15" rx="2" fill="#d4d4d8"/><ellipse cx="76" cy="70" rx="20" ry="19" fill="url(#ey)"/><ellipse cx="124" cy="70" rx="20" ry="19" fill="url(#ey)"/><path d="M88,94 Q100,86 112,94 Q107,103 100,105 Q93,103 88,94Z" fill="#18181b"/><ellipse cx="82" cy="46" rx="12" ry="8" fill="rgba(255,255,255,0.2)" transform="rotate(-20,82,46)"/></svg>`),
   },
   {
     id: 'Micro-Realism',
     name: 'Micro-Realism',
     desc: 'Tiny, intricate details using single needle.',
-    cardStyle: 'repeating-linear-gradient(0deg, rgba(255,255,255,0.06) 0px, rgba(255,255,255,0.06) 1px, transparent 1px, transparent 8px), repeating-linear-gradient(90deg, rgba(255,255,255,0.06) 0px, rgba(255,255,255,0.06) 1px, transparent 1px, transparent 8px), linear-gradient(135deg, #0c4a6e 0%, #0369a1 100%)',
+    imgSrc: mkSvg(`<svg viewBox="0 0 200 150" xmlns="http://www.w3.org/2000/svg"><rect width="200" height="150" fill="#fafafa"/><path d="M100,148 Q98,125 100,100 Q102,78 99,58" stroke="#3f3f46" stroke-width="0.8" fill="none"/><path d="M100,122 Q78,114 72,103 Q84,102 100,118" fill="none" stroke="#3f3f46" stroke-width="0.7"/><path d="M100,108 Q122,100 128,88 Q116,89 100,105" fill="none" stroke="#3f3f46" stroke-width="0.7"/><path d="M100,20 Q118,28 120,46 Q118,64 100,72 Q82,64 80,46 Q82,28 100,20Z" fill="none" stroke="#be185d" stroke-width="0.9"/><path d="M82,26 Q80,12 94,12 Q100,16 100,20" fill="none" stroke="#be185d" stroke-width="0.65"/><path d="M118,26 Q120,12 106,12 Q100,16 100,20" fill="none" stroke="#be185d" stroke-width="0.65"/><path d="M76,48 Q62,42 64,30 Q74,34 78,44" fill="none" stroke="#be185d" stroke-width="0.65"/><path d="M124,48 Q138,42 136,30 Q126,34 122,44" fill="none" stroke="#be185d" stroke-width="0.65"/><path d="M76,54 Q60,64 63,77 Q73,73 79,62" fill="none" stroke="#be185d" stroke-width="0.65"/><path d="M124,54 Q140,64 137,77 Q127,73 121,62" fill="none" stroke="#be185d" stroke-width="0.65"/><path d="M100,38 Q105,35 104,42 Q103,49 97,47 Q91,45 93,38 Q95,31 101,34" fill="none" stroke="#be185d" stroke-width="0.8"/><line x1="90" y1="30" x2="87" y2="62" stroke="#be185d" stroke-width="0.35" opacity="0.5"/><line x1="110" y1="30" x2="113" y2="62" stroke="#be185d" stroke-width="0.35" opacity="0.5"/></svg>`),
   },
   {
     id: 'Color Realism',
     name: 'Color Realism',
     desc: 'Painterly, vibrant, no black outlines.',
-    cardStyle: 'linear-gradient(135deg, #16a34a 0%, #0891b2 25%, #7c3aed 50%, #dc2626 75%, #ea580c 100%)',
+    imgSrc: mkSvg(`<svg viewBox="0 0 200 150" xmlns="http://www.w3.org/2000/svg"><rect width="200" height="150" fill="#0c0a0a"/><ellipse cx="100" cy="58" rx="38" ry="30" fill="#b91c1c" opacity="0.9"/><ellipse cx="80" cy="65" rx="26" ry="21" fill="#dc2626" opacity="0.85"/><ellipse cx="120" cy="65" rx="26" ry="21" fill="#ef4444" opacity="0.8"/><ellipse cx="95" cy="72" rx="22" ry="18" fill="#dc2626" opacity="0.9"/><ellipse cx="105" cy="72" rx="22" ry="18" fill="#b91c1c" opacity="0.85"/><ellipse cx="84" cy="46" rx="20" ry="24" fill="#be123c" opacity="0.75"/><ellipse cx="116" cy="46" rx="20" ry="24" fill="#9f1239" opacity="0.75"/><ellipse cx="100" cy="38" rx="16" ry="16" fill="#e11d48" opacity="0.7"/><ellipse cx="88" cy="51" rx="11" ry="8" fill="#fca5a5" opacity="0.4"/><ellipse cx="84" cy="59" rx="7" ry="6" fill="#fecdd3" opacity="0.25"/><ellipse cx="100" cy="62" rx="14" ry="11" fill="#7f1d1d" opacity="0.85"/><ellipse cx="100" cy="62" rx="7" ry="6" fill="#3b0a0a" opacity="0.95"/><path d="M78,88 Q64,110 68,132" stroke="#166534" stroke-width="14" fill="none" stroke-linecap="round" opacity="0.9"/><path d="M122,88 Q136,110 132,132" stroke="#15803d" stroke-width="11" fill="none" stroke-linecap="round" opacity="0.85"/><path d="M92,92 Q82,118 86,142" stroke="#14532d" stroke-width="9" fill="none" stroke-linecap="round"/></svg>`),
   },
   {
     id: 'Blackwork',
     name: 'Blackwork',
     desc: 'Heavy black saturation, negative space.',
-    cardStyle: 'repeating-linear-gradient(0deg, rgba(255,255,255,0.09) 0px, rgba(255,255,255,0.09) 1px, transparent 1px, transparent 32px), repeating-linear-gradient(90deg, rgba(255,255,255,0.09) 0px, rgba(255,255,255,0.09) 1px, transparent 1px, transparent 32px), radial-gradient(ellipse at 50% 50%, #27272a, #09090b)',
+    imgSrc: mkSvg(`<svg viewBox="0 0 200 150" xmlns="http://www.w3.org/2000/svg"><defs><clipPath id="c1"><circle cx="100" cy="75" r="64"/></clipPath><clipPath id="c2"><circle cx="100" cy="75" r="46"/></clipPath><clipPath id="c3"><circle cx="100" cy="75" r="28"/></clipPath><pattern id="dp" x="0" y="0" width="0" height="0"/></defs><rect width="200" height="150" fill="#f5f5f0"/><circle cx="100" cy="75" r="65" fill="#09090b"/><circle cx="100" cy="75" r="52" fill="#f5f5f0"/><circle cx="100" cy="75" r="42" fill="#09090b"/><circle cx="100" cy="75" r="30" fill="#f5f5f0"/><circle cx="100" cy="75" r="20" fill="#09090b"/><circle cx="100" cy="75" r="10" fill="#f5f5f0"/><circle cx="100" cy="75" r="4" fill="#09090b"/><polygon points="100,11 104,68 100,75 96,68" fill="#09090b"/><polygon points="100,139 96,82 100,75 104,82" fill="#09090b"/><polygon points="36,75 93,71 100,75 93,79" fill="#09090b"/><polygon points="164,75 107,79 100,75 107,71" fill="#09090b"/><polygon points="55,30 97,72 100,75 94,78" fill="#09090b"/><polygon points="145,120 103,78 100,75 106,72" fill="#09090b"/><polygon points="55,120 97,78 100,75 94,72" fill="#09090b"/><polygon points="145,30 103,72 100,75 106,78" fill="#09090b"/></svg>`),
   },
   {
     id: 'Cybersigilism',
     name: 'Cybersigilism',
     desc: 'Sharp, aggressive, wire-like thin lines.',
-    cardStyle: 'repeating-linear-gradient(60deg, rgba(96,165,250,0.18) 0px, rgba(96,165,250,0.18) 1px, transparent 1px, transparent 12px), repeating-linear-gradient(-60deg, rgba(96,165,250,0.18) 0px, rgba(96,165,250,0.18) 1px, transparent 1px, transparent 12px), linear-gradient(135deg, #020617 0%, #1e3a5f 100%)',
+    imgSrc: mkSvg(`<svg viewBox="0 0 200 150" xmlns="http://www.w3.org/2000/svg"><rect width="200" height="150" fill="#020617"/><path d="M100,8 L110,48 L148,22 L122,58 L172,52 L132,74 L178,88 L132,96 L158,132 L110,104 L108,148 L100,108 L92,148 L90,104 L42,132 L68,96 L22,88 L68,74 L28,52 L78,58 L52,22 L90,48Z" fill="none" stroke="#60a5fa" stroke-width="1.4" stroke-linejoin="round"/><path d="M100,28 L107,58 L132,40 L114,62 L148,58 L120,74 L152,84 L120,90 L136,118 L106,96 L100,132 L94,96 L64,118 L80,90 L48,84 L80,74 L52,58 L86,62 L68,40 L93,58Z" fill="none" stroke="#93c5fd" stroke-width="0.7" stroke-linejoin="round" opacity="0.45"/><circle cx="100" cy="75" r="9" fill="none" stroke="#60a5fa" stroke-width="1.5"/><circle cx="100" cy="75" r="3" fill="#60a5fa" opacity="0.8"/></svg>`),
   },
   {
     id: 'Dotwork',
     name: 'Dotwork',
     desc: 'Images created entirely with stippled dots.',
-    cardStyle: 'radial-gradient(circle, rgba(255,255,255,0.5) 1.5px, transparent 1.5px) 0 0 / 14px 14px, radial-gradient(circle, rgba(255,255,255,0.25) 1.5px, transparent 1.5px) 7px 7px / 14px 14px, linear-gradient(135deg, #292524 0%, #44403c 100%)',
+    imgSrc: mkSvg(`<svg viewBox="0 0 200 150" xmlns="http://www.w3.org/2000/svg"><defs><pattern id="dp1" x="0" y="0" width="7" height="7" patternUnits="userSpaceOnUse"><circle cx="3.5" cy="3.5" r="0.9" fill="#1c1917"/></pattern><pattern id="dp2" x="0" y="0" width="5" height="5" patternUnits="userSpaceOnUse"><circle cx="2.5" cy="2.5" r="1.1" fill="#1c1917"/></pattern><pattern id="dp3" x="0" y="0" width="3.5" height="3.5" patternUnits="userSpaceOnUse"><circle cx="1.75" cy="1.75" r="1.1" fill="#1c1917"/></pattern><clipPath id="r1"><circle cx="100" cy="75" r="64"/></clipPath><clipPath id="r2"><circle cx="100" cy="75" r="46"/></clipPath><clipPath id="r3"><circle cx="100" cy="75" r="28"/></clipPath><clipPath id="r4"><circle cx="100" cy="75" r="12"/></clipPath></defs><rect width="200" height="150" fill="#fafaf9"/><rect x="30" y="8" width="140" height="140" fill="url(#dp1)" clip-path="url(#r1)"/><circle cx="100" cy="75" r="46" fill="#fafaf9"/><rect x="48" y="25" width="104" height="104" fill="url(#dp2)" clip-path="url(#r2)"/><circle cx="100" cy="75" r="28" fill="#fafaf9"/><rect x="68" y="45" width="64" height="64" fill="url(#dp3)" clip-path="url(#r3)"/><circle cx="100" cy="75" r="12" fill="#fafaf9"/><rect x="86" y="61" width="28" height="28" fill="url(#dp3)" clip-path="url(#r4)"/><circle cx="100" cy="75" r="3" fill="#1c1917"/><line x1="100" y1="11" x2="100" y2="139" stroke="#1c1917" stroke-width="0.5" opacity="0.25"/><line x1="36" y1="75" x2="164" y2="75" stroke="#1c1917" stroke-width="0.5" opacity="0.25"/><line x1="55" y1="30" x2="145" y2="120" stroke="#1c1917" stroke-width="0.5" opacity="0.25"/><line x1="145" y1="30" x2="55" y2="120" stroke="#1c1917" stroke-width="0.5" opacity="0.25"/></svg>`),
   },
   {
     id: 'Trash Polka',
     name: 'Trash Polka',
     desc: 'Collage style, black and red, chaotic.',
-    cardStyle: 'repeating-linear-gradient(135deg, #dc2626 0px, #dc2626 4px, transparent 4px, transparent 22px), linear-gradient(135deg, #09090b 0%, #1c0000 100%)',
+    imgSrc: mkSvg(`<svg viewBox="0 0 200 150" xmlns="http://www.w3.org/2000/svg"><rect width="200" height="150" fill="#f5f5f0"/><ellipse cx="80" cy="60" rx="45" ry="30" fill="#09090b" opacity="0.85" transform="rotate(-15,80,60)"/><rect x="30" y="90" width="80" height="40" fill="#09090b" opacity="0.7" transform="rotate(5,70,110)"/><ellipse cx="140" cy="100" rx="35" ry="45" fill="#09090b" opacity="0.75" transform="rotate(20,140,100)"/><ellipse cx="120" cy="35" rx="40" ry="20" fill="#dc2626" opacity="0.9" transform="rotate(-25,120,35)"/><ellipse cx="160" cy="70" rx="20" ry="35" fill="#dc2626" opacity="0.8" transform="rotate(10,160,70)"/><circle cx="60" cy="130" r="22" fill="#dc2626" opacity="0.75"/><circle cx="172" cy="28" r="6" fill="#dc2626" opacity="0.85"/><circle cx="182" cy="48" r="4" fill="#dc2626" opacity="0.7"/><circle cx="157" cy="20" r="3" fill="#dc2626" opacity="0.8"/><line x1="10" y1="10" x2="190" y2="140" stroke="#09090b" stroke-width="8" opacity="0.12"/><line x1="10" y1="140" x2="190" y2="10" stroke="#dc2626" stroke-width="3" opacity="0.18"/><text x="100" y="80" font-size="26" fill="#f5f5f0" text-anchor="middle" font-family="sans-serif" font-weight="900" opacity="0.88" transform="rotate(-8,100,80)">CHAOS</text></svg>`),
   },
   {
     id: 'Ignorant Style',
     name: 'Ignorant Style',
     desc: 'Intentional amateurism, simple line drawings.',
-    cardStyle: 'repeating-linear-gradient(22deg, rgba(255,255,255,0.1) 0px, rgba(255,255,255,0.1) 2px, transparent 2px, transparent 18px), linear-gradient(135deg, #44403c 0%, #78716c 100%)',
+    imgSrc: mkSvg(`<svg viewBox="0 0 200 150" xmlns="http://www.w3.org/2000/svg"><rect width="200" height="150" fill="#fafaf9"/><path d="M65,45 Q63,22 75,20 L80,38" fill="none" stroke="#09090b" stroke-width="4" stroke-linecap="round"/><path d="M135,45 Q137,22 125,20 L120,38" fill="none" stroke="#09090b" stroke-width="4" stroke-linecap="round"/><path d="M65,45 Q64,85 68,100 Q80,115 100,116 Q120,115 132,100 Q136,85 135,45 Q115,38 100,40 Q85,38 65,45Z" fill="none" stroke="#09090b" stroke-width="4.5" stroke-linejoin="round"/><circle cx="83" cy="68" r="9" fill="none" stroke="#09090b" stroke-width="3.5"/><circle cx="87" cy="70" r="5" fill="#09090b"/><circle cx="118" cy="66" r="9" fill="none" stroke="#09090b" stroke-width="3.5"/><circle cx="120" cy="69" r="5" fill="#09090b"/><path d="M97,82 L100,88 L103,82" fill="none" stroke="#09090b" stroke-width="3" stroke-linejoin="round"/><path d="M86,96 Q100,108 114,96" fill="none" stroke="#09090b" stroke-width="3.5" stroke-linecap="round"/><line x1="40" y1="78" x2="72" y2="82" stroke="#09090b" stroke-width="2.5" stroke-linecap="round"/><line x1="38" y1="88" x2="72" y2="88" stroke="#09090b" stroke-width="2.5" stroke-linecap="round"/><line x1="128" y1="82" x2="162" y2="78" stroke="#09090b" stroke-width="2.5" stroke-linecap="round"/><line x1="128" y1="88" x2="163" y2="90" stroke="#09090b" stroke-width="2.5" stroke-linecap="round"/><text x="100" y="136" font-size="10" fill="#09090b" text-anchor="middle" font-family="sans-serif">hand poked</text></svg>`),
   },
   {
     id: 'Patchwork',
     name: 'Patchwork',
     desc: 'Collection of small, unrelated tattoos.',
-    cardStyle: 'repeating-linear-gradient(0deg, rgba(255,255,255,0.1) 0px, rgba(255,255,255,0.1) 1px, transparent 1px, transparent 44px), repeating-linear-gradient(90deg, rgba(255,255,255,0.1) 0px, rgba(255,255,255,0.1) 1px, transparent 1px, transparent 44px), linear-gradient(135deg, #1e1b4b 0%, #3730a3 50%, #6d28d9 100%)',
+    imgSrc: mkSvg(`<svg viewBox="0 0 200 150" xmlns="http://www.w3.org/2000/svg"><rect width="200" height="150" fill="#09090b"/><line x1="100" y1="5" x2="100" y2="145" stroke="#27272a" stroke-width="1" stroke-dasharray="4,4"/><line x1="5" y1="75" x2="195" y2="75" stroke="#27272a" stroke-width="1" stroke-dasharray="4,4"/><polygon points="50,18 55,32 70,32 58,41 63,56 50,47 37,56 42,41 30,32 45,32" fill="#eab308" stroke="#000" stroke-width="2"/><path d="M145,18 Q135,8 125,18 Q115,28 145,48 Q175,28 165,18 Q155,8 145,18Z" fill="#dc2626" stroke="#000" stroke-width="2"/><rect x="22" y="88" width="42" height="42" rx="7" fill="#f5f5f0" stroke="#09090b" stroke-width="3"/><circle cx="33" cy="99" r="3.5" fill="#09090b"/><circle cx="53" cy="99" r="3.5" fill="#09090b"/><circle cx="43" cy="109" r="3.5" fill="#09090b"/><circle cx="33" cy="119" r="3.5" fill="#09090b"/><circle cx="53" cy="119" r="3.5" fill="#09090b"/><path d="M138,86 L156,86 L142,108 L162,108 L130,148 L144,118 L126,118Z" fill="#eab308" stroke="#09090b" stroke-width="2.5" stroke-linejoin="round"/></svg>`),
   },
 ];
 
@@ -186,6 +195,12 @@ export default function App() {
       } else {
         setResult(consultation);
         setStep('results');
+        // Auto-start image generation so it's ready while the user reads results
+        setIsGeneratingImage(true);
+        generateTattooImage(consultation.image_generation.dalle_prompt)
+          .then((img) => setGeneratedImage(img))
+          .catch((err) => console.error('Auto image generation failed:', err))
+          .finally(() => setIsGeneratingImage(false));
       }
     } catch (err: unknown) {
       console.error(err);
@@ -453,23 +468,28 @@ export default function App() {
                     <label className="text-sm font-medium text-zinc-400 uppercase tracking-wider mb-3 block">
                       Skin Color (Melanin)
                     </label>
-                    <select
-                      required
-                      value={questionnaire.skinColor}
-                      onChange={(e) =>
-                        setQuestionnaire({ ...questionnaire, skinColor: e.target.value })
-                      }
-                      className="w-full bg-zinc-900/50 border border-zinc-800 rounded-xl p-4 text-base text-zinc-100 focus:outline-none focus:ring-1 focus:ring-zinc-500"
-                    >
-                      <option value="" disabled>
-                        Select...
-                      </option>
-                      <option value="Very Light (Type I)">Very Light (Type I)</option>
-                      <option value="Light (Type II)">Light (Type II)</option>
-                      <option value="Medium (Type III/IV)">Medium (Type III/IV)</option>
-                      <option value="Dark (Type V)">Dark (Type V)</option>
-                      <option value="Very Dark (Type VI)">Very Dark (Type VI)</option>
-                    </select>
+                    <div className="flex gap-4 flex-wrap">
+                      {SKIN_TONES.map((tone) => (
+                        <button
+                          key={tone.value}
+                          type="button"
+                          onClick={() => setQuestionnaire({ ...questionnaire, skinColor: tone.value })}
+                          className="flex flex-col items-center gap-2 group"
+                        >
+                          <div
+                            className={`w-11 h-11 rounded-full transition-all ${
+                              questionnaire.skinColor === tone.value
+                                ? 'ring-2 ring-offset-2 ring-offset-zinc-950 ring-zinc-300 scale-110'
+                                : 'opacity-70 hover:opacity-100 hover:scale-105'
+                            }`}
+                            style={{ backgroundColor: tone.color }}
+                          />
+                          <span className={`text-xs transition-colors ${questionnaire.skinColor === tone.value ? 'text-zinc-200' : 'text-zinc-500'}`}>
+                            {tone.label}
+                          </span>
+                        </button>
+                      ))}
+                    </div>
                   </div>
 
                   <div className="space-y-2">
@@ -538,7 +558,7 @@ export default function App() {
                 <div className="pt-4 border-t border-zinc-900">
                   <button
                     type="submit"
-                    disabled={!questionnaire.bodyShape}
+                    disabled={!questionnaire.bodyShape || !questionnaire.skinColor}
                     className="w-full bg-zinc-100 text-zinc-950 rounded-xl py-4 px-4 text-base font-medium hover:bg-white disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2"
                   >
                     Continue to Style Selection <ChevronRight size={16} />
@@ -590,10 +610,12 @@ export default function App() {
                         : 'border-zinc-800 hover:border-zinc-600'
                     }`}
                   >
-                    <div
-                      className="aspect-[4/3] relative transition-transform duration-500 group-hover:scale-105"
-                      style={{ background: style.cardStyle }}
-                    >
+                    <div className="aspect-[4/3] relative overflow-hidden">
+                      <img
+                        src={style.imgSrc}
+                        alt={style.name}
+                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                      />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent" />
                       <div className="absolute bottom-0 left-0 right-0 p-5">
                         <h3 className="text-base font-medium text-white mb-1">
