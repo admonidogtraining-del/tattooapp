@@ -121,22 +121,6 @@ const STYLE_IMAGE_PROMPTS: Record<string, string> = {
   'Patchwork': 'Patchwork tattoo flash collection on white background. MANDATORY: multiple small distinct traditional tattoo designs arranged together, each element surrounded by a white border outline, mix of classic flash motifs (hearts, stars, roses, daggers, animals), flash sheet layout.',
 };
 
-// Short prompts used to generate style preview cards (loaded on the style selection page)
-const STYLE_PREVIEW_PROMPTS: Record<string, string> = {
-  'American Traditional': 'American traditional old school tattoo flash: bold eagle clutching anchor surrounded by red roses, thick black outlines, flat red yellow green black only, white background.',
-  'Neo-Traditional': 'Neo-traditional tattoo: ornate purple rose bouquet with decorative filigree flourishes, jewel tones, bold and thin line variation, white background.',
-  'Japanese (Irezumi)': 'Japanese Irezumi tattoo: koi fish leaping through waves with cherry blossoms, bold black outlines, vivid red gold blue ink, traditional style, white background.',
-  'Black & Grey Realism': 'Black and grey realism tattoo: photorealistic wolf portrait with grey wash shading, single light source from upper left, zero outlines, no color, white background.',
-  'Micro-Realism': 'Micro realism single-needle tattoo: tiny detailed hummingbird in flight, ultra-thin delicate lines only, miniature scale, high contrast, white background.',
-  'Color Realism': 'Color realism tattoo: vibrant painterly sunflower, no black outlines anywhere, saturated pigments blending, impressionistic and photorealistic, white background.',
-  'Blackwork': 'Blackwork tattoo: intricate solid black geometric mandala, pure black ink only, bold negative space, no grey or color, white background.',
-  'Cybersigilism': 'Cybersigilism tattoo: ultra-thin sharp alien sigil with long tapering lines, needle-thin aggressive shapes, no fills, dark background.',
-  'Dotwork': 'Dotwork stipple tattoo: sacred geometry mandala made entirely of stippled dots, no lines only dots of varying density, white background.',
-  'Trash Polka': 'Trash polka tattoo: chaotic collage using only black and red, realistic skull mixed with red paint splatters and bold graphic text, white background.',
-  'Ignorant Style': 'Ignorant style hand-poked tattoo: shaky naive smiley face drawing, intentionally imperfect lines, flat childlike 2D, marker aesthetic, white background.',
-  'Patchwork': 'Patchwork tattoo flash sheet: multiple small unrelated traditional flash designs arranged together — heart, star, dagger, rose, horseshoe — each with white border, white background.',
-};
-
 // Maps style IDs to their pre-generated PNG filename under public/style-previews/
 const STYLE_SLUGS: Record<string, string> = {
   'American Traditional': 'american-traditional',
@@ -409,18 +393,12 @@ export default function App() {
   const [isGeneratingImage, setIsGeneratingImage] = useState(false);
   const [showTryOn, setShowTryOn] = useState(false);
   const [tattooScale, setTattooScale] = useState(1);
-  const [stylePreviewImages, setStylePreviewImages] = useState<Record<string, string>>(() => {
-    try {
-      const cached = localStorage.getItem('inksight_style_previews');
-      return cached ? JSON.parse(cached) : {};
-    } catch {
-      return {};
-    }
-  });
-  const [generatingPreviews, setGeneratingPreviews] = useState<Set<string>>(new Set());
+  // stylePreviewImages holds images from public/style-previews/ (generated via `npm run gen-previews`)
+  // They are used as style references when generating the final tattoo — not shown in the UI cards.
+  const [stylePreviewImages, setStylePreviewImages] = useState<Record<string, string>>({});
 
-  // On mount: load any pre-generated images from public/style-previews/ into state
-  // so they're available as style references even before the style page is visited
+  // On mount: silently load pre-generated style reference images into state
+  // so they're available as Gemini input references when the user generates a tattoo
   useEffect(() => {
     TATTOO_STYLES.forEach(style => {
       const url = stylePreviewPublicUrl(style.id);
@@ -428,7 +406,6 @@ export default function App() {
       fetch(url, { method: 'HEAD' })
         .then(r => {
           if (!r.ok) return;
-          // Fetch the actual image data so we can pass it as inlineData to Gemini
           return fetch(url).then(r2 => r2.blob()).then(blob => new Promise<string>(resolve => {
             const reader = new FileReader();
             reader.onloadend = () => resolve(reader.result as string);
@@ -439,7 +416,7 @@ export default function App() {
           if (!dataUrl) return;
           setStylePreviewImages(prev => prev[style.id] ? prev : { ...prev, [style.id]: dataUrl });
         })
-        .catch(() => { /* file not generated yet — will fall back to runtime generation */ });
+        .catch(() => { /* no pre-generated file — generation works fine without it */ });
     });
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -452,40 +429,6 @@ export default function App() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, [step]);
 
-  // Generate style preview images when the style selection page first loads (batched, cached in localStorage)
-  useEffect(() => {
-    if (step !== 'style_selection') return;
-    const stylesToGenerate = TATTOO_STYLES.filter(s => !stylePreviewImages[s.id] && !generatingPreviews.has(s.id));
-    if (stylesToGenerate.length === 0) return;
-
-    setGeneratingPreviews(prev => new Set([...prev, ...stylesToGenerate.map(s => s.id)]));
-
-    // Process in batches of 3 to avoid rate limits
-    const BATCH = 3;
-    const runBatch = async (batch: typeof stylesToGenerate) => {
-      await Promise.allSettled(batch.map(async style => {
-        const prompt = STYLE_PREVIEW_PROMPTS[style.id] ?? `${style.name} tattoo example, white background.`;
-        try {
-          const img = await generateTattooImage(prompt);
-          setStylePreviewImages(prev => {
-            const next = { ...prev, [style.id]: img };
-            try { localStorage.setItem('inksight_style_previews', JSON.stringify(next)); } catch { /* storage full */ }
-            return next;
-          });
-        } catch { /* leave SVG placeholder */ }
-        finally {
-          setGeneratingPreviews(prev => { const next = new Set(prev); next.delete(style.id); return next; });
-        }
-      }));
-    };
-
-    (async () => {
-      for (let i = 0; i < stylesToGenerate.length; i += BATCH) {
-        await runBatch(stylesToGenerate.slice(i, i + BATCH));
-      }
-    })();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [step]);
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []) as File[];
@@ -988,26 +931,11 @@ export default function App() {
                     }`}
                   >
                     <div className="aspect-[4/3] relative overflow-hidden">
-                      {/* SVG illustration always shown as base layer */}
                       <img
                         src={style.imgSrc}
                         alt={style.name}
-                        className="w-full h-full object-cover"
+                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                       />
-                      {/* AI-generated photo fades in on top once ready */}
-                      {stylePreviewImages[style.id] && (
-                        <img
-                          src={stylePreviewImages[style.id]}
-                          alt={style.name}
-                          className="absolute inset-0 w-full h-full object-cover transition-opacity duration-700 group-hover:scale-105"
-                        />
-                      )}
-                      {/* Small spinner badge while generating */}
-                      {generatingPreviews.has(style.id) && (
-                        <div className="absolute top-2 right-2 z-10 w-6 h-6 rounded-full bg-black/50 flex items-center justify-center">
-                          <div className="w-3.5 h-3.5 border border-zinc-500 border-t-zinc-200 rounded-full animate-spin" />
-                        </div>
-                      )}
                       <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent" />
                       <div className="absolute bottom-0 left-0 right-0 p-5">
                         <h3 className="text-base font-medium text-white mb-1">
