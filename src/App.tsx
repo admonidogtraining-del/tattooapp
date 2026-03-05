@@ -137,6 +137,28 @@ const STYLE_PREVIEW_PROMPTS: Record<string, string> = {
   'Patchwork': 'Patchwork tattoo flash sheet: multiple small unrelated traditional flash designs arranged together — heart, star, dagger, rose, horseshoe — each with white border, white background.',
 };
 
+// Maps style IDs to their pre-generated PNG filename under public/style-previews/
+const STYLE_SLUGS: Record<string, string> = {
+  'American Traditional': 'american-traditional',
+  'Neo-Traditional': 'neo-traditional',
+  'Japanese (Irezumi)': 'japanese-irezumi',
+  'Black & Grey Realism': 'black-grey-realism',
+  'Micro-Realism': 'micro-realism',
+  'Color Realism': 'color-realism',
+  'Blackwork': 'blackwork',
+  'Cybersigilism': 'cybersigilism',
+  'Dotwork': 'dotwork',
+  'Trash Polka': 'trash-polka',
+  'Ignorant Style': 'ignorant-style',
+  'Patchwork': 'patchwork',
+};
+
+/** Returns the public URL for a pre-generated style preview, or null if not available. */
+const stylePreviewPublicUrl = (styleId: string): string | null => {
+  const slug = STYLE_SLUGS[styleId];
+  return slug ? `/style-previews/${slug}.png` : null;
+};
+
 const buildStylePrompt = (dallePrompt: string, style: string): string => {
   const prefix = STYLE_IMAGE_PROMPTS[style] ?? '';
   const suffix = ' Complete standalone tattoo design, full subject visible, not cropped, perfectly centered on pure white background, tattoo flash sheet presentation.';
@@ -396,6 +418,31 @@ export default function App() {
     }
   });
   const [generatingPreviews, setGeneratingPreviews] = useState<Set<string>>(new Set());
+
+  // On mount: load any pre-generated images from public/style-previews/ into state
+  // so they're available as style references even before the style page is visited
+  useEffect(() => {
+    TATTOO_STYLES.forEach(style => {
+      const url = stylePreviewPublicUrl(style.id);
+      if (!url) return;
+      fetch(url, { method: 'HEAD' })
+        .then(r => {
+          if (!r.ok) return;
+          // Fetch the actual image data so we can pass it as inlineData to Gemini
+          return fetch(url).then(r2 => r2.blob()).then(blob => new Promise<string>(resolve => {
+            const reader = new FileReader();
+            reader.onloadend = () => resolve(reader.result as string);
+            reader.readAsDataURL(blob);
+          }));
+        })
+        .then(dataUrl => {
+          if (!dataUrl) return;
+          setStylePreviewImages(prev => prev[style.id] ? prev : { ...prev, [style.id]: dataUrl });
+        })
+        .catch(() => { /* file not generated yet — will fall back to runtime generation */ });
+    });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const tattooX = useMotionValue(0);
   const tattooY = useMotionValue(0);
@@ -502,8 +549,10 @@ export default function App() {
         setStep('results');
         // Auto-start image generation with style-enforced prompt
         setIsGeneratingImage(true);
-        generateTattooImage(buildStylePrompt(consultation.image_generation.dalle_prompt, questionnaire.style))
-          .then((img) => setGeneratedImage(img))
+        generateTattooImage(
+          buildStylePrompt(consultation.image_generation.dalle_prompt, questionnaire.style),
+          stylePreviewImages[questionnaire.style]
+        ).then((img) => setGeneratedImage(img))
           .catch((err) => console.error('Auto image generation failed:', err))
           .finally(() => setIsGeneratingImage(false));
       }
@@ -587,7 +636,7 @@ export default function App() {
     setError(null);
     try {
       const promptToUse = customImagePrompt.trim() || buildStylePrompt(result.image_generation.dalle_prompt, questionnaire.style);
-      const imageBase64 = await generateTattooImage(promptToUse);
+      const imageBase64 = await generateTattooImage(promptToUse, stylePreviewImages[questionnaire.style]);
       setGeneratedImage(imageBase64);
     } catch (err: unknown) {
       console.error(err);
@@ -1212,8 +1261,10 @@ export default function App() {
                           setCustomImagePrompt('');
                           setIsGeneratingImage(true);
                           setGeneratedImage(null);
-                          generateTattooImage(buildStylePrompt(result.image_generation.dalle_prompt, s.id))
-                            .then(img => setGeneratedImage(img))
+                          generateTattooImage(
+                            buildStylePrompt(result.image_generation.dalle_prompt, s.id),
+                            stylePreviewImages[s.id]
+                          ).then(img => setGeneratedImage(img))
                             .catch(err => { console.error(err); setError('Image generation failed.'); })
                             .finally(() => setIsGeneratingImage(false));
                         }}

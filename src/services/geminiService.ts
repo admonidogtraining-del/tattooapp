@@ -244,23 +244,34 @@ export async function generateTattooConsultation(
   return JSON.parse(response.text) as TattooConsultation;
 }
 
-export async function generateTattooImage(prompt: string): Promise<string> {
+export async function generateTattooImage(prompt: string, styleReferenceDataUrl?: string): Promise<string> {
+  // Build parts — if a style reference image is provided, include it so Gemini
+  // uses it as a visual style guide for the generated tattoo
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const parts: any[] = [];
+
+  if (styleReferenceDataUrl) {
+    const commaIdx = styleReferenceDataUrl.indexOf(',');
+    const mimeType = commaIdx > 0
+      ? (styleReferenceDataUrl.slice(5, commaIdx).split(';')[0] || 'image/png')
+      : 'image/png';
+    const data = commaIdx > 0 ? styleReferenceDataUrl.slice(commaIdx + 1) : styleReferenceDataUrl;
+    parts.push({ inlineData: { data, mimeType } });
+    parts.push({ text: `Using the above image as a strict style reference, generate a tattoo design in exactly that style: ${prompt}` });
+  } else {
+    parts.push({ text: prompt });
+  }
+
   const response = await ai.models.generateContent({
     model: "gemini-2.0-flash-preview-image-generation",
-    contents: {
-      parts: [
-        {
-          text: prompt,
-        },
-      ],
-    },
+    contents: { parts },
     config: {
       responseModalities: ["TEXT", "IMAGE"],
     },
   });
 
-  const parts = response.candidates?.[0]?.content?.parts || [];
-  for (const part of parts) {
+  const responseParts = response.candidates?.[0]?.content?.parts || [];
+  for (const part of responseParts) {
     if (part.inlineData) {
       return `data:${part.inlineData.mimeType};base64,${part.inlineData.data}`;
     }

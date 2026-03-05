@@ -5,7 +5,8 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "gen-previews": "node --env-file=.env scripts/generate-style-previews.mjs"
   },
   "dependencies": {
     "@google/genai": "^1.0.0",
