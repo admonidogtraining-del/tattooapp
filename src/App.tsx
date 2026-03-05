@@ -1,8 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
+import { motion, AnimatePresence, useMotionValue } from 'motion/react';
 import {
   Upload, PenTool, Sparkles, AlertTriangle, Image as ImageIcon,
-  ChevronRight, Droplet, ChevronLeft, X, Download, Plus, Maximize
+  ChevronRight, Droplet, ChevronLeft, X, Download, Plus, Maximize, Save
 } from 'lucide-react';
 import {
   generateTattooConsultation,
@@ -119,6 +119,22 @@ const STYLE_IMAGE_PROMPTS: Record<string, string> = {
   'Trash Polka': 'Trash Polka tattoo collage on white background. MANDATORY: ONLY black and red colors, chaotic collage of realistic imagery mixed with abstract red paint splatters and bold graphic text elements, high contrast, aggressive composition.',
   'Ignorant Style': 'Ignorant style hand-poked tattoo on white background. MANDATORY: intentionally shaky imperfect lines, simple naive childlike drawing, flat 2D, wrong proportions, sharpie marker aesthetic, primitive look, no professional polish whatsoever.',
   'Patchwork': 'Patchwork tattoo flash collection on white background. MANDATORY: multiple small distinct traditional tattoo designs arranged together, each element surrounded by a white border outline, mix of classic flash motifs (hearts, stars, roses, daggers, animals), flash sheet layout.',
+};
+
+// Short prompts used to generate style preview cards (loaded on the style selection page)
+const STYLE_PREVIEW_PROMPTS: Record<string, string> = {
+  'American Traditional': 'American traditional old school tattoo flash: bold eagle clutching anchor surrounded by red roses, thick black outlines, flat red yellow green black only, white background.',
+  'Neo-Traditional': 'Neo-traditional tattoo: ornate purple rose bouquet with decorative filigree flourishes, jewel tones, bold and thin line variation, white background.',
+  'Japanese (Irezumi)': 'Japanese Irezumi tattoo: koi fish leaping through waves with cherry blossoms, bold black outlines, vivid red gold blue ink, traditional style, white background.',
+  'Black & Grey Realism': 'Black and grey realism tattoo: photorealistic wolf portrait with grey wash shading, single light source from upper left, zero outlines, no color, white background.',
+  'Micro-Realism': 'Micro realism single-needle tattoo: tiny detailed hummingbird in flight, ultra-thin delicate lines only, miniature scale, high contrast, white background.',
+  'Color Realism': 'Color realism tattoo: vibrant painterly sunflower, no black outlines anywhere, saturated pigments blending, impressionistic and photorealistic, white background.',
+  'Blackwork': 'Blackwork tattoo: intricate solid black geometric mandala, pure black ink only, bold negative space, no grey or color, white background.',
+  'Cybersigilism': 'Cybersigilism tattoo: ultra-thin sharp alien sigil with long tapering lines, needle-thin aggressive shapes, no fills, dark background.',
+  'Dotwork': 'Dotwork stipple tattoo: sacred geometry mandala made entirely of stippled dots, no lines only dots of varying density, white background.',
+  'Trash Polka': 'Trash polka tattoo: chaotic collage using only black and red, realistic skull mixed with red paint splatters and bold graphic text, white background.',
+  'Ignorant Style': 'Ignorant style hand-poked tattoo: shaky naive smiley face drawing, intentionally imperfect lines, flat childlike 2D, marker aesthetic, white background.',
+  'Patchwork': 'Patchwork tattoo flash sheet: multiple small unrelated traditional flash designs arranged together — heart, star, dagger, rose, horseshoe — each with white border, white background.',
 };
 
 const buildStylePrompt = (dallePrompt: string, style: string): string => {
@@ -371,11 +387,32 @@ export default function App() {
   const [isGeneratingImage, setIsGeneratingImage] = useState(false);
   const [showTryOn, setShowTryOn] = useState(false);
   const [tattooScale, setTattooScale] = useState(1);
+  const [stylePreviewImages, setStylePreviewImages] = useState<Record<string, string>>({});
+  const [generatingPreviews, setGeneratingPreviews] = useState<Set<string>>(new Set());
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const tattooX = useMotionValue(0);
+  const tattooY = useMotionValue(0);
 
   // Scroll to top whenever the user moves to a new step
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [step]);
+
+  // Generate style preview images when the style selection page first loads
+  useEffect(() => {
+    if (step !== 'style_selection') return;
+    const stylesToGenerate = TATTOO_STYLES.filter(s => !stylePreviewImages[s.id] && !generatingPreviews.has(s.id));
+    if (stylesToGenerate.length === 0) return;
+
+    setGeneratingPreviews(prev => new Set([...prev, ...stylesToGenerate.map(s => s.id)]));
+    stylesToGenerate.forEach(style => {
+      const prompt = STYLE_PREVIEW_PROMPTS[style.id] ?? `${style.name} tattoo example, white background.`;
+      generateTattooImage(prompt)
+        .then(img => setStylePreviewImages(prev => ({ ...prev, [style.id]: img })))
+        .catch(() => {/* leave placeholder on error */})
+        .finally(() => setGeneratingPreviews(prev => { const next = new Set(prev); next.delete(style.id); return next; }));
+    });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [step]);
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -478,6 +515,29 @@ export default function App() {
     setIsGeneratingImage(false);
     setDiscoveryAnswers({});
     setShowTryOn(false);
+    setTattooScale(1);
+    tattooX.set(0);
+    tattooY.set(0);
+  };
+
+  // Extracts the best-matching body part keyword from free-form text
+  const extractPlacement = (text: string): string => {
+    const lower = (text || '').toLowerCase();
+    if (lower.includes('back') && !lower.includes('set back') && !lower.includes('setback')) return 'back';
+    if (lower.includes('chest') || lower.includes('sternum') || lower.includes('pec')) return 'chest';
+    if (lower.includes('shoulder') || lower.includes('deltoid')) return 'shoulder';
+    if (lower.includes('rib') || lower.includes('side body') || lower.includes('flank')) return 'ribs';
+    if (lower.includes('thigh') || lower.includes('upper leg') || lower.includes('quad')) return 'thigh';
+    if (lower.includes('calf') || lower.includes('lower leg')) return 'calf';
+    if (lower.includes('forearm') || lower.includes('fore arm') || lower.includes('lower arm')) return 'forearm';
+    if (lower.includes('wrist')) return 'wrist';
+    if (lower.includes('ankle')) return 'ankle';
+    if (lower.includes('foot') || lower.includes('feet') || lower.includes('heel')) return 'foot';
+    if (lower.includes('neck') || lower.includes('throat') || lower.includes('nape')) return 'neck';
+    if (lower.includes('finger') || lower.includes('knuckle')) return 'finger';
+    if (lower.includes('hand') || lower.includes('palm')) return 'hand';
+    if (lower.includes('arm')) return 'forearm'; // generic "arm" defaults to forearm
+    return text;
   };
 
   const getPlacementBg = (placement: string) => {
@@ -854,11 +914,28 @@ export default function App() {
                     }`}
                   >
                     <div className="aspect-[4/3] relative overflow-hidden">
-                      <img
-                        src={style.imgSrc}
-                        alt={style.name}
-                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                      />
+                      {stylePreviewImages[style.id] ? (
+                        <img
+                          src={stylePreviewImages[style.id]}
+                          alt={style.name}
+                          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex flex-col items-center justify-center bg-zinc-900 gap-3">
+                          {generatingPreviews.has(style.id) ? (
+                            <>
+                              <div className="w-6 h-6 border-2 border-zinc-600 border-t-zinc-200 rounded-full animate-spin" />
+                              <span className="text-xs text-zinc-500">Generating preview…</span>
+                            </>
+                          ) : (
+                            <img
+                              src={style.imgSrc}
+                              alt={style.name}
+                              className="w-full h-full object-cover opacity-60"
+                            />
+                          )}
+                        </div>
+                      )}
                       <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent" />
                       <div className="absolute bottom-0 left-0 right-0 p-5">
                         <h3 className="text-base font-medium text-white mb-1">
@@ -1065,7 +1142,7 @@ export default function App() {
                           <Download size={16} /> Download
                         </a>
                         <button
-                          onClick={() => setShowTryOn(true)}
+                          onClick={() => { tattooX.set(0); tattooY.set(0); setTattooScale(1); setShowTryOn(true); }}
                           className="text-sm text-zinc-400 hover:text-zinc-200 flex items-center gap-2 transition-colors"
                         >
                           <Maximize size={16} /> Try on Body
@@ -1219,6 +1296,20 @@ export default function App() {
                 </p>
               </div>
 
+              {/* ── SAVE DESIGN ── */}
+              {generatedImage && (
+                <div className="bg-zinc-900/50 border border-zinc-700 rounded-2xl p-5 flex flex-col items-center gap-3 text-center">
+                  <p className="text-sm text-zinc-400">Happy with your design? Save it to your computer.</p>
+                  <a
+                    href={generatedImage}
+                    download="inksight-tattoo-design.png"
+                    className="w-full flex items-center justify-center gap-3 bg-zinc-100 text-zinc-950 rounded-xl py-3.5 px-6 text-base font-semibold hover:bg-white transition-all"
+                  >
+                    <Save size={20} /> Save Design to Computer
+                  </a>
+                </div>
+              )}
+
               {error && (
                 <div className="p-4 bg-red-950/30 border border-red-900/50 rounded-xl text-red-400 text-sm flex items-start gap-3">
                   <AlertTriangle size={16} className="shrink-0 mt-0.5" />
@@ -1258,13 +1349,20 @@ export default function App() {
 
               {(() => {
                 const skinHex = SKIN_TONES.find(t => t.value === questionnaire.skinColor)?.color ?? '#C68642';
-                const placementLabel = getPlacementBg(questionnaire.placement || '').label;
                 const isLightSkin = ['Very Light', 'Light'].includes(questionnaire.skinColor);
+                // Use the AI's suggested placement if the user's input doesn't map to a known body part
+                const userExtracted = extractPlacement(questionnaire.placement || '');
+                const aiExtracted = result ? extractPlacement(result.user_profile_analysis.suggested_placement_logic) : '';
+                const knownParts = ['back', 'chest', 'shoulder', 'rib', 'thigh', 'calf', 'forearm', 'wrist', 'ankle', 'foot', 'neck', 'finger', 'hand', 'arm'];
+                const effectivePlacement = knownParts.some(p => userExtracted.toLowerCase().includes(p))
+                  ? userExtracted
+                  : (aiExtracted || userExtracted || 'forearm');
+                const placementLabel = getPlacementBg(effectivePlacement).label;
                 return (
                   <div className="relative w-full max-w-2xl aspect-[3/4] sm:aspect-square rounded-[40px] sm:rounded-[60px] overflow-hidden shadow-inner border-4 border-zinc-800">
                     {/* Body part SVG fills entire container */}
-                    <div className="absolute inset-0">
-                      <BodyPartPreview placement={questionnaire.placement || ''} skinHex={skinHex} />
+                    <div className="absolute inset-0 try-on-body">
+                      <BodyPartPreview placement={effectivePlacement} skinHex={skinHex} />
                     </div>
 
                     {/* Placement area badge */}
@@ -1280,13 +1378,15 @@ export default function App() {
                       <motion.img
                         drag
                         dragConstraints={{ left: -200, right: 200, top: -200, bottom: 200 }}
-                        src={generatedImage!}
-                        className={`object-contain cursor-grab active:cursor-grabbing z-10 drop-shadow-2xl ${isLightSkin ? 'mix-blend-multiply' : ''}`}
                         style={{
+                          x: tattooX,
+                          y: tattooY,
                           opacity: isLightSkin ? 0.92 : 0.78,
                           width: `${Math.round(192 * tattooScale)}px`,
                           height: `${Math.round(192 * tattooScale)}px`,
                         }}
+                        src={generatedImage!}
+                        className={`object-contain cursor-grab active:cursor-grabbing z-10 drop-shadow-2xl ${isLightSkin ? 'mix-blend-multiply' : ''}`}
                         alt="Tattoo Try On"
                       />
                     </div>
@@ -1314,6 +1414,69 @@ export default function App() {
                   className="w-8 h-8 rounded-full bg-zinc-800 text-white text-lg flex items-center justify-center hover:bg-zinc-700 transition-colors shrink-0"
                 >+</button>
                 <span className="text-zinc-500 text-xs w-10 text-right">{Math.round(tattooScale * 100)}%</span>
+              </div>
+
+              <div className="w-full max-w-2xl flex gap-3">
+                <button
+                  onClick={() => {
+                    if (!generatedImage) return;
+                    // Capture body SVG + tattoo onto a canvas and save
+                    const svgEl = document.querySelector('.try-on-body svg') as SVGElement | null;
+                    const canvas = document.createElement('canvas');
+                    const size = 600;
+                    canvas.width = size;
+                    canvas.height = size;
+                    const ctx = canvas.getContext('2d')!;
+                    ctx.fillStyle = '#0f172a';
+                    ctx.fillRect(0, 0, size, size);
+
+                    const drawTattoo = () => {
+                      const tattooSize = Math.round(192 * tattooScale);
+                      const cx = size / 2 + tattooX.get();
+                      const cy = size / 2 + tattooY.get();
+                      const img = new Image();
+                      img.onload = () => {
+                        ctx.globalAlpha = 0.85;
+                        ctx.drawImage(img, cx - tattooSize / 2, cy - tattooSize / 2, tattooSize, tattooSize);
+                        ctx.globalAlpha = 1;
+                        canvas.toBlob(blob => {
+                          if (!blob) return;
+                          const url = URL.createObjectURL(blob);
+                          const a = document.createElement('a');
+                          a.href = url;
+                          a.download = 'inksight-tryon.png';
+                          a.click();
+                          URL.revokeObjectURL(url);
+                        }, 'image/png');
+                      };
+                      img.src = generatedImage!;
+                    };
+
+                    if (svgEl) {
+                      const svgData = new XMLSerializer().serializeToString(svgEl);
+                      const blob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
+                      const url = URL.createObjectURL(blob);
+                      const bodyImg = new Image();
+                      bodyImg.onload = () => {
+                        ctx.drawImage(bodyImg, 0, 0, size, size);
+                        URL.revokeObjectURL(url);
+                        drawTattoo();
+                      };
+                      bodyImg.src = url;
+                    } else {
+                      drawTattoo();
+                    }
+                  }}
+                  className="flex-1 flex items-center justify-center gap-2 bg-zinc-800 text-zinc-100 rounded-xl py-3 text-sm font-medium hover:bg-zinc-700 transition-colors"
+                >
+                  <Save size={16} /> Save Try-On
+                </button>
+                <button
+                  onClick={() => setShowTryOn(false)}
+                  className="flex-1 flex items-center justify-center gap-2 bg-zinc-900 border border-zinc-700 text-zinc-300 rounded-xl py-3 text-sm font-medium hover:border-zinc-500 transition-colors"
+                >
+                  Done
+                </button>
               </div>
 
               <p className="text-zinc-600 text-xs text-center">
