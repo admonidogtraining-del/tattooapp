@@ -25,73 +25,85 @@ const TATTOO_STYLES = [
     id: 'American Traditional',
     name: 'American Traditional',
     desc: 'Bold lines, solid colors (red, yellow, green, black).',
-    img: 'https://image.pollinations.ai/prompt/American%20Traditional%20Tattoo%20Flash%20Art?width=400&height=300&nologo=true',
+    img: 'https://image.pollinations.ai/prompt/American+Traditional+Tattoo+Flash+Art+eagle+anchor+bold+lines+red+yellow?width=400&height=300&nologo=true&model=flux&seed=101',
+    gradient: 'linear-gradient(135deg, #7f1d1d 0%, #b45309 100%)',
   },
   {
     id: 'Neo-Traditional',
     name: 'Neo-Traditional',
     desc: 'Varying line weights, jewel tones, filigree.',
-    img: 'https://image.pollinations.ai/prompt/Neo-Traditional%20Tattoo%20Art%20Design?width=400&height=300&nologo=true',
+    img: 'https://image.pollinations.ai/prompt/Neo-Traditional+Tattoo+Art+Design+jewel+tones+filigree+ornate?width=400&height=300&nologo=true&model=flux&seed=102',
+    gradient: 'linear-gradient(135deg, #312e81 0%, #7c3aed 100%)',
   },
   {
     id: 'Japanese (Irezumi)',
     name: 'Japanese (Irezumi)',
     desc: 'Flowing backgrounds, mythological motifs.',
-    img: 'https://image.pollinations.ai/prompt/Japanese%20Irezumi%20Tattoo%20Art?width=400&height=300&nologo=true',
+    img: 'https://image.pollinations.ai/prompt/Japanese+Irezumi+Tattoo+koi+dragon+waves+flowing+traditional?width=400&height=300&nologo=true&model=flux&seed=103',
+    gradient: 'linear-gradient(135deg, #881337 0%, #be123c 100%)',
   },
   {
     id: 'Black & Grey Realism',
     name: 'Black & Grey Realism',
     desc: 'Smooth shading, no outlines, highly detailed.',
-    img: 'https://image.pollinations.ai/prompt/Black%20and%20Grey%20Realism%20Tattoo%20Portrait?width=400&height=300&nologo=true',
+    img: 'https://image.pollinations.ai/prompt/Black+and+Grey+Realism+Tattoo+Portrait+smooth+shading+highly+detailed?width=400&height=300&nologo=true&model=flux&seed=104',
+    gradient: 'linear-gradient(135deg, #18181b 0%, #52525b 100%)',
   },
   {
     id: 'Micro-Realism',
     name: 'Micro-Realism',
     desc: 'Tiny, intricate details using single needle.',
-    img: 'https://image.pollinations.ai/prompt/Micro-Realism%20Tiny%20Tattoo%20Art?width=400&height=300&nologo=true',
+    img: 'https://image.pollinations.ai/prompt/Micro-Realism+Tiny+Tattoo+single+needle+intricate+fine+line?width=400&height=300&nologo=true&model=flux&seed=105',
+    gradient: 'linear-gradient(135deg, #0c4a6e 0%, #0891b2 100%)',
   },
   {
     id: 'Color Realism',
     name: 'Color Realism',
     desc: 'Painterly, vibrant, no black outlines.',
-    img: 'https://image.pollinations.ai/prompt/Color%20Realism%20Tattoo%20Art?width=400&height=300&nologo=true',
+    img: 'https://image.pollinations.ai/prompt/Color+Realism+Tattoo+Art+painterly+vibrant+flowers+portrait?width=400&height=300&nologo=true&model=flux&seed=106',
+    gradient: 'linear-gradient(135deg, #14532d 0%, #16a34a 100%)',
   },
   {
     id: 'Blackwork',
     name: 'Blackwork',
     desc: 'Heavy black saturation, negative space.',
-    img: 'https://image.pollinations.ai/prompt/Heavy%20Blackwork%20Tattoo%20Mandala?width=400&height=300&nologo=true',
+    img: 'https://image.pollinations.ai/prompt/Heavy+Blackwork+Tattoo+Mandala+geometric+negative+space+bold?width=400&height=300&nologo=true&model=flux&seed=107',
+    gradient: 'linear-gradient(135deg, #09090b 0%, #3f3f46 100%)',
   },
   {
     id: 'Cybersigilism',
     name: 'Cybersigilism',
     desc: 'Sharp, aggressive, wire-like thin lines.',
-    img: 'https://image.pollinations.ai/prompt/Cybersigilism%20Tattoo%20Design%20Sharp%20Lines?width=400&height=300&nologo=true',
+    img: 'https://image.pollinations.ai/prompt/Cybersigilism+Tattoo+Design+thin+wire+sharp+cyber+angular?width=400&height=300&nologo=true&model=flux&seed=108',
+    gradient: 'linear-gradient(135deg, #020617 0%, #1e3a5f 100%)',
   },
   {
     id: 'Dotwork',
     name: 'Dotwork',
     desc: 'Images created entirely with stippled dots.',
-    img: 'https://image.pollinations.ai/prompt/Dotwork%20Pointillism%20Tattoo%20Art?width=400&height=300&nologo=true',
+    img: 'https://image.pollinations.ai/prompt/Dotwork+Pointillism+Tattoo+Art+stippled+dots+geometric+mandala?width=400&height=300&nologo=true&model=flux&seed=109',
+    gradient: 'linear-gradient(135deg, #292524 0%, #78716c 100%)',
   },
   {
     id: 'Trash Polka',
     name: 'Trash Polka',
     desc: 'Collage style, black and red, chaotic.',
-    img: 'https://image.pollinations.ai/prompt/Trash%20Polka%20Tattoo%20Red%20and%20Black?width=400&height=300&nologo=true',
+    img: 'https://image.pollinations.ai/prompt/Trash+Polka+Tattoo+Red+and+Black+collage+chaotic+splatter?width=400&height=300&nologo=true&model=flux&seed=110',
+    gradient: 'linear-gradient(135deg, #450a0a 0%, #dc2626 100%)',
   },
   {
     id: 'Ignorant Style',
     name: 'Ignorant Style',
     desc: 'Intentional amateurism, simple line drawings.',
-    img: 'https://image.pollinations.ai/prompt/Ignorant%20Style%20Tattoo%20Simple%20Line%20Art?width=400&height=300&nologo=true',
+    img: 'https://image.pollinations.ai/prompt/Ignorant+Style+Tattoo+Simple+Line+Art+naive+raw+childlike?width=400&height=300&nologo=true&model=flux&seed=111',
+    gradient: 'linear-gradient(135deg, #1c1917 0%, #57534e 100%)',
   },
   {
     id: 'Patchwork',
     name: 'Patchwork',
     desc: 'Collection of small, unrelated tattoos.',
-    img: 'https://image.pollinations.ai/prompt/Patchwork%20Tattoo%20Sleeve%20Collection?width=400&height=300&nologo=true',
+    img: 'https://image.pollinations.ai/prompt/Patchwork+Tattoo+Sleeve+Collection+small+individual+mixed+styles?width=400&height=300&nologo=true&model=flux&seed=112',
+    gradient: 'linear-gradient(135deg, #1e1b4b 0%, #6d28d9 100%)',
   },
 ];
 
@@ -234,7 +246,7 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-zinc-950 text-zinc-50 font-sans selection:bg-zinc-800 selection:text-zinc-50">
+    <div className="min-h-screen bg-zinc-950 text-zinc-50 selection:bg-zinc-800 selection:text-zinc-50">
       <header className="border-b border-zinc-900 bg-zinc-950/50 backdrop-blur-md sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3 cursor-pointer" onClick={handleReset}>
@@ -568,18 +580,22 @@ export default function App() {
                         : 'border-zinc-800 hover:border-zinc-600'
                     }`}
                   >
-                    <div className="aspect-[4/3] relative">
+                    <div
+                      className="aspect-[4/3] relative"
+                      style={{ background: style.gradient }}
+                    >
                       <img
                         src={style.img}
                         alt={style.name}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                        className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                        onError={(e) => { e.currentTarget.style.display = 'none'; }}
                       />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent" />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent" />
                       <div className="absolute bottom-0 left-0 right-0 p-5">
-                        <h3 className="text-base font-sans font-medium text-white mb-1">
+                        <h3 className="text-base font-medium text-white mb-1">
                           {style.name}
                         </h3>
-                        <p className="text-sm font-sans text-zinc-300 line-clamp-2">{style.desc}</p>
+                        <p className="text-sm text-zinc-300 line-clamp-2">{style.desc}</p>
                       </div>
                     </div>
                   </div>
@@ -709,275 +725,61 @@ export default function App() {
               key="results"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              className="max-w-6xl mx-auto space-y-8"
+              className="max-w-4xl mx-auto space-y-6"
             >
               <button
                 onClick={handleReset}
-                className="text-sm text-zinc-400 hover:text-zinc-200 flex items-center gap-2 mb-8 transition-colors"
+                className="text-sm text-zinc-400 hover:text-zinc-200 flex items-center gap-2 transition-colors"
               >
-                <ChevronLeft size={16} /> Start New Consultation
+                <ChevronLeft size={16} /> Start Over
               </button>
 
-              <div className="grid sm:grid-cols-2 gap-6">
-                {/* Artistic Consultant */}
-                <div className="bg-zinc-900/30 border border-zinc-800 rounded-2xl p-6 space-y-6">
-                  <div className="flex items-center gap-3 pb-4 border-b border-zinc-800/50">
-                    <div className="w-8 h-8 rounded-full bg-zinc-800 flex items-center justify-center text-zinc-400">
-                      <Sparkles size={16} />
-                    </div>
-                    <h3 className="text-sm font-medium text-zinc-400 uppercase tracking-wider">
-                      Artistic Consultant
-                    </h3>
-                  </div>
-
-                  <div>
-                    <p className="text-sm font-medium text-zinc-400 uppercase tracking-wider block mb-3">
-                      Interpreted Style
-                    </p>
-                    <p className="text-lg font-medium text-zinc-100">
-                      {result.user_profile_analysis.interpreted_style}
-                    </p>
-                  </div>
-
-                  <div>
-                    <p className="text-sm font-medium text-zinc-400 uppercase tracking-wider block mb-3">
-                      Symbolic Metaphors
-                    </p>
-                    <div className="flex flex-wrap gap-2">
-                      {result.user_profile_analysis.symbolic_metaphors.map((m, i) => (
-                        <span
-                          key={i}
-                          className="px-3 py-1.5 bg-zinc-800 text-zinc-100 text-sm rounded-lg border border-zinc-700"
-                        >
-                          {m}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div>
-                    <p className="text-sm font-medium text-zinc-400 uppercase tracking-wider block mb-3">
-                      Placement Logic
-                    </p>
-                    <p className="text-base font-sans text-zinc-100 leading-relaxed">
-                      {result.user_profile_analysis.suggested_placement_logic}
-                    </p>
-                  </div>
-                </div>
-
-                {/* Anatomy & Longevity */}
-                <div className="bg-zinc-900/30 border border-zinc-800 rounded-2xl p-6 space-y-6">
-                  <div className="flex items-center gap-3 pb-4 border-b border-zinc-800/50">
-                    <div className="w-8 h-8 rounded-full bg-zinc-800 flex items-center justify-center text-zinc-400">
-                      <Droplet size={16} />
-                    </div>
-                    <h3 className="text-sm font-medium text-zinc-400 uppercase tracking-wider">
-                      Anatomy & Longevity
-                    </h3>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="bg-zinc-950 p-4 rounded-xl border border-zinc-800/50">
-                      <p className="text-sm font-medium text-zinc-400 uppercase tracking-wider block mb-1">
-                        Complexity
-                      </p>
-                      <p className="text-2xl font-light text-zinc-100">
-                        {result.technical_brief.design_complexity}
-                        <span className="text-sm text-zinc-600">/10</span>
-                      </p>
-                    </div>
-                    <div className="bg-zinc-950 p-4 rounded-xl border border-zinc-800/50">
-                      <p className="text-sm font-medium text-zinc-400 uppercase tracking-wider block mb-1">
-                        Longevity
-                      </p>
-                      <p className="text-base font-sans text-zinc-100 mt-1">
-                        {result.technical_brief.estimated_longevity}
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="space-y-3">
-                    <p className="text-sm font-medium text-zinc-400 uppercase tracking-wider block mb-3">
-                      Artist Notes
-                    </p>
-                    <div className="space-y-2 text-base font-sans">
-                      <div className="flex justify-between items-center border-b border-zinc-800/50 pb-2">
-                        <span className="text-zinc-400">Needles</span>
-                        <span className="font-mono text-zinc-300">
-                          {result.technical_brief.artist_notes.needle_groupings}
-                        </span>
-                      </div>
-                      <div className="flex justify-between items-center border-b border-zinc-800/50 pb-2">
-                        <span className="text-zinc-400">Shading</span>
-                        <span className="text-zinc-100">
-                          {result.technical_brief.artist_notes.shading_style}
-                        </span>
-                      </div>
-                      <div className="pt-1">
-                        <span className="text-zinc-400 block mb-2">Palette</span>
-                        <div className="flex gap-2">
-                          {result.technical_brief.artist_notes.color_palette_hex.map((hex, i) => (
-                            <div
-                              key={i}
-                              className="w-6 h-6 rounded-full border border-zinc-700 shadow-sm"
-                              style={{ backgroundColor: hex }}
-                              title={hex}
-                            />
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Prompt Architect */}
-              <div className="bg-zinc-900/30 border border-zinc-800 rounded-2xl p-6 space-y-6">
-                <div className="flex items-center gap-3 pb-4 border-b border-zinc-800/50">
-                  <div className="w-8 h-8 rounded-full bg-zinc-800 flex items-center justify-center text-zinc-400">
-                    <ImageIcon size={16} />
-                  </div>
-                  <h3 className="text-sm font-medium text-zinc-400 uppercase tracking-wider">
-                    Prompt Architect
-                  </h3>
-                </div>
-
-                <div className="space-y-4">
-                  <div>
-                    <p className="text-sm font-medium text-zinc-400 uppercase tracking-wider flex items-center justify-between mb-3">
-                      <span>Midjourney Prompt</span>
-                      <button
-                        onClick={() =>
-                          navigator.clipboard.writeText(result.image_generation.midjourney_prompt)
-                        }
-                        className="text-zinc-400 hover:text-zinc-200 transition-colors"
-                      >
-                        Copy
-                      </button>
-                    </p>
-                    <div className="bg-zinc-950 p-4 rounded-xl border border-zinc-800 font-mono text-sm text-zinc-300 leading-relaxed">
-                      {result.image_generation.midjourney_prompt}
-                    </div>
-                  </div>
-
-                  <div>
-                    <p className="text-sm font-medium text-zinc-400 uppercase tracking-wider flex items-center justify-between mb-3">
-                      <span>DALL-E 3 Prompt</span>
-                      <button
-                        onClick={() =>
-                          navigator.clipboard.writeText(result.image_generation.dalle_prompt)
-                        }
-                        className="text-zinc-400 hover:text-zinc-200 transition-colors"
-                      >
-                        Copy
-                      </button>
-                    </p>
-                    <div className="bg-zinc-950 p-4 rounded-xl border border-zinc-800 font-mono text-sm text-zinc-300 leading-relaxed">
-                      {result.image_generation.dalle_prompt}
-                    </div>
-                  </div>
-
-                  <div>
-                    <p className="text-sm font-medium text-zinc-400 uppercase tracking-wider block mb-3">
-                      Variations
-                    </p>
-                    <ul className="space-y-2">
-                      {result.image_generation.variation_suggestions.map((v, i) => (
-                        <li key={i} className="text-base font-sans text-zinc-100 flex items-start gap-2">
-                          <span className="text-zinc-600 mt-1">•</span>
-                          {v}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                </div>
-              </div>
-
-              {/* Aftercare Preview */}
+              {/* ── CONCEPT ART (top, most important) ── */}
               <div className="bg-zinc-900/30 border border-zinc-800 rounded-2xl p-6">
                 <div className="flex items-center gap-3 pb-4 border-b border-zinc-800/50 mb-6">
                   <div className="w-8 h-8 rounded-full bg-zinc-800 flex items-center justify-center text-zinc-400">
-                    <AlertTriangle size={16} />
+                    <Sparkles size={16} />
                   </div>
                   <h3 className="text-sm font-medium text-zinc-400 uppercase tracking-wider">
-                    Aftercare Preview
-                  </h3>
-                </div>
-
-                <div className="grid sm:grid-cols-[200px_1fr] gap-6">
-                  <div>
-                    <p className="text-sm font-medium text-zinc-400 uppercase tracking-wider block mb-3">
-                      Healing Difficulty
-                    </p>
-                    <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-zinc-950 border border-zinc-800 rounded-lg">
-                      <div
-                        className={`w-2 h-2 rounded-full ${
-                          result.aftercare_preview.healing_difficulty.toLowerCase().includes('high')
-                            ? 'bg-red-500'
-                            : result.aftercare_preview.healing_difficulty
-                                  .toLowerCase()
-                                  .includes('med')
-                              ? 'bg-yellow-500'
-                              : 'bg-emerald-500'
-                        }`}
-                      />
-                      <span className="text-base font-sans">
-                        {result.aftercare_preview.healing_difficulty}
-                      </span>
-                    </div>
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-zinc-400 uppercase tracking-wider block mb-3">
-                      Lifestyle Warning
-                    </p>
-                    <p className="text-base font-sans text-zinc-100 leading-relaxed bg-zinc-950 p-4 rounded-xl border border-zinc-800/50">
-                      {result.aftercare_preview.lifestyle_warning}
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Concept Art */}
-              <div className="bg-zinc-900/30 border border-zinc-800 rounded-2xl p-6">
-                <div className="flex items-center gap-3 pb-4 border-b border-zinc-800/50 mb-6">
-                  <div className="w-8 h-8 rounded-full bg-zinc-800 flex items-center justify-center text-zinc-400">
-                    <ImageIcon size={16} />
-                  </div>
-                  <h3 className="text-sm font-medium text-zinc-400 uppercase tracking-wider">
-                    Concept Art
+                    Your Tattoo Concept
                   </h3>
                 </div>
 
                 <div className="flex flex-col items-center justify-center">
                   {!generatedImage && !isGeneratingImage && (
-                    <div className="text-center space-y-4 py-8">
-                      <p className="text-sm text-zinc-400">
-                        Ready to see a visual concept of your tattoo?
+                    <div className="text-center space-y-3 py-8">
+                      <p className="text-base text-zinc-300">
+                        Ready to see your design?
+                      </p>
+                      <p className="text-sm text-zinc-500">
+                        Generation takes about 20–40 seconds
                       </p>
                       <button
                         onClick={handleGenerateImage}
-                        className="bg-zinc-100 text-zinc-950 rounded-xl py-3 px-6 text-sm font-medium hover:bg-white transition-all flex items-center gap-2 mx-auto"
+                        className="bg-zinc-100 text-zinc-950 rounded-xl py-3 px-6 text-sm font-medium hover:bg-white transition-all flex items-center gap-2 mx-auto mt-2"
                       >
                         <Sparkles size={16} />
-                        Generate Visual Concept
+                        Generate Concept Art
                       </button>
                     </div>
                   )}
 
                   {isGeneratingImage && (
                     <div className="py-12 flex flex-col items-center justify-center space-y-4">
-                      <div className="relative w-12 h-12">
+                      <div className="relative w-14 h-14">
                         <div className="absolute inset-0 border-2 border-zinc-800 rounded-full" />
                         <div className="absolute inset-0 border-2 border-zinc-400 rounded-full border-t-transparent animate-spin" />
+                        <div className="absolute inset-0 flex items-center justify-center">
+                          <PenTool size={18} className="text-zinc-400 animate-pulse" />
+                        </div>
                       </div>
-                      <p className="text-sm font-medium text-zinc-400 uppercase tracking-wider">
-                        Generating Image...
-                      </p>
+                      <p className="text-sm text-zinc-300 font-medium">Generating your tattoo...</p>
+                      <p className="text-xs text-zinc-500">This usually takes 20–40 seconds</p>
                     </div>
                   )}
 
                   {generatedImage && !isGeneratingImage && (
-                    <div className="w-full max-w-md mx-auto space-y-4">
+                    <div className="w-full max-w-sm mx-auto space-y-4">
                       <div className="relative aspect-square rounded-xl overflow-hidden border border-zinc-800 bg-zinc-950">
                         <img
                           src={generatedImage}
@@ -1000,32 +802,142 @@ export default function App() {
                           <Maximize size={16} /> Try on Body
                         </button>
                       </div>
-
-                      <div className="pt-6 mt-6 border-t border-zinc-800/50">
-                        <label className="text-sm font-medium text-zinc-400 uppercase tracking-wider block mb-3">
-                          Not quite right? Tweak the prompt
-                        </label>
-                        <div className="flex gap-2">
-                          <input
-                            type="text"
-                            value={customImagePrompt}
-                            onChange={(e) => setCustomImagePrompt(e.target.value)}
-                            placeholder={result.image_generation.dalle_prompt}
-                            className="flex-1 bg-zinc-900/50 border border-zinc-800 rounded-xl p-3 text-base font-sans text-zinc-100 focus:outline-none focus:ring-1 focus:ring-zinc-500 placeholder:text-zinc-600"
-                          />
-                          <button
-                            onClick={handleGenerateImage}
-                            className="bg-zinc-800 text-zinc-100 rounded-xl px-4 py-3 text-base font-medium hover:bg-zinc-700 transition-all flex items-center gap-2 shrink-0"
-                          >
-                            <Sparkles size={16} />
-                            Regenerate
-                          </button>
-                        </div>
+                      <div className="flex gap-2 pt-2">
+                        <input
+                          type="text"
+                          value={customImagePrompt}
+                          onChange={(e) => setCustomImagePrompt(e.target.value)}
+                          placeholder="Tweak the prompt to regenerate..."
+                          className="flex-1 bg-zinc-900/50 border border-zinc-800 rounded-xl p-3 text-sm text-zinc-100 focus:outline-none focus:ring-1 focus:ring-zinc-500 placeholder:text-zinc-600"
+                        />
+                        <button
+                          onClick={handleGenerateImage}
+                          className="bg-zinc-800 text-zinc-100 rounded-xl px-4 py-3 text-sm font-medium hover:bg-zinc-700 transition-all flex items-center gap-2 shrink-0"
+                        >
+                          <Sparkles size={16} />
+                          Redo
+                        </button>
                       </div>
                     </div>
                   )}
                 </div>
               </div>
+
+              {/* ── SUMMARY ROW ── */}
+              <div className="grid sm:grid-cols-2 gap-6">
+                {/* Your Design */}
+                <div className="bg-zinc-900/30 border border-zinc-800 rounded-2xl p-6 space-y-5">
+                  <h3 className="text-sm font-medium text-zinc-400 uppercase tracking-wider pb-3 border-b border-zinc-800/50">
+                    Your Design
+                  </h3>
+                  <div>
+                    <p className="text-xs font-medium text-zinc-500 uppercase tracking-wider mb-1">Style</p>
+                    <p className="text-base font-medium text-zinc-100">
+                      {result.user_profile_analysis.interpreted_style}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-xs font-medium text-zinc-500 uppercase tracking-wider mb-2">Themes</p>
+                    <div className="flex flex-wrap gap-2">
+                      {result.user_profile_analysis.symbolic_metaphors.map((m, i) => (
+                        <span
+                          key={i}
+                          className="px-2.5 py-1 bg-zinc-800 text-zinc-200 text-xs rounded-lg border border-zinc-700"
+                        >
+                          {m}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                  <div>
+                    <p className="text-xs font-medium text-zinc-500 uppercase tracking-wider mb-1">Placement Tip</p>
+                    <p className="text-sm text-zinc-300 leading-relaxed">
+                      {result.user_profile_analysis.suggested_placement_logic}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Quick Stats */}
+                <div className="bg-zinc-900/30 border border-zinc-800 rounded-2xl p-6 space-y-5">
+                  <h3 className="text-sm font-medium text-zinc-400 uppercase tracking-wider pb-3 border-b border-zinc-800/50">
+                    At a Glance
+                  </h3>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="bg-zinc-950 p-4 rounded-xl border border-zinc-800/50">
+                      <p className="text-xs font-medium text-zinc-500 uppercase tracking-wider mb-1">Complexity</p>
+                      <p className="text-2xl font-light text-zinc-100">
+                        {result.technical_brief.design_complexity}
+                        <span className="text-sm text-zinc-600">/10</span>
+                      </p>
+                    </div>
+                    <div className="bg-zinc-950 p-4 rounded-xl border border-zinc-800/50">
+                      <p className="text-xs font-medium text-zinc-500 uppercase tracking-wider mb-1">Healing</p>
+                      <div className="flex items-center gap-2 mt-1">
+                        <div
+                          className={`w-2 h-2 rounded-full shrink-0 ${
+                            result.aftercare_preview.healing_difficulty.toLowerCase().includes('high')
+                              ? 'bg-red-500'
+                              : result.aftercare_preview.healing_difficulty.toLowerCase().includes('med')
+                                ? 'bg-yellow-500'
+                                : 'bg-emerald-500'
+                          }`}
+                        />
+                        <span className="text-sm text-zinc-200 leading-tight">
+                          {result.aftercare_preview.healing_difficulty}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                  <div>
+                    <p className="text-xs font-medium text-zinc-500 uppercase tracking-wider mb-1">Longevity</p>
+                    <p className="text-sm text-zinc-300">{result.technical_brief.estimated_longevity}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs font-medium text-zinc-500 uppercase tracking-wider mb-2">Color Palette</p>
+                    <div className="flex gap-2 flex-wrap">
+                      {result.technical_brief.artist_notes.color_palette_hex.map((hex, i) => (
+                        <div
+                          key={i}
+                          className="w-7 h-7 rounded-full border-2 border-zinc-700 shadow-sm"
+                          style={{ backgroundColor: hex }}
+                          title={hex}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                  <div>
+                    <p className="text-xs font-medium text-zinc-500 uppercase tracking-wider mb-1">Aftercare</p>
+                    <p className="text-sm text-zinc-300 leading-relaxed">
+                      {result.aftercare_preview.lifestyle_warning}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* ── ARTIST BRIEF (compact) ── */}
+              <div className="bg-zinc-900/30 border border-zinc-800 rounded-2xl p-5">
+                <div className="flex items-center justify-between mb-3">
+                  <p className="text-xs font-medium text-zinc-400 uppercase tracking-wider">
+                    Prompt for Your Artist / AI Tool
+                  </p>
+                  <button
+                    onClick={() => navigator.clipboard.writeText(result.image_generation.dalle_prompt)}
+                    className="text-xs text-zinc-400 hover:text-zinc-200 transition-colors border border-zinc-700 hover:border-zinc-500 px-2.5 py-1 rounded-lg"
+                  >
+                    Copy
+                  </button>
+                </div>
+                <p className="text-xs font-mono text-zinc-500 leading-relaxed line-clamp-3">
+                  {result.image_generation.dalle_prompt}
+                </p>
+              </div>
+
+              {error && (
+                <div className="p-4 bg-red-950/30 border border-red-900/50 rounded-xl text-red-400 text-sm flex items-start gap-3">
+                  <AlertTriangle size={16} className="shrink-0 mt-0.5" />
+                  <p>{error}</p>
+                </div>
+              )}
             </motion.div>
           )}
         </AnimatePresence>
@@ -1037,9 +949,27 @@ export default function App() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4 sm:p-6"
+              className="fixed inset-0 z-50 bg-black/95 flex flex-col items-center justify-center p-4 sm:p-6 gap-4"
             >
-              <div className="relative w-full max-w-2xl aspect-[3/4] sm:aspect-square rounded-[40px] sm:rounded-[100px] overflow-hidden shadow-inner flex items-center justify-center border-8 border-zinc-900 bg-[#e3c2a4]">
+              {/* Header */}
+              <div className="flex items-center justify-between w-full max-w-2xl">
+                <div>
+                  <p className="text-white font-medium">Try on Body</p>
+                  {questionnaire.placement && (
+                    <p className="text-zinc-400 text-sm mt-0.5">
+                      Placement: <span className="text-zinc-200">{questionnaire.placement}</span>
+                    </p>
+                  )}
+                </div>
+                <button
+                  onClick={() => setShowTryOn(false)}
+                  className="w-10 h-10 bg-zinc-800 text-white rounded-full flex items-center justify-center hover:bg-zinc-700 transition-colors"
+                >
+                  <X size={20} />
+                </button>
+              </div>
+
+              <div className="relative w-full max-w-2xl aspect-[3/4] sm:aspect-square rounded-[40px] sm:rounded-[60px] overflow-hidden shadow-inner flex items-center justify-center border-4 border-zinc-800 bg-[#c8a882]">
                 <div
                   className="absolute inset-0 bg-cover bg-center opacity-90"
                   style={{
@@ -1048,14 +978,7 @@ export default function App() {
                   }}
                 />
 
-                <button
-                  onClick={() => setShowTryOn(false)}
-                  className="absolute top-6 right-6 w-10 h-10 bg-black/50 text-white rounded-full flex items-center justify-center hover:bg-black/80 transition-colors z-20"
-                >
-                  <X size={20} />
-                </button>
-
-                <p className="absolute top-6 left-6 text-black/70 text-sm font-medium uppercase tracking-wider z-20 bg-white/50 px-3 py-1 rounded-full backdrop-blur-sm">
+                <p className="absolute top-4 left-4 text-black/60 text-xs font-medium uppercase tracking-wider z-20 bg-white/40 px-2.5 py-1 rounded-full backdrop-blur-sm">
                   Drag to position
                 </p>
 
@@ -1067,6 +990,10 @@ export default function App() {
                   alt="Tattoo Try On"
                 />
               </div>
+
+              <p className="text-zinc-600 text-xs text-center">
+                Drag the tattoo to position it on the{questionnaire.placement ? ` ${questionnaire.placement.toLowerCase()}` : ' body'}
+              </p>
             </motion.div>
           )}
         </AnimatePresence>
