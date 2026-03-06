@@ -162,7 +162,7 @@ export async function generateTattooConsultation(
   }
 
   const response = await ai.models.generateContent({
-    model: "gemini-2.0-flash",
+    model: "gemini-2.5-flash",
     contents: { parts },
     config: {
       systemInstruction: SYSTEM_INSTRUCTION,
@@ -263,7 +263,7 @@ export async function generateTattooImage(prompt: string, styleReferenceDataUrl?
   }
 
   const response = await ai.models.generateContent({
-    model: "gemini-2.0-flash-preview-image-generation",
+    model: "gemini-2.5-flash-preview-image-generation",
     contents: { parts },
     config: {
       responseModalities: ["TEXT", "IMAGE"],
