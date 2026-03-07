@@ -35,7 +35,7 @@ function Header() {
             <PenTool size={18} className="stroke-[2.5]" />
           </div>
           <div>
-            <h1 className="text-lg font-semibold tracking-tight leading-none">InkSight AI</h1>
+            <h1 className="text-lg font-semibold tracking-tight leading-none">InkSight AI <span className="text-xs bg-emerald-500 text-black px-1.5 py-0.5 rounded font-bold ml-1">NEW</span></h1>
             <p className="text-xs text-zinc-500 mt-1 uppercase tracking-widest">
               Art Director & Prompt Architect
             </p>
