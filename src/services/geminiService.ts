@@ -241,38 +241,97 @@ export async function generateTattooConsultation(
   return JSON.parse(response.text) as TattooConsultation;
 }
 
-export async function generateTattooImage(prompt: string, styleReferenceDataUrl?: string): Promise<string> {
-  // Build parts — if a style reference image is provided, include it so Gemini
-  // uses it as a visual style guide for the generated tattoo
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const parts: any[] = [];
-
-  if (styleReferenceDataUrl) {
-    const commaIdx = styleReferenceDataUrl.indexOf(',');
-    const mimeType = commaIdx > 0
-      ? (styleReferenceDataUrl.slice(5, commaIdx).split(';')[0] || 'image/png')
-      : 'image/png';
-    const data = commaIdx > 0 ? styleReferenceDataUrl.slice(commaIdx + 1) : styleReferenceDataUrl;
-    parts.push({ inlineData: { data, mimeType } });
-    parts.push({ text: `Using the above image as a strict style reference, generate a tattoo design in exactly that style: ${prompt}` });
-  } else {
-    parts.push({ text: prompt });
+/**
+ * Generate a style card preview image using Imagen 3 (fast).
+ * Falls back to Gemini image generation if Imagen fails.
+ */
+export async function generateStyleCardImage(prompt: string): Promise<string> {
+  // Try Imagen 3 fast first (best quality for style previews)
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const response = await (ai.models as any).generateImages({
+      model: 'imagen-3.0-fast-generate-001',
+      prompt,
+      config: { numberOfImages: 1, aspectRatio: '1:1' },
+    });
+    const bytes = response?.generatedImages?.[0]?.image?.imageBytes;
+    if (bytes) return `data:image/png;base64,${bytes}`;
+  } catch {
+    // fall through to Gemini
   }
 
+  // Fallback: Gemini image generation
   const response = await ai.models.generateContent({
-    model: "gemini-2.0-flash-preview-image-generation",
-    contents: { parts },
-    config: {
-      responseModalities: ["TEXT", "IMAGE"],
-    },
+    model: 'gemini-2.0-flash-preview-image-generation',
+    contents: { parts: [{ text: prompt }] },
+    config: { responseModalities: ['TEXT', 'IMAGE'] },
   });
-
   const responseParts = response.candidates?.[0]?.content?.parts || [];
   for (const part of responseParts) {
     if (part.inlineData) {
       return `data:${part.inlineData.mimeType};base64,${part.inlineData.data}`;
     }
   }
+  throw new Error('Failed to generate style card image');
+}
 
-  throw new Error("Failed to generate image");
+/**
+ * Generate the final tattoo design using Imagen 3 (high quality).
+ * If a style reference image is provided, uses Gemini which supports multimodal input.
+ */
+export async function generateTattooImage(prompt: string, styleReferenceDataUrl?: string): Promise<string> {
+  // If we have a style reference image, use Gemini (supports image+text input)
+  if (styleReferenceDataUrl) {
+    const commaIdx = styleReferenceDataUrl.indexOf(',');
+    const mimeType = commaIdx > 0
+      ? (styleReferenceDataUrl.slice(5, commaIdx).split(';')[0] || 'image/png')
+      : 'image/png';
+    const data = commaIdx > 0 ? styleReferenceDataUrl.slice(commaIdx + 1) : styleReferenceDataUrl;
+
+    const response = await ai.models.generateContent({
+      model: 'gemini-2.0-flash-preview-image-generation',
+      contents: {
+        parts: [
+          { inlineData: { data, mimeType } },
+          { text: `Using the above image as a strict visual style reference, generate a tattoo design that rigidly follows that exact style: ${prompt}` },
+        ],
+      },
+      config: { responseModalities: ['TEXT', 'IMAGE'] },
+    });
+    const responseParts = response.candidates?.[0]?.content?.parts || [];
+    for (const part of responseParts) {
+      if (part.inlineData) {
+        return `data:${part.inlineData.mimeType};base64,${part.inlineData.data}`;
+      }
+    }
+    throw new Error('Failed to generate image');
+  }
+
+  // No style reference — use Imagen 3 for best quality
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const response = await (ai.models as any).generateImages({
+      model: 'imagen-3.0-generate-002',
+      prompt,
+      config: { numberOfImages: 1, aspectRatio: '1:1' },
+    });
+    const bytes = response?.generatedImages?.[0]?.image?.imageBytes;
+    if (bytes) return `data:image/png;base64,${bytes}`;
+  } catch {
+    // fall through to Gemini
+  }
+
+  // Fallback: Gemini
+  const response = await ai.models.generateContent({
+    model: 'gemini-2.0-flash-preview-image-generation',
+    contents: { parts: [{ text: prompt }] },
+    config: { responseModalities: ['TEXT', 'IMAGE'] },
+  });
+  const responseParts = response.candidates?.[0]?.content?.parts || [];
+  for (const part of responseParts) {
+    if (part.inlineData) {
+      return `data:${part.inlineData.mimeType};base64,${part.inlineData.data}`;
+    }
+  }
+  throw new Error('Failed to generate image');
 }

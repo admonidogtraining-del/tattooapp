@@ -35,29 +35,6 @@ export default function QuestionnairePage() {
       </div>
 
       <form onSubmit={handleContinue} className="space-y-8">
-        {/* Gender */}
-        <div className="space-y-3">
-          <label className="text-sm font-medium text-zinc-400 uppercase tracking-wider block">
-            Gender
-          </label>
-          <div className="flex gap-3">
-            {['Male', 'Female', 'Other'].map(g => (
-              <button
-                key={g}
-                type="button"
-                onClick={() => setQuestionnaire({ ...questionnaire, gender: g })}
-                className={`flex-1 py-3 rounded-xl border text-sm font-medium transition-all ${
-                  questionnaire.gender === g
-                    ? 'bg-zinc-100 text-zinc-900 border-zinc-100'
-                    : 'bg-zinc-900/50 border-zinc-800 text-zinc-400 hover:border-zinc-600 hover:text-zinc-200'
-                }`}
-              >
-                {g}
-              </button>
-            ))}
-          </div>
-        </div>
-
         {/* Skin tone */}
         <div className="space-y-3">
           <label className="text-sm font-medium text-zinc-400 uppercase tracking-wider block">
@@ -150,7 +127,7 @@ export default function QuestionnairePage() {
         <div className="pt-4 border-t border-zinc-900">
           <button
             type="submit"
-            disabled={!questionnaire.gender || !questionnaire.skinColor || !questionnaire.colorPreference || !questionnaire.size}
+            disabled={!questionnaire.skinColor || !questionnaire.colorPreference || !questionnaire.size}
             className="w-full bg-zinc-100 text-zinc-950 rounded-xl py-4 text-base font-medium hover:bg-white disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2"
           >
             Choose Style <ChevronRight size={16} />

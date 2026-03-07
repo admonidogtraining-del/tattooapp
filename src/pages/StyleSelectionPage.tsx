@@ -4,7 +4,7 @@ import { ChevronLeft, Sparkles, Check, Loader } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useApp } from '../context/AppContext';
 import { TATTOO_STYLES, STYLE_CARD_PROMPTS } from '../constants';
-import { generateTattooImage } from '../services/geminiService';
+import { generateStyleCardImage } from '../services/geminiService';
 
 const CACHE_VERSION = 'v2';
 const cacheKey = (id: string) => `inksight-style-preview-${CACHE_VERSION}-${id}`;
@@ -42,7 +42,7 @@ export default function StyleSelectionPage() {
         if (cancelledRef.current) break;
         setGenerating(prev => new Set(prev).add(style.id));
         try {
-          const img = await generateTattooImage(STYLE_CARD_PROMPTS[style.id]);
+          const img = await generateStyleCardImage(STYLE_CARD_PROMPTS[style.id]);
           if (!cancelledRef.current) {
             localStorage.setItem(cacheKey(style.id), img);
             setCardImages(prev => ({ ...prev, [style.id]: img }));

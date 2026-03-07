@@ -100,18 +100,30 @@ export const TATTOO_STYLES = [
 ];
 
 export const STYLE_IMAGE_PROMPTS: Record<string, string> = {
-  'American Traditional': 'American Traditional old school tattoo flash art on pure white background. MANDATORY: bold thick black outlines, flat solid fill colors using ONLY red, black, gold/yellow, zero shading or gradients, no photorealism, classic poster flash style.',
-  'Neo-Traditional': 'Neo-Traditional tattoo illustration on white background. MANDATORY: varying line weights (bold outer contour, fine internal details), jewel tone palette (deep purple, teal, magenta), ornamental filigree flourishes, white ink highlights, no photorealism.',
-  'Japanese (Irezumi)': 'Japanese Irezumi traditional tattoo art on white background. MANDATORY: bold black outlines, flat vivid colors (red, black, gold), gakubori background elements (wind bars, waves, clouds), traditional Japanese iconography, no Western shading.',
-  'Black & Grey Realism': 'Black and grey realism tattoo art on white background. MANDATORY: zero outlines, grey wash technique only, single consistent light source from upper left, photorealistic 3D volumetric shading, only black and grey ink, no color.',
-  'Micro-Realism': 'Micro-realism single-needle tattoo design on white background. MANDATORY: extremely delicate ultra-thin lines (1RL needle weight), tiny miniature scale, hyper-detailed precision, no thick outlines, high contrast, delicate fine linework only.',
-  'Color Realism': 'Color realism painterly tattoo art on white background. MANDATORY: no black outlines anywhere, painterly blending, solid vibrant saturated pigments, complementary color contrast defines shapes, impressionistic photorealistic style.',
-  'Blackwork': 'Blackwork tattoo design on white background. MANDATORY: only pure solid black ink, no grey tones, no color, strong negative space contrast, bold geometric or tribal forms, solid black saturation.',
-  'Cybersigilism': 'Cybersigilism tattoo design on white background. MANDATORY: only ultra-thin sharp black lines, no fills or solid areas, sharp aggressive organic-geometric shapes, long tapering stinger forms, alien sigil aesthetic, needle-thin lines only.',
-  'Dotwork': 'Dotwork stippling tattoo on white background. MANDATORY: form created entirely from individual dots only, no solid lines or fills, dot density creates shading (dense=shadow, sparse=highlight), pointillist texture throughout, no smooth gradients.',
-  'Trash Polka': 'Trash Polka tattoo collage on white background. MANDATORY: ONLY black and red colors, chaotic collage of realistic imagery mixed with abstract red paint splatters and bold graphic text elements, high contrast, aggressive composition.',
-  'Ignorant Style': 'Ignorant style hand-poked tattoo on white background. MANDATORY: intentionally shaky imperfect lines, simple naive childlike drawing, flat 2D, wrong proportions, sharpie marker aesthetic, primitive look, no professional polish whatsoever.',
-  'Patchwork': 'Patchwork tattoo flash collection on white background. MANDATORY: multiple small distinct traditional tattoo designs arranged together, each element surrounded by a white border outline, mix of classic flash motifs (hearts, stars, roses, daggers, animals), flash sheet layout.',
+  'American Traditional':
+    'STYLE: American Traditional (Old School) tattoo flash art. RULES — NO EXCEPTIONS: (1) Bold uniform thick black outlines on every shape, (2) Flat solid color fills using ONLY red, black, gold/yellow — absolutely zero gradients or blending, (3) Classic sailor tattoo poster aesthetic, (4) No photorealism, no shading, no textures.',
+  'Neo-Traditional':
+    'STYLE: Neo-Traditional tattoo illustration. RULES — NO EXCEPTIONS: (1) Hierarchical line weights — thick bold outer contour, progressively thinner internal detail lines, (2) Jewel tone palette (deep purple, teal, magenta, forest green), (3) Ornamental filigree and decorative flourishes, (4) Crisp white ink highlights, (5) No photorealistic shading.',
+  'Japanese (Irezumi)':
+    'STYLE: Japanese Irezumi traditional tattoo art. RULES — NO EXCEPTIONS: (1) Bold black outlines throughout, (2) Flat vivid color fills (red, black, gold), (3) Traditional gakubori background elements (stylized wind bars, crashing waves, or flowing clouds), (4) Classical Japanese motif treatment, (5) No Western shading techniques.',
+  'Black & Grey Realism':
+    'STYLE: Black & Grey Realism tattoo. RULES — NO EXCEPTIONS: (1) Zero outlines — all form built entirely from graywash, (2) Single consistent light source from upper-left creating photorealistic 3D volume, (3) ONLY black and grey tones — absolutely no color, (4) Power blacks in deepest shadow areas, smooth transitions to white highlights.',
+  'Micro-Realism':
+    'STYLE: Micro-Realism single-needle tattoo. RULES — NO EXCEPTIONS: (1) Extremely delicate ultra-thin hairline strokes (single needle 1RL weight), (2) Miniature hyper-detailed precision work, (3) No thick outlines anywhere, (4) Maximum contrast between fine detail and pure white background, (5) Every element rendered at tiny miniature scale.',
+  'Color Realism':
+    'STYLE: Color Realism painterly tattoo. RULES — NO EXCEPTIONS: (1) Absolutely no black outlines — shape defined entirely by color contrast, (2) Painterly blending of rich saturated pigments, (3) Impressionistic photorealism with complementary color contrast, (4) Vibrant luminous colors, (5) Soft edges with no hard line work.',
+  'Blackwork':
+    'STYLE: Blackwork tattoo. RULES — NO EXCEPTIONS: (1) ONLY pure solid black ink — no grey tones, no color, (2) Art exists entirely in negative space contrast between solid black and white, (3) Bold geometric or tribal forms with maximum black saturation, (4) No gradients, no outlines separate from fills.',
+  'Cybersigilism':
+    'STYLE: Cybersigilism tattoo. RULES — NO EXCEPTIONS: (1) Ultra-thin sharp black lines only — needle-thin, (2) No filled solid areas anywhere, (3) Aggressive organic-geometric shapes combining alien sigil forms with biological thorns and stingers, (4) Long tapering pointed forms, (5) Pure line art — zero fills, zero shading.',
+  'Dotwork':
+    'STYLE: Dotwork / Pointillist tattoo. RULES — NO EXCEPTIONS: (1) Every element of the design — including all shading — must be formed ONLY from individual dots, (2) No solid lines or fills anywhere, (3) High dot density = dark shadow, low dot density = highlight, (4) Grainy tactile pointillist texture throughout.',
+  'Trash Polka':
+    'STYLE: Trash Polka tattoo collage. RULES — NO EXCEPTIONS: (1) ONLY black and red — no other colors, (2) Chaotic collage layering: realistic imagery + abstract red paint splatters + bold graphic text + geometric elements, (3) High contrast aggressive composition, (4) Intentionally chaotic overlapping layers.',
+  'Ignorant Style':
+    'STYLE: Ignorant Style hand-poked tattoo. RULES — NO EXCEPTIONS: (1) Intentionally shaky imperfect wobbly lines — NOT smooth, (2) Naive childlike flat 2D drawing aesthetic (sharpie/ballpoint pen look), (3) Wrong proportions, simplified shapes, (4) Zero professional polish — looks handmade and crude, (5) No shading or gradients.',
+  'Patchwork':
+    'STYLE: Patchwork tattoo flash collection. RULES — NO EXCEPTIONS: (1) Multiple small distinct traditional tattoo designs arranged as a collection on white background, (2) Every individual element has a white border/outline around it separating it from adjacent pieces, (3) Classic flash motifs (hearts, stars, roses, daggers, snakes, animals), (4) Flash sheet layout.',
 };
 
 export const STYLE_SLUGS: Record<string, string> = {
@@ -136,8 +148,12 @@ export const stylePreviewPublicUrl = (styleId: string): string | null => {
 
 export const buildStylePrompt = (dallePrompt: string, style: string): string => {
   const prefix = STYLE_IMAGE_PROMPTS[style] ?? '';
-  const suffix = ' Complete standalone tattoo design, full subject visible, not cropped, perfectly centered on pure white background, tattoo flash sheet presentation.';
-  return prefix ? `${prefix} The tattoo design subject: ${dallePrompt}${suffix}` : `${dallePrompt}${suffix}`;
+  // The suffix enforces presentation quality and anchors the subject
+  const suffix =
+    ' The tattoo design must be completely standalone, finished artwork — full subject visible, not cropped, perfectly centered on a pure white background, presented as professional tattoo flash art. Do NOT deviate from the style rules above.';
+  return prefix
+    ? `${prefix}\n\nTattoo concept to render in this exact style: "${dallePrompt}"${suffix}`
+    : `Tattoo flash art design — concept: "${dallePrompt}". Pure white background, professional flash sheet, complete standalone design.`;
 };
 
 export const extractPlacement = (text: string): string => {
