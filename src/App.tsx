@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route, useLocation, useNavigate, Navigate } from 'react-router-dom';
+import { useEffect } from 'react';
 import { AnimatePresence } from 'motion/react';
 import { PenTool } from 'lucide-react';
 import { AppProvider, useApp } from './context/AppContext';
@@ -7,6 +8,12 @@ import QuestionnairePage from './pages/QuestionnairePage';
 import StyleSelectionPage from './pages/StyleSelectionPage';
 import ResultsPage from './pages/ResultsPage';
 import TryOnModal from './components/TryOnModal';
+
+function ScrollToTop() {
+  const { pathname } = useLocation();
+  useEffect(() => { window.scrollTo(0, 0); }, [pathname]);
+  return null;
+}
 
 function Header() {
   const { handleReset } = useApp();
@@ -43,6 +50,7 @@ function AppRoutes() {
   const location = useLocation();
   return (
     <>
+      <ScrollToTop />
       <Header />
       <main className="px-6 py-12">
         <AnimatePresence mode="wait">

@@ -1,16 +1,31 @@
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Upload, Plus, X, ChevronRight } from 'lucide-react';
+import { Upload, Plus, X, ChevronRight, Wand2 } from 'lucide-react';
 import { motion } from 'motion/react';
 import { useApp } from '../context/AppContext';
+import { generatePromptIdea } from '../services/geminiService';
 
 export default function InitialPage() {
   const navigate = useNavigate();
   const { prompt, setPrompt, images, handleImageUpload, removeImage, fileInputRef } = useApp();
+  const [inspiring, setInspiring] = useState(false);
 
   const handleContinue = (e: React.FormEvent) => {
     e.preventDefault();
     if (!prompt.trim() && images.length === 0) return;
     navigate('/details');
+  };
+
+  const handleInspire = async () => {
+    setInspiring(true);
+    try {
+      const idea = await generatePromptIdea(prompt);
+      setPrompt(idea);
+    } catch {
+      // silently fail — user still has their original text
+    } finally {
+      setInspiring(false);
+    }
   };
 
   return (
@@ -73,13 +88,32 @@ export default function InitialPage() {
           <div className="flex-grow border-t border-zinc-900" />
         </div>
 
-        <form onSubmit={handleContinue} className="space-y-4">
-          <textarea
-            value={prompt}
-            onChange={(e) => setPrompt(e.target.value)}
-            placeholder="Describe your story, emotions, or concept..."
-            className="w-full h-32 bg-zinc-900/50 border border-zinc-800 rounded-xl p-4 text-sm focus:outline-none focus:ring-1 focus:ring-zinc-500 focus:border-zinc-500 transition-all resize-none placeholder:text-zinc-600"
-          />
+        <form onSubmit={handleContinue} className="space-y-3">
+          <div className="relative">
+            <textarea
+              value={prompt}
+              onChange={(e) => setPrompt(e.target.value)}
+              placeholder="Describe your story, emotions, or concept..."
+              className="w-full h-32 bg-zinc-900/50 border border-zinc-800 rounded-xl p-4 pb-12 text-sm focus:outline-none focus:ring-1 focus:ring-zinc-500 focus:border-zinc-500 transition-all resize-none placeholder:text-zinc-600"
+            />
+            <button
+              type="button"
+              onClick={handleInspire}
+              disabled={inspiring}
+              className="absolute bottom-3 right-3 flex items-center gap-1.5 px-3 py-1.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 hover:text-zinc-100 rounded-lg text-xs font-medium transition-all disabled:opacity-50"
+            >
+              {inspiring ? (
+                <motion.span
+                  className="inline-block w-3 h-3 border border-zinc-400 border-t-transparent rounded-full"
+                  animate={{ rotate: 360 }}
+                  transition={{ duration: 0.8, repeat: Infinity, ease: 'linear' }}
+                />
+              ) : (
+                <Wand2 size={12} />
+              )}
+              {inspiring ? 'Inspiring…' : 'Inspire me'}
+            </button>
+          </div>
           <button
             type="submit"
             disabled={!prompt.trim() && images.length === 0}

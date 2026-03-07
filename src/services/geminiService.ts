@@ -101,7 +101,6 @@ To give the absolute best technical foundation for editing and generating tattoo
 - Output is ALWAYS valid JSON. Never break format.`;
 
 export interface QuestionnaireData {
-  gender: string;
   skinColor: string;
   colorPreference: string;
   size: string;
@@ -143,7 +142,7 @@ export async function generateTattooConsultation(
 ): Promise<TattooConsultation> {
   const parts: object[] = [
     {
-      text: `User Prompt: ${prompt}\n\nUser Profile & Preferences:\n- Gender: ${questionnaire.gender}\n- Skin Color: ${questionnaire.skinColor}\n- Color Preference: ${questionnaire.colorPreference}\n- Size: ${questionnaire.size}\n- Selected Style: ${questionnaire.style}`,
+      text: `User Prompt: ${prompt}\n\nUser Profile & Preferences:\n- Skin Color: ${questionnaire.skinColor}\n- Color Preference: ${questionnaire.colorPreference}\n- Size: ${questionnaire.size}\n- Selected Style: ${questionnaire.style}`,
     },
   ];
 
@@ -272,4 +271,27 @@ export async function generateStyleCardImage(prompt: string): Promise<string> {
  */
 export async function generateTattooImage(prompt: string): Promise<string> {
   return geminiGenerateImage([{ text: prompt }]);
+}
+
+/**
+ * Generate or expand a tattoo concept prompt idea.
+ * If the user has a rough idea, expands it. Otherwise creates something fresh.
+ */
+export async function generatePromptIdea(hint: string): Promise<string> {
+  const instruction = hint.trim()
+    ? `Take this rough tattoo idea and expand it into a rich, evocative 2-3 sentence concept description. Describe the visual elements, symbolism, and mood. Be specific and poetic. Idea: "${hint.trim()}"`
+    : `Generate a creative, evocative tattoo concept description (2-3 sentences). Include specific visual elements, symbolism, and emotional mood. Make it personal and meaningful.`;
+
+  const response = await ai.models.generateContent({
+    model: 'gemini-2.5-flash',
+    contents: instruction,
+    config: {
+      systemInstruction: 'You are a tattoo concept writer. Output only the concept description — no labels, no intro, no extra commentary. Just the vivid description.',
+      maxOutputTokens: 200,
+    },
+  });
+
+  const text = response.text?.trim();
+  if (!text) throw new Error('No idea generated');
+  return text;
 }

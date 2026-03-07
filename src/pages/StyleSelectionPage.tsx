@@ -6,7 +6,7 @@ import { useApp } from '../context/AppContext';
 import { TATTOO_STYLES, STYLE_CARD_PROMPTS } from '../constants';
 import { generateStyleCardImage } from '../services/geminiService';
 
-const CACHE_VERSION = 'v3';
+const CACHE_VERSION = 'v4';
 const cacheKey = (id: string) => `inksight-style-preview-${CACHE_VERSION}-${id}`;
 
 export default function StyleSelectionPage() {

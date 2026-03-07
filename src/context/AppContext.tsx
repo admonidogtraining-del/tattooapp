@@ -49,7 +49,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [prompt, setPrompt] = useState('');
   const [images, setImages] = useState<{ data: string; mimeType: string; url: string }[]>([]);
   const [questionnaire, setQuestionnaire] = useState<QuestionnaireData>({
-    gender: '',
     skinColor: '',
     colorPreference: '',
     size: '',
@@ -138,7 +137,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const handleReset = () => {
     setPrompt('');
     setImages([]);
-    setQuestionnaire({ gender: '', skinColor: '', colorPreference: '', size: '', style: '' });
+    setQuestionnaire({ skinColor: '', colorPreference: '', size: '', style: '' });
     setResult(null);
     setError(null);
     setGeneratedImage(null);

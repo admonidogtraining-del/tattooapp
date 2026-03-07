@@ -151,8 +151,12 @@ export default function TryOnModal() {
     if (!showTryOn || !generatedImage || !containerRef.current) return;
 
     const container = containerRef.current;
-    const w = container.clientWidth;
-    const h = container.clientHeight;
+    let rafId: number;
+    let ro: ResizeObserver | null = null;
+
+    const init = () => {
+    const w = container.clientWidth || window.innerWidth;
+    const h = container.clientHeight || Math.round(window.innerHeight * 0.7);
 
     // Renderer
     const renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -240,21 +244,28 @@ export default function TryOnModal() {
     cameraRef.current = camera;
 
     // Resize observer
-    const ro = new ResizeObserver(() => {
-      const nw = container.clientWidth;
-      const nh = container.clientHeight;
+    ro = new ResizeObserver(() => {
+      const nw = container.clientWidth || window.innerWidth;
+      const nh = container.clientHeight || Math.round(window.innerHeight * 0.7);
       renderer.setSize(nw, nh);
       camera.aspect = nw / nh;
       camera.updateProjectionMatrix();
     });
     ro.observe(container);
+    }; // end init
+
+    rafId = requestAnimationFrame(init);
 
     return () => {
+      cancelAnimationFrame(rafId);
       cancelAnimationFrame(frameIdRef.current);
-      ro.disconnect();
-      renderer.dispose();
-      if (container.contains(renderer.domElement)) {
-        container.removeChild(renderer.domElement);
+      ro?.disconnect();
+      const renderer = rendererRef.current;
+      if (renderer) {
+        renderer.dispose();
+        if (container.contains(renderer.domElement)) {
+          container.removeChild(renderer.domElement);
+        }
       }
       rendererRef.current = null;
       sceneRef.current = null;
