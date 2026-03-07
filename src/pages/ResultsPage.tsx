@@ -15,7 +15,7 @@ export default function ResultsPage() {
     tattooX, tattooY, setTattooScale,
     customImagePrompt, setCustomImagePrompt,
     handleGenerateImage, handleReset,
-    stylePreviewImages, error,
+    error,
   } = useApp();
 
   // Guard: if nothing is loading and nothing is ready, user navigated here directly
@@ -29,8 +29,7 @@ export default function ResultsPage() {
     setCustomImagePrompt('');
     setGeneratedImage(null);
     generateTattooImage(
-      buildStylePrompt(result?.image_generation.dalle_prompt ?? '', styleId),
-      stylePreviewImages[styleId]
+      buildStylePrompt(result?.image_generation.dalle_prompt ?? '', styleId)
     )
       .then(img => setGeneratedImage(img))
       .catch(err => console.error('Style switch failed:', err));

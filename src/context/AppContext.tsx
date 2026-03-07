@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
+import React, { createContext, useContext, useState, useRef } from 'react';
 import { useMotionValue, MotionValue } from 'motion/react';
 import {
   generateTattooConsultation,
@@ -6,7 +6,7 @@ import {
   TattooConsultation,
   QuestionnaireData,
 } from '../services/geminiService';
-import { buildStylePrompt, stylePreviewPublicUrl, TATTOO_STYLES } from '../constants';
+import { buildStylePrompt } from '../constants';
 
 interface AppContextValue {
   // State
@@ -29,7 +29,6 @@ interface AppContextValue {
   setShowTryOn: (v: boolean) => void;
   tattooScale: number;
   setTattooScale: React.Dispatch<React.SetStateAction<number>>;
-  stylePreviewImages: Record<string, string>;
   tattooX: MotionValue<number>;
   tattooY: MotionValue<number>;
   fileInputRef: React.RefObject<HTMLInputElement>;
@@ -65,34 +64,10 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [isConsulting, setIsConsulting] = useState(false);
   const [showTryOn, setShowTryOn] = useState(false);
   const [tattooScale, setTattooScale] = useState(1);
-  const [stylePreviewImages, setStylePreviewImages] = useState<Record<string, string>>({});
 
   const tattooX = useMotionValue(0);
   const tattooY = useMotionValue(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
-
-  // Load pre-generated style reference images from public/ (optional, used as style guides)
-  useEffect(() => {
-    TATTOO_STYLES.forEach(style => {
-      const url = stylePreviewPublicUrl(style.id);
-      if (!url) return;
-      fetch(url, { method: 'HEAD' })
-        .then(r => {
-          if (!r.ok) return;
-          return fetch(url).then(r2 => r2.blob()).then(blob => new Promise<string>(resolve => {
-            const reader = new FileReader();
-            reader.onloadend = () => resolve(reader.result as string);
-            reader.readAsDataURL(blob);
-          }));
-        })
-        .then(dataUrl => {
-          if (!dataUrl) return;
-          setStylePreviewImages(prev => prev[style.id] ? prev : { ...prev, [style.id]: dataUrl });
-        })
-        .catch(() => {});
-    });
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []) as File[];
@@ -130,15 +105,13 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     const currentStyle = questionnaire.style;
     const currentImages = images;
     const currentQuestionnaire = questionnaire;
-    const styleRef = stylePreviewImages[currentStyle];
 
     // ── Image generation: starts IMMEDIATELY from the user's prompt + style ──
     generateTattooImage(
       buildStylePrompt(
         customImagePrompt.trim() || currentPrompt,
         currentStyle
-      ),
-      styleRef
+      )
     )
       .then(img => setGeneratedImage(img))
       .catch(err => {
@@ -186,7 +159,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     try {
       const basePrompt = result?.image_generation.dalle_prompt ?? prompt;
       const promptToUse = customImagePrompt.trim() || buildStylePrompt(basePrompt, questionnaire.style);
-      const img = await generateTattooImage(promptToUse, stylePreviewImages[questionnaire.style]);
+      const img = await generateTattooImage(promptToUse);
       setGeneratedImage(img);
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Failed to generate image. Please try again.';
@@ -210,7 +183,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       isConsulting,
       showTryOn, setShowTryOn,
       tattooScale, setTattooScale,
-      stylePreviewImages,
       tattooX, tattooY,
       fileInputRef,
       handleImageUpload,

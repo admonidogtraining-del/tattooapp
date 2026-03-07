@@ -1,4 +1,4 @@
-import { GoogleGenAI, Type, type GenerateImagesParameters } from "@google/genai";
+import { GoogleGenAI, Type } from "@google/genai";
 
 // Uses Vite's env variable system — set VITE_GEMINI_API_KEY in your .env file
 const ai = new GoogleGenAI({ apiKey: import.meta.env.VITE_GEMINI_API_KEY });
@@ -241,96 +241,35 @@ export async function generateTattooConsultation(
   return JSON.parse(response.text) as TattooConsultation;
 }
 
-async function runGenerateImages(params: GenerateImagesParameters): Promise<string | null> {
-  try {
-    const response = await ai.models.generateImages(params);
-    const bytes = response?.generatedImages?.[0]?.image?.imageBytes;
-    return bytes ? `data:image/png;base64,${bytes}` : null;
-  } catch (err) {
-    console.warn('[Imagen] generateImages failed:', err);
-    return null;
-  }
-}
+const IMAGE_GEN_MODEL = 'gemini-2.0-flash-preview-image-generation';
 
-async function runGeminiImageGen(prompt: string): Promise<string | null> {
-  try {
-    const response = await ai.models.generateContent({
-      model: 'gemini-2.0-flash-preview-image-generation',
-      contents: { parts: [{ text: prompt }] },
-      config: { responseModalities: ['TEXT', 'IMAGE'] },
-    });
-    const parts = response.candidates?.[0]?.content?.parts || [];
-    for (const part of parts) {
-      if (part.inlineData) {
-        return `data:${part.inlineData.mimeType};base64,${part.inlineData.data}`;
-      }
+async function geminiGenerateImage(parts: object[]): Promise<string> {
+  const response = await ai.models.generateContent({
+    model: IMAGE_GEN_MODEL,
+    contents: { parts },
+    config: { responseModalities: ['TEXT', 'IMAGE'] },
+  });
+  const responseParts = response.candidates?.[0]?.content?.parts || [];
+  for (const part of responseParts) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    if ((part as any).inlineData) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { mimeType, data } = (part as any).inlineData;
+      return `data:${mimeType};base64,${data}`;
     }
-  } catch (err) {
-    console.warn('[Gemini] image generation failed:', err);
   }
-  return null;
+  throw new Error('No image in response');
 }
 
-/**
- * Generate a style card preview image.
- * Tries Imagen 3 fast → Gemini flash image gen → throws if both fail.
- */
+/** Generate a style card preview image (fast, text-only prompt). */
 export async function generateStyleCardImage(prompt: string): Promise<string> {
-  const result =
-    (await runGenerateImages({ model: 'imagen-3.0-fast-generate-001', prompt, config: { numberOfImages: 1, aspectRatio: '1:1' } })) ??
-    (await runGeminiImageGen(prompt));
-  if (result) return result;
-  throw new Error('Failed to generate style card image');
+  return geminiGenerateImage([{ text: prompt }]);
 }
 
 /**
  * Generate the final tattoo design.
- * - With style reference image → Gemini multimodal (only model that accepts image input)
- * - Without reference → Imagen 3 standard quality, fallback to Gemini flash
+ * Prompt is pre-built with full style rules by buildStylePrompt().
  */
-export async function generateTattooImage(prompt: string, styleReferenceDataUrl?: string): Promise<string> {
-  // Multimodal path: style reference image provided — must use Gemini
-  if (styleReferenceDataUrl) {
-    const commaIdx = styleReferenceDataUrl.indexOf(',');
-    const mimeType = commaIdx > 0
-      ? (styleReferenceDataUrl.slice(5, commaIdx).split(';')[0] || 'image/png')
-      : 'image/png';
-    const data = commaIdx > 0 ? styleReferenceDataUrl.slice(commaIdx + 1) : styleReferenceDataUrl;
-
-    try {
-      const response = await ai.models.generateContent({
-        model: 'gemini-2.0-flash-preview-image-generation',
-        contents: {
-          parts: [
-            { inlineData: { data, mimeType } },
-            { text: `Using the above image as a strict visual style reference, generate a design that rigidly follows that exact visual style: ${prompt}` },
-          ],
-        },
-        config: { responseModalities: ['TEXT', 'IMAGE'] },
-      });
-      const responseParts = response.candidates?.[0]?.content?.parts || [];
-      for (const part of responseParts) {
-        if (part.inlineData) {
-          return `data:${part.inlineData.mimeType};base64,${part.inlineData.data}`;
-        }
-      }
-    } catch (err) {
-      console.warn('[Gemini multimodal] failed:', err);
-    }
-    // If multimodal Gemini fails, fall through to Imagen without reference
-  }
-
-  // Imagen 3 standard (best quality, ~15-25s)
-  const imagenResult = await runGenerateImages({
-    model: 'imagen-3.0-generate-002',
-    prompt,
-    config: { numberOfImages: 1, aspectRatio: '1:1' },
-  });
-  if (imagenResult) return imagenResult;
-
-  // Fallback: Gemini flash image generation
-  const geminiResult = await runGeminiImageGen(prompt);
-  if (geminiResult) return geminiResult;
-
-  throw new Error('Image generation failed. Check your API key and model access.');
+export async function generateTattooImage(prompt: string): Promise<string> {
+  return geminiGenerateImage([{ text: prompt }]);
 }
