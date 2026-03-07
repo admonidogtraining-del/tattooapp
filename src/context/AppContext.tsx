@@ -24,6 +24,7 @@ interface AppContextValue {
   customImagePrompt: string;
   setCustomImagePrompt: (v: string) => void;
   isGeneratingImage: boolean;
+  isConsulting: boolean;
   showTryOn: boolean;
   setShowTryOn: (v: boolean) => void;
   tattooScale: number;
@@ -36,11 +37,11 @@ interface AppContextValue {
   // Actions
   handleImageUpload: (e: React.ChangeEvent<HTMLInputElement>) => void;
   removeImage: (index: number) => void;
-  handleSubmit: (isDiscoverySubmit?: boolean) => Promise<TattooConsultation>;
+  /** Start image generation + consultation in parallel. Navigate to /results immediately. */
+  startParallelGeneration: () => void;
   handleDiscoveryAnswer: (question: string, answer: string) => void;
   handleReset: () => void;
   handleGenerateImage: () => Promise<void>;
-  triggerAutoImageGeneration: (consultation: TattooConsultation) => void;
 }
 
 const AppContext = createContext<AppContextValue | null>(null);
@@ -50,10 +51,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [images, setImages] = useState<{ data: string; mimeType: string; url: string }[]>([]);
   const [questionnaire, setQuestionnaire] = useState<QuestionnaireData>({
     gender: '',
-    weight: '5',
-    bodyShape: '',
     skinColor: '',
-    placement: '',
     colorPreference: '',
     size: '',
     style: '',
@@ -64,6 +62,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [generatedImage, setGeneratedImage] = useState<string | null>(null);
   const [customImagePrompt, setCustomImagePrompt] = useState('');
   const [isGeneratingImage, setIsGeneratingImage] = useState(false);
+  const [isConsulting, setIsConsulting] = useState(false);
   const [showTryOn, setShowTryOn] = useState(false);
   const [tattooScale, setTattooScale] = useState(1);
   const [stylePreviewImages, setStylePreviewImages] = useState<Record<string, string>>({});
@@ -72,7 +71,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const tattooY = useMotionValue(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Load style preview images on mount
+  // Load pre-generated style reference images from public/ (optional, used as style guides)
   useEffect(() => {
     TATTOO_STYLES.forEach(style => {
       const url = stylePreviewPublicUrl(style.id);
@@ -114,35 +113,49 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     setImages(prev => prev.filter((_, i) => i !== index));
   };
 
-  const triggerAutoImageGeneration = (consultation: TattooConsultation) => {
+  /**
+   * Start image generation and consultation in parallel.
+   * Image gen starts immediately from the user prompt + style (no consultation needed).
+   * Consultation runs in background and fills in supplementary data.
+   */
+  const startParallelGeneration = () => {
     setIsGeneratingImage(true);
+    setIsConsulting(true);
+    setGeneratedImage(null);
+    setResult(null);
+    setError(null);
+
+    // Snapshot current values immediately (avoids stale closure issues)
+    const currentPrompt = prompt;
+    const currentStyle = questionnaire.style;
+    const currentImages = images;
+    const currentQuestionnaire = questionnaire;
+    const styleRef = stylePreviewImages[currentStyle];
+
+    // ── Image generation: starts IMMEDIATELY from the user's prompt + style ──
     generateTattooImage(
-      buildStylePrompt(consultation.image_generation.dalle_prompt, questionnaire.style),
-      stylePreviewImages[questionnaire.style]
+      buildStylePrompt(
+        customImagePrompt.trim() || currentPrompt,
+        currentStyle
+      ),
+      styleRef
     )
       .then(img => setGeneratedImage(img))
-      .catch(err => console.error('Auto image generation failed:', err))
+      .catch(err => {
+        console.error('Image generation failed:', err);
+        setError(err instanceof Error ? err.message : 'Image generation failed.');
+      })
       .finally(() => setIsGeneratingImage(false));
-  };
 
-  const handleSubmit = async (isDiscoverySubmit = false) => {
-    setError(null);
-    let finalPrompt = prompt;
-    if (isDiscoverySubmit) {
-      const answersText = Object.entries(discoveryAnswers)
-        .map(([q, a]) => `Q: ${q}\nA: ${a}`)
-        .join('\n');
-      finalPrompt += `\n\nClarifications:\n${answersText}`;
-    }
-
-    const consultation = await generateTattooConsultation(
-      finalPrompt,
-      images.map(img => ({ data: img.data, mimeType: img.mimeType })),
-      questionnaire
-    );
-
-    setResult(consultation);
-    return consultation;
+    // ── Consultation: runs in parallel for supplementary design data ──
+    generateTattooConsultation(
+      currentPrompt,
+      currentImages.map(img => ({ data: img.data, mimeType: img.mimeType })),
+      currentQuestionnaire
+    )
+      .then(consultation => setResult(consultation))
+      .catch(err => console.error('Consultation failed:', err))
+      .finally(() => setIsConsulting(false));
   };
 
   const handleDiscoveryAnswer = (question: string, answer: string) => {
@@ -152,12 +165,13 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const handleReset = () => {
     setPrompt('');
     setImages([]);
-    setQuestionnaire({ gender: '', weight: '5', bodyShape: '', skinColor: '', placement: '', colorPreference: '', size: '', style: '' });
+    setQuestionnaire({ gender: '', skinColor: '', colorPreference: '', size: '', style: '' });
     setResult(null);
     setError(null);
     setGeneratedImage(null);
     setCustomImagePrompt('');
     setIsGeneratingImage(false);
+    setIsConsulting(false);
     setDiscoveryAnswers({});
     setShowTryOn(false);
     setTattooScale(1);
@@ -166,13 +180,14 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   };
 
   const handleGenerateImage = async () => {
-    if (!result) return;
+    if (!result && !prompt) return;
     setIsGeneratingImage(true);
     setError(null);
     try {
-      const promptToUse = customImagePrompt.trim() || buildStylePrompt(result.image_generation.dalle_prompt, questionnaire.style);
-      const imageBase64 = await generateTattooImage(promptToUse, stylePreviewImages[questionnaire.style]);
-      setGeneratedImage(imageBase64);
+      const basePrompt = result?.image_generation.dalle_prompt ?? prompt;
+      const promptToUse = customImagePrompt.trim() || buildStylePrompt(basePrompt, questionnaire.style);
+      const img = await generateTattooImage(promptToUse, stylePreviewImages[questionnaire.style]);
+      setGeneratedImage(img);
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Failed to generate image. Please try again.';
       setError(message);
@@ -192,6 +207,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       generatedImage, setGeneratedImage,
       customImagePrompt, setCustomImagePrompt,
       isGeneratingImage,
+      isConsulting,
       showTryOn, setShowTryOn,
       tattooScale, setTattooScale,
       stylePreviewImages,
@@ -199,11 +215,10 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       fileInputRef,
       handleImageUpload,
       removeImage,
-      handleSubmit,
+      startParallelGeneration,
       handleDiscoveryAnswer,
       handleReset,
       handleGenerateImage,
-      triggerAutoImageGeneration,
     }}>
       {children}
     </AppContext.Provider>

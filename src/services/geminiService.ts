@@ -102,10 +102,7 @@ To give the absolute best technical foundation for editing and generating tattoo
 
 export interface QuestionnaireData {
   gender: string;
-  weight: string;
-  bodyShape: string;
   skinColor: string;
-  placement: string;
   colorPreference: string;
   size: string;
   style: string;
@@ -146,7 +143,7 @@ export async function generateTattooConsultation(
 ): Promise<TattooConsultation> {
   const parts: object[] = [
     {
-      text: `User Prompt: ${prompt}\n\nUser Profile & Preferences:\n- Gender: ${questionnaire.gender}\n- Body Weight: ${questionnaire.weight}\n- Body Shape: ${questionnaire.bodyShape}\n- Skin Color: ${questionnaire.skinColor}\n- Placement: ${questionnaire.placement}\n- Color Preference: ${questionnaire.colorPreference}\n- Size: ${questionnaire.size}\n- Selected Style: ${questionnaire.style}`,
+      text: `User Prompt: ${prompt}\n\nUser Profile & Preferences:\n- Gender: ${questionnaire.gender}\n- Skin Color: ${questionnaire.skinColor}\n- Color Preference: ${questionnaire.colorPreference}\n- Size: ${questionnaire.size}\n- Selected Style: ${questionnaire.style}`,
     },
   ];
 

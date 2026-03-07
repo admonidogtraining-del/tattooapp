@@ -1,12 +1,10 @@
-import { BrowserRouter, Routes, Route, useLocation, useNavigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, useLocation, useNavigate, Navigate } from 'react-router-dom';
 import { AnimatePresence } from 'motion/react';
 import { PenTool } from 'lucide-react';
 import { AppProvider, useApp } from './context/AppContext';
 import InitialPage from './pages/InitialPage';
 import QuestionnairePage from './pages/QuestionnairePage';
 import StyleSelectionPage from './pages/StyleSelectionPage';
-import GeneratingPage from './pages/GeneratingPage';
-import DiscoveryPage from './pages/DiscoveryPage';
 import ResultsPage from './pages/ResultsPage';
 import TryOnModal from './components/TryOnModal';
 
@@ -52,9 +50,8 @@ function AppRoutes() {
             <Route path="/" element={<InitialPage />} />
             <Route path="/details" element={<QuestionnairePage />} />
             <Route path="/style" element={<StyleSelectionPage />} />
-            <Route path="/generating" element={<GeneratingPage />} />
-            <Route path="/discovery" element={<DiscoveryPage />} />
             <Route path="/results" element={<ResultsPage />} />
+            <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </AnimatePresence>
       </main>

@@ -1,11 +1,18 @@
-export const BODY_SHAPES = [
-  { id: 'Ectomorph', name: 'Ectomorph', desc: 'Lean & Slender' },
-  { id: 'Mesomorph', name: 'Mesomorph', desc: 'Athletic & Muscular' },
-  { id: 'Endomorph', name: 'Endomorph', desc: 'Broad & Stocky' },
-  { id: 'Hourglass', name: 'Hourglass', desc: 'Balanced top/bottom, defined waist' },
-  { id: 'Pear', name: 'Pear', desc: 'Wider hips than shoulders' },
-  { id: 'Apple', name: 'Apple', desc: 'Broader upper body & midsection' },
-];
+// Short prompts used to generate AI preview images for the style-selection cards
+export const STYLE_CARD_PROMPTS: Record<string, string> = {
+  'American Traditional': 'American Traditional old school tattoo flash art of a bold eagle with banner, pure white background, thick black outlines, flat red yellow green, no shading, classic flash sheet',
+  'Neo-Traditional': 'Neo-Traditional tattoo illustration of an ornate rose with filigree, white background, jewel tone purples and teals, varied bold line weights, white ink highlights',
+  'Japanese (Irezumi)': 'Japanese Irezumi traditional tattoo of a koi fish with waves and wind bars, white background, bold black outlines, vivid red and gold, flowing gakubori background',
+  'Black & Grey Realism': 'Black and grey realism tattoo portrait of a lion, white background, zero outlines, smooth graywash shading, single light source, photorealistic 3D volume, only grey tones',
+  'Micro-Realism': 'Micro realism single-needle tattoo of a tiny detailed butterfly, pure white background, ultra-fine delicate lines, miniature hyper-detailed, high contrast, no thick outlines',
+  'Color Realism': 'Color realism painterly tattoo of a vibrant hummingbird, white background, no black outlines, rich saturated painterly blending, complementary colors, photorealistic impressionism',
+  'Blackwork': 'Blackwork geometric mandala tattoo, white background, only solid pure black ink, bold geometric pattern, strong negative space contrast, no grey tones no color',
+  'Cybersigilism': 'Cybersigilism tattoo design, white background, ultra-thin sharp black lines only, aggressive alien sigil geometry, long tapering stinger forms, no fills, wiry needle-thin lines',
+  'Dotwork': 'Dotwork stippling tattoo mandala, white background, form created entirely from individual dots, pointillist density creates shadows, no solid lines, grainy tactile texture',
+  'Trash Polka': 'Trash Polka tattoo collage, white background, ONLY black and red ink, realistic skull mixed with abstract red paint splatters and bold graphic text, chaotic layered composition',
+  'Ignorant Style': 'Ignorant style tattoo of a simple smiley face, white background, intentionally shaky imperfect lines, naive childlike sharpie drawing aesthetic, flat 2D, no professional polish',
+  'Patchwork': 'Patchwork tattoo flash collection, white background, six small traditional designs arranged in a grid, each with white border outline, hearts stars roses daggers, flash sheet style',
+};
 
 export const SKIN_TONES = [
   { label: 'Very Light', value: 'Very Light', color: '#FDDBB4' },

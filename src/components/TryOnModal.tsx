@@ -16,12 +16,9 @@ export default function TryOnModal() {
 
   const skinHex = SKIN_TONES.find(t => t.value === questionnaire.skinColor)?.color ?? '#C68642';
   const isLightSkin = ['Very Light', 'Light'].includes(questionnaire.skinColor);
-  const userExtracted = extractPlacement(questionnaire.placement || '');
-  const aiExtracted = result ? extractPlacement(result.user_profile_analysis.suggested_placement_logic) : '';
-  const knownParts = ['back', 'chest', 'shoulder', 'rib', 'thigh', 'calf', 'forearm', 'wrist', 'ankle', 'foot', 'neck', 'finger', 'hand', 'arm'];
-  const effectivePlacement = knownParts.some(p => userExtracted.toLowerCase().includes(p))
-    ? userExtracted
-    : (aiExtracted || userExtracted || 'forearm');
+  // Use AI-suggested placement (since we no longer collect placement in the form)
+  const aiExtracted = result ? extractPlacement(result.user_profile_analysis.suggested_placement_logic) : 'forearm';
+  const effectivePlacement = aiExtracted || 'forearm';
   const placementLabel = getPlacementBg(effectivePlacement).label;
 
   const handleSave = () => {
@@ -82,11 +79,9 @@ export default function TryOnModal() {
       <div className="flex items-center justify-between w-full max-w-2xl">
         <div>
           <p className="text-white font-medium">Try on Body</p>
-          {questionnaire.placement && (
-            <p className="text-zinc-400 text-sm mt-0.5">
-              Placement: <span className="text-zinc-200">{questionnaire.placement}</span>
-            </p>
-          )}
+          <p className="text-zinc-400 text-sm mt-0.5">
+            Placement: <span className="text-zinc-200">{placementLabel}</span>
+          </p>
         </div>
         <button
           onClick={() => setShowTryOn(false)}
