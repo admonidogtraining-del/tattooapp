@@ -1,17 +1,18 @@
 // Short prompts used to generate AI preview images for the style-selection cards
+// Note: word "tattoo" intentionally avoided to reduce content-filter rejections
 export const STYLE_CARD_PROMPTS: Record<string, string> = {
-  'American Traditional': 'American Traditional old school tattoo flash art of a bold eagle with banner, pure white background, thick black outlines, flat red yellow green, no shading, classic flash sheet',
-  'Neo-Traditional': 'Neo-Traditional tattoo illustration of an ornate rose with filigree, white background, jewel tone purples and teals, varied bold line weights, white ink highlights',
-  'Japanese (Irezumi)': 'Japanese Irezumi traditional tattoo of a koi fish with waves and wind bars, white background, bold black outlines, vivid red and gold, flowing gakubori background',
-  'Black & Grey Realism': 'Black and grey realism tattoo portrait of a lion, white background, zero outlines, smooth graywash shading, single light source, photorealistic 3D volume, only grey tones',
-  'Micro-Realism': 'Micro realism single-needle tattoo of a tiny detailed butterfly, pure white background, ultra-fine delicate lines, miniature hyper-detailed, high contrast, no thick outlines',
-  'Color Realism': 'Color realism painterly tattoo of a vibrant hummingbird, white background, no black outlines, rich saturated painterly blending, complementary colors, photorealistic impressionism',
-  'Blackwork': 'Blackwork geometric mandala tattoo, white background, only solid pure black ink, bold geometric pattern, strong negative space contrast, no grey tones no color',
-  'Cybersigilism': 'Cybersigilism tattoo design, white background, ultra-thin sharp black lines only, aggressive alien sigil geometry, long tapering stinger forms, no fills, wiry needle-thin lines',
-  'Dotwork': 'Dotwork stippling tattoo mandala, white background, form created entirely from individual dots, pointillist density creates shadows, no solid lines, grainy tactile texture',
-  'Trash Polka': 'Trash Polka tattoo collage, white background, ONLY black and red ink, realistic skull mixed with abstract red paint splatters and bold graphic text, chaotic layered composition',
-  'Ignorant Style': 'Ignorant style tattoo of a simple smiley face, white background, intentionally shaky imperfect lines, naive childlike sharpie drawing aesthetic, flat 2D, no professional polish',
-  'Patchwork': 'Patchwork tattoo flash collection, white background, six small traditional designs arranged in a grid, each with white border outline, hearts stars roses daggers, flash sheet style',
+  'American Traditional': 'American Traditional old school flash art illustration of a bold eagle with banner scroll, pure white background, thick uniform black outlines, flat red yellow green fills, zero shading, classic sailor flash sheet style',
+  'Neo-Traditional': 'Neo-Traditional decorative illustration of an ornate rose with filigree scrollwork, white background, jewel tone purples and teals, varied bold line weights, crisp white highlights',
+  'Japanese (Irezumi)': 'Japanese Irezumi traditional art of a koi fish with waves and wind bars, white background, bold black outlines, vivid red and gold flat fills, flowing gakubori wave background elements',
+  'Black & Grey Realism': 'Black and grey realism illustration of a lion portrait, white background, zero outlines, smooth graywash shading only, single light source, photorealistic 3D volume, only black and grey tones',
+  'Micro-Realism': 'Micro realism single-needle fine-line illustration of a tiny detailed butterfly, pure white background, ultra-fine hairline strokes, miniature hyper-detailed, high contrast, no thick outlines',
+  'Color Realism': 'Color realism painterly illustration of a vibrant hummingbird, white background, no black outlines, rich saturated painterly color blending, complementary colors, photorealistic impressionism',
+  'Blackwork': 'Blackwork geometric mandala design, white background, only solid pure black ink, bold interlocking geometric pattern, strong negative space contrast, no grey tones no color',
+  'Cybersigilism': 'Cybersigilism design, white background, ultra-thin sharp black lines only, aggressive alien sigil geometry, long tapering stinger forms, no fills, wiry needle-thin organic-geometric lines',
+  'Dotwork': 'Dotwork stippling mandala design, white background, form created entirely from individual dots, pointillist dot density creates shadows and highlights, no solid lines, grainy tactile texture',
+  'Trash Polka': 'Trash Polka collage illustration, white background, ONLY black and red ink, realistic skull combined with abstract red paint splatters and bold graphic text, chaotic layered graphic composition',
+  'Ignorant Style': 'Ignorant style naive illustration of a simple smiley face, white background, intentionally shaky imperfect wobbly lines, childlike sharpie drawing aesthetic, flat 2D, deliberately crude',
+  'Patchwork': 'Patchwork flash collection illustration, white background, six small traditional flash designs arranged in a grid layout, each design surrounded by white border, hearts stars roses daggers snakes',
 };
 
 export const SKIN_TONES = [

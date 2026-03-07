@@ -6,7 +6,7 @@ import { useApp } from '../context/AppContext';
 import { TATTOO_STYLES, STYLE_CARD_PROMPTS } from '../constants';
 import { generateStyleCardImage } from '../services/geminiService';
 
-const CACHE_VERSION = 'v2';
+const CACHE_VERSION = 'v3';
 const cacheKey = (id: string) => `inksight-style-preview-${CACHE_VERSION}-${id}`;
 
 export default function StyleSelectionPage() {
@@ -47,7 +47,8 @@ export default function StyleSelectionPage() {
             localStorage.setItem(cacheKey(style.id), img);
             setCardImages(prev => ({ ...prev, [style.id]: img }));
           }
-        } catch {
+        } catch (err) {
+          console.warn(`Style card failed for ${style.id}:`, err);
           // silently skip — SVG fallback will show
         } finally {
           setGenerating(prev => {
@@ -56,6 +57,8 @@ export default function StyleSelectionPage() {
             return next;
           });
         }
+        // Small delay between requests to avoid rate limiting
+        await new Promise(r => setTimeout(r, 400));
       }
     };
 
