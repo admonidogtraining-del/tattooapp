@@ -263,7 +263,7 @@ export async function generateTattooImage(prompt: string, styleReferenceDataUrl?
   }
 
   const response = await ai.models.generateContent({
-    model: "gemini-2.5-flash-preview-image-generation",
+    model: "gemini-2.5-flash-image",
     contents: { parts },
     config: {
       responseModalities: ["TEXT", "IMAGE"],
