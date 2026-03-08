@@ -273,25 +273,86 @@ export async function generateTattooImage(prompt: string): Promise<string> {
   return imagenGenerate(prompt);
 }
 
+// Curated tattoo concept prompts — used when user clicks "Inspire Me" with no text.
+// Each is optimised as a standalone concept for Imagen 4: specific subject,
+// clear composition, symbolic meaning — no style name (added separately).
+const TATTOO_INSPIRATIONS = [
+  'A wolf skull fractured open with geometric crystals erupting from inside, crescent moon overhead — solitude becoming inner strength',
+  'Twin koi locked in a yin-yang orbit, their scales dissolving into falling cherry blossoms — eternal balance inside constant struggle',
+  'A compass shattering into moth wings mid-flight, the needle still pointing true north — finding direction through transformation',
+  'A lighthouse consumed by rising water, its flame still burning above the surface — persistence when everything else drowns',
+  'An ouroboros serpent whose body is made of dense geometric line-work, tail dissolving into stardust — endless reinvention',
+  'A samurai helmet cracked open with cherry blossoms erupting through the fractures — beauty born directly from something broken',
+  'A black bear standing motionless inside a waterfall, eyes closed — the quiet power of stillness under pressure',
+  'An antler crown overgrown with wildflowers, a raven perched at its peak holding a pocket watch — time reclaimed by nature',
+  'A ribcage with a rose garden growing from within, roots threading between the bones — life flourishing in unlikely places',
+  "A human silhouette mid-step dissolving into a murmuration of starlings — releasing who you were to become something larger",
+  'A tiger eye in extreme close-up, iris reflecting a mountain range, surrounded by razor grass — predatory clarity',
+  'An anatomical heart with deep oak roots below and bare winter branches above — love as a living, seasonal organism',
+  'A snake coiled around a cracked hourglass, time spilling as sand blossoms into flowers — mortality made beautiful',
+  'A hummingbird suspended at a dying flower, wings blurred into pure speed — the urgency of fragile, precious moments',
+  'A hand reaching through storm clouds clutching a single lit match — isolation discovering its own quiet fire',
+  'A chrysalis splitting open with a galaxy pouring out instead of a butterfly — the extraordinary dormant inside the ordinary',
+  'A fox curled asleep, its tail forming a perfect circle, constellation patterns mapped across its fur — knowing your place in the cosmos',
+  'A crumbling Greek column overgrown with ivy, a single candle still burning at the capital — what survives despite everything',
+  'A Viking longship crossing a sea made entirely of black ink, storm clouds shaped like charging wolves — courage into the unknown',
+  'Stacked vertebrae with a single wildflower growing through the spinal canal — resilience wired into the body itself',
+  'A panther mid-leap through a shattered mirror, each shard reflecting a different version of the same eye — identity in fragments',
+  'A dead tree on a cliff edge, its hollow filled with a swarm of luminous fireflies — beauty choosing the darkest places',
+  'An astronaut floating free, tether cut, Earth reflected in the visor — the terrifying freedom of letting go',
+  'A serpent shedding its skin into wildflowers — the transformation that hurts and the beauty that follows pain',
+  'A full-face wolf howling, northern lights reflected in its eye — the wild thing inside you, finally acknowledged',
+];
+
 /**
  * Generate or expand a tattoo concept prompt idea.
- * If the user has a rough idea, expands it. Otherwise creates something fresh.
+ * Empty state: instant random pick from curated list (no API call).
+ * With user hint: expands via Gemini.
  */
 export async function generatePromptIdea(hint: string): Promise<string> {
-  const instruction = hint.trim()
-    ? `Transform this rough idea into a vivid, specific tattoo concept prompt. Output ONE sentence (max 30 words) that names: (1) the exact subject/motif, (2) key visual elements, (3) the mood or symbolism. Make it specific enough to generate a tattoo from. Idea: "${hint.trim()}"`
-    : `Generate a single vivid tattoo concept prompt (max 30 words). Name a specific subject/motif, its key visual elements, and its mood. Examples of good output: "A stoic wolf skull wrapped in geometric triangles with a crescent moon, symbolizing solitude and transformation" or "A koi fish breaking through crashing waves mid-leap, bold red and gold, representing perseverance against adversity" or "Twin serpents coiling around a blooming rose, black and grey, representing the duality of beauty and danger". Generate a new original one.`;
+  const randomInspiration = () =>
+    TATTOO_INSPIRATIONS[Math.floor(Math.random() * TATTOO_INSPIRATIONS.length)];
 
-  const response = await getAI().models.generateContent({
-    model: 'gemini-2.5-flash',
-    contents: instruction,
-    config: {
-      systemInstruction: 'You are a tattoo prompt writer. Output ONLY the concept prompt — one sentence, no labels, no intro, no quotes, no extra commentary. It must be vivid, specific, and usable to generate a tattoo image.',
-      maxOutputTokens: 80,
-    },
-  });
+  if (!hint.trim()) {
+    // Instant — no API call needed, always works
+    return randomInspiration();
+  }
 
-  const text = response.text?.trim().replace(/^["']|["']$/g, '');
-  if (!text) throw new Error('No idea generated');
-  return text;
+  // Try Gemini expansion with a 3-second hard timeout.
+  // Falls back to a random inspiration if API is slow, missing, or errors.
+  try {
+    const timeout = new Promise<never>((_, reject) =>
+      setTimeout(() => reject(new Error('timeout')), 3000)
+    );
+    const gemini = getAI().models.generateContent({
+      model: 'gemini-2.5-flash',
+      contents: `User's rough idea: "${hint.trim()}"`,
+      config: {
+        systemInstruction: `You are a master tattoo concept writer and Imagen prompt engineer.
+
+Your job: transform a rough idea into ONE punchy tattoo concept sentence that will produce an outstanding result when fed into an AI image generator (Imagen 4).
+
+Rules for the output sentence:
+- Lead with the EXACT visual subject (animal, object, figure, symbol — be specific)
+- Add 1-2 key design details (pose, composition, extra elements)
+- End with the emotional/symbolic meaning in a short clause
+- MAX 35 words. NO style name (style is added separately). NO filler words.
+- Output ONLY the single sentence. No quotes, no label, no intro.
+
+Good examples:
+"A stoic wolf skull fractured open with geometric crystals growing inside, crescent moon overhead — solitude becoming strength"
+"Twin koi circling each other in a yin-yang formation, scales rendered as falling cherry blossoms — the beauty inside constant struggle"
+"A compass shattered into moth wings mid-flight, needle pointing true north — finding direction through transformation"`,
+        maxOutputTokens: 80,
+        temperature: 0.9,
+      },
+    });
+    const response = await Promise.race([gemini, timeout]);
+    const text = response.text?.trim().replace(/^["']|["']$/g, '').replace(/\.$/, '');
+    if (text && text.length > 10) return text;
+  } catch {
+    // Silently fall back to random
+  }
+
+  return randomInspiration();
 }
