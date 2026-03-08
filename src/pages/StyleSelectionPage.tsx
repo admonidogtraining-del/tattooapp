@@ -1,9 +1,13 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ChevronLeft, ChevronRight, Sparkles, Check } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Sparkles, Check, Loader } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useApp } from '../context/AppContext';
-import { TATTOO_STYLES, STYLE_PREVIEW_VARIANTS } from '../constants';
+import { TATTOO_STYLES, STYLE_CARD_PROMPTS, STYLE_PREVIEW_VARIANTS } from '../constants';
+import { generateStyleCardImage } from '../services/geminiService';
+
+const CACHE_VERSION = 'v7';
+const cacheKey = (id: string) => `inksight-style-preview-${CACHE_VERSION}-${id}`;
 
 export default function StyleSelectionPage() {
   const navigate = useNavigate();
@@ -11,7 +15,55 @@ export default function StyleSelectionPage() {
 
   /** Track which preview variant index is active per style card */
   const [previewIdx, setPreviewIdx] = useState<Record<string, number>>({});
+  /** AI-generated preview images loaded from localStorage or freshly generated */
+  const [cardImages, setCardImages] = useState<Record<string, string>>({});
+  /** Which styles are currently being AI-generated */
+  const [generating, setGenerating] = useState<Set<string>>(new Set());
+  const cancelledRef = useRef(false);
+
   const selectedStyle = TATTOO_STYLES.find(s => s.id === questionnaire.style);
+
+  // On mount: load cached AI previews, then generate any missing ones sequentially
+  useEffect(() => {
+    cancelledRef.current = false;
+
+    // Load whatever is already cached in localStorage
+    const cached: Record<string, string> = {};
+    TATTOO_STYLES.forEach(s => {
+      const stored = localStorage.getItem(cacheKey(s.id));
+      if (stored) cached[s.id] = stored;
+    });
+    if (Object.keys(cached).length > 0) setCardImages(cached);
+
+    // Sequentially generate the ones we don't have cached
+    const missing = TATTOO_STYLES.filter(s => !cached[s.id]);
+    if (missing.length === 0) return;
+
+    const genQueue = async () => {
+      for (const style of missing) {
+        if (cancelledRef.current) break;
+        setGenerating(prev => new Set(prev).add(style.id));
+        try {
+          const img = await generateStyleCardImage(STYLE_CARD_PROMPTS[style.id]);
+          if (!cancelledRef.current) {
+            localStorage.setItem(cacheKey(style.id), img);
+            setCardImages(prev => ({ ...prev, [style.id]: img }));
+          }
+        } catch {
+          // silently skip — SVG fallback will show
+        } finally {
+          setGenerating(prev => {
+            const next = new Set(prev);
+            next.delete(style.id);
+            return next;
+          });
+        }
+      }
+    };
+
+    genQueue();
+    return () => { cancelledRef.current = true; };
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleGenerate = () => {
     if (!questionnaire.style) return;
@@ -19,20 +71,19 @@ export default function StyleSelectionPage() {
     navigate('/results');
   };
 
-  // Return SVG variants for the carousel. If a static pre-generated PNG exists
-  // at /style-previews/{slug}.png it is appended as an additional variant.
+  /**
+   * Variants for the carousel: AI-generated image first (if available),
+   * then the SVG placeholder variants so user can scroll and compare styles.
+   */
   const getVariants = (styleId: string): string[] => {
     const svgVariants: string[] = STYLE_PREVIEW_VARIANTS[styleId] ?? [
       TATTOO_STYLES.find(s => s.id === styleId)!.imgSrc,
     ];
-    return svgVariants;
+    const aiImg = cardImages[styleId];
+    return aiImg ? [aiImg, ...svgVariants] : svgVariants;
   };
 
-  const changePreview = (
-    e: React.MouseEvent,
-    styleId: string,
-    dir: 1 | -1,
-  ) => {
+  const changePreview = (e: React.MouseEvent, styleId: string, dir: 1 | -1) => {
     e.stopPropagation();
     const variants = getVariants(styleId);
     setPreviewIdx(prev => {
@@ -60,21 +111,29 @@ export default function StyleSelectionPage() {
         <ChevronLeft size={16} /> Back
       </button>
 
-      <div className="mb-8">
-        <h2 className="text-3xl font-light tracking-tight mb-2">Select Your Style</h2>
-        <p className="text-sm text-zinc-400">
-          Choose the aesthetic. Scroll through each card to see different examples of that style.
-        </p>
+      <div className="mb-8 flex items-end justify-between gap-4">
+        <div>
+          <h2 className="text-3xl font-light tracking-tight mb-2">Select Your Style</h2>
+          <p className="text-sm text-zinc-400">
+            Choose the aesthetic. Scroll through each card to see different examples.
+          </p>
+        </div>
+        {generating.size > 0 && (
+          <div className="flex items-center gap-2 text-xs text-zinc-500 shrink-0">
+            <Loader size={12} className="animate-spin" />
+            Generating previews…
+          </div>
+        )}
       </div>
 
       {/* Style grid */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 mb-8">
         {TATTOO_STYLES.map((style) => {
           const isSelected = questionnaire.style === style.id;
+          const isGenerating = generating.has(style.id);
           const variants = getVariants(style.id);
-          const idx = previewIdx[style.id] ?? 0;
-          const safeidx = Math.min(idx, variants.length - 1);
-          const currentSrc = variants[safeidx];
+          const idx = Math.min(previewIdx[style.id] ?? 0, variants.length - 1);
+          const currentSrc = variants[idx];
 
           return (
             <motion.div
@@ -88,22 +147,33 @@ export default function StyleSelectionPage() {
               }`}
             >
               <div className="aspect-square relative overflow-hidden bg-zinc-900">
-                {/* Current preview image */}
+                {/* Current preview — fades in when src changes */}
                 <AnimatePresence mode="wait" initial={false}>
                   <motion.img
-                    key={`${style.id}-${safeidx}`}
+                    key={currentSrc}
                     src={currentSrc}
-                    alt={`${style.name} preview ${safeidx + 1}`}
+                    alt={`${style.name} preview`}
                     className="w-full h-full object-cover absolute inset-0"
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
-                    transition={{ duration: 0.2 }}
+                    transition={{ duration: 0.3 }}
                     onError={(e) => {
                       (e.target as HTMLImageElement).src = style.imgSrc;
                     }}
                   />
                 </AnimatePresence>
+
+                {/* Shimmer while AI preview is generating for this card */}
+                {isGenerating && !cardImages[style.id] && (
+                  <div className="absolute inset-0 overflow-hidden pointer-events-none z-10">
+                    <motion.div
+                      className="absolute inset-0 bg-gradient-to-r from-transparent via-zinc-600/20 to-transparent"
+                      animate={{ x: ['-100%', '100%'] }}
+                      transition={{ duration: 1.4, repeat: Infinity, ease: 'linear' }}
+                    />
+                  </div>
+                )}
 
                 {/* Gradient overlay */}
                 <div className={`absolute inset-0 bg-gradient-to-t transition-opacity duration-300 z-10 ${
@@ -115,7 +185,6 @@ export default function StyleSelectionPage() {
                   <button
                     onClick={(e) => changePreview(e, style.id, -1)}
                     className="absolute left-0 inset-y-0 w-7 flex items-center justify-center z-20 opacity-0 group-hover:opacity-100 transition-opacity bg-gradient-to-r from-black/40 to-transparent"
-                    aria-label="Previous preview"
                   >
                     <ChevronLeft size={13} className="text-white drop-shadow" />
                   </button>
@@ -126,7 +195,6 @@ export default function StyleSelectionPage() {
                   <button
                     onClick={(e) => changePreview(e, style.id, 1)}
                     className="absolute right-0 inset-y-0 w-7 flex items-center justify-center z-20 opacity-0 group-hover:opacity-100 transition-opacity bg-gradient-to-l from-black/40 to-transparent"
-                    aria-label="Next preview"
                   >
                     <ChevronRight size={13} className="text-white drop-shadow" />
                   </button>
@@ -155,11 +223,8 @@ export default function StyleSelectionPage() {
                         key={i}
                         onClick={(e) => setPreview(e, style.id, i)}
                         className={`rounded-full transition-all duration-200 pointer-events-auto ${
-                          i === safeidx
-                            ? 'w-3 h-1.5 bg-white'
-                            : 'w-1.5 h-1.5 bg-white/40 hover:bg-white/70'
+                          i === idx ? 'w-3 h-1.5 bg-white' : 'w-1.5 h-1.5 bg-white/40 hover:bg-white/70'
                         }`}
-                        aria-label={`Preview ${i + 1}`}
                       />
                     ))}
                   </div>
@@ -190,10 +255,7 @@ export default function StyleSelectionPage() {
           >
             <div className="w-14 h-14 rounded-xl shrink-0 border border-zinc-700 overflow-hidden bg-zinc-900">
               <img
-                src={(() => {
-                  const v = getVariants(selectedStyle.id);
-                  return v[Math.min(previewIdx[selectedStyle.id] ?? 0, v.length - 1)];
-                })()}
+                src={cardImages[selectedStyle.id] ?? selectedStyle.imgSrc}
                 alt={selectedStyle.name}
                 className="w-full h-full object-cover"
                 onError={(e) => {
