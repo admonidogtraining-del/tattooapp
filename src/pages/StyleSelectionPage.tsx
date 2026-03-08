@@ -3,13 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { ChevronLeft, ChevronRight, Sparkles, Check } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useApp } from '../context/AppContext';
-import { TATTOO_STYLES, STYLE_SLUGS, STYLE_PREVIEW_VARIANTS } from '../constants';
-
-/** Returns the URL of the pre-generated static preview, or null if no slug mapping. */
-function staticPreviewUrl(styleId: string): string | null {
-  const slug = STYLE_SLUGS[styleId];
-  return slug ? `/style-previews/${slug}.png` : null;
-}
+import { TATTOO_STYLES, STYLE_PREVIEW_VARIANTS } from '../constants';
 
 export default function StyleSelectionPage() {
   const navigate = useNavigate();
@@ -17,9 +11,6 @@ export default function StyleSelectionPage() {
 
   /** Track which preview variant index is active per style card */
   const [previewIdx, setPreviewIdx] = useState<Record<string, number>>({});
-  /** Track whether static PNG failed per style (avoid infinite retry) */
-  const [staticFailed, setStaticFailed] = useState<Record<string, boolean>>({});
-
   const selectedStyle = TATTOO_STYLES.find(s => s.id === questionnaire.style);
 
   const handleGenerate = () => {
@@ -28,15 +19,12 @@ export default function StyleSelectionPage() {
     navigate('/results');
   };
 
+  // Return SVG variants for the carousel. If a static pre-generated PNG exists
+  // at /style-previews/{slug}.png it is appended as an additional variant.
   const getVariants = (styleId: string): string[] => {
-    const svgVariants = STYLE_PREVIEW_VARIANTS[styleId] ?? [
+    const svgVariants: string[] = STYLE_PREVIEW_VARIANTS[styleId] ?? [
       TATTOO_STYLES.find(s => s.id === styleId)!.imgSrc,
     ];
-    const staticUrl = staticPreviewUrl(styleId);
-    // Prepend static PNG (if available and not failed) so AI-generated images show first
-    if (staticUrl && !staticFailed[styleId]) {
-      return [staticUrl, ...svgVariants];
-    }
     return svgVariants;
   };
 
@@ -112,16 +100,7 @@ export default function StyleSelectionPage() {
                     exit={{ opacity: 0 }}
                     transition={{ duration: 0.2 }}
                     onError={(e) => {
-                      const el = e.target as HTMLImageElement;
-                      // If static PNG failed, mark it and fall back to SVG variant 0
-                      const staticUrl = staticPreviewUrl(style.id);
-                      if (staticUrl && el.src.includes(staticUrl.replace(/^\//, ''))) {
-                        setStaticFailed(prev => ({ ...prev, [style.id]: true }));
-                        setPreviewIdx(prev => ({ ...prev, [style.id]: 0 }));
-                      } else {
-                        // Final fallback to base imgSrc
-                        el.src = style.imgSrc;
-                      }
+                      (e.target as HTMLImageElement).src = style.imgSrc;
                     }}
                   />
                 </AnimatePresence>
@@ -211,14 +190,10 @@ export default function StyleSelectionPage() {
           >
             <div className="w-14 h-14 rounded-xl shrink-0 border border-zinc-700 overflow-hidden bg-zinc-900">
               <img
-                src={
-                  getVariants(selectedStyle.id)[
-                    Math.min(
-                      previewIdx[selectedStyle.id] ?? 0,
-                      getVariants(selectedStyle.id).length - 1
-                    )
-                  ]
-                }
+                src={(() => {
+                  const v = getVariants(selectedStyle.id);
+                  return v[Math.min(previewIdx[selectedStyle.id] ?? 0, v.length - 1)];
+                })()}
                 alt={selectedStyle.name}
                 className="w-full h-full object-cover"
                 onError={(e) => {
