@@ -3,11 +3,27 @@ import { useNavigate } from 'react-router-dom';
 import { ChevronLeft, ChevronRight, Sparkles, Check, Loader } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useApp } from '../context/AppContext';
-import { TATTOO_STYLES, STYLE_CARD_PROMPTS, STYLE_PREVIEW_VARIANTS } from '../constants';
+import { TATTOO_STYLES, STYLE_CARD_PROMPTS, STYLE_PREVIEW_VARIANTS, STYLE_SLUGS } from '../constants';
 import { generateStyleCardImage } from '../services/geminiService';
 
 const CACHE_VERSION = 'v7';
 const cacheKey = (id: string) => `inksight-style-preview-${CACHE_VERSION}-${id}`;
+
+/** Returns path to pre-generated static PNG if it could exist */
+const staticPng = (id: string) => {
+  const slug = STYLE_SLUGS[id];
+  return slug ? `/style-previews/${slug}.png` : null;
+};
+
+/** Try to load a URL, resolve with the URL if OK, reject if 404 */
+function tryLoad(url: string): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => resolve(url);
+    img.onerror = reject;
+    img.src = url;
+  });
+}
 
 export default function StyleSelectionPage() {
   const navigate = useNavigate();
@@ -23,24 +39,45 @@ export default function StyleSelectionPage() {
 
   const selectedStyle = TATTOO_STYLES.find(s => s.id === questionnaire.style);
 
-  // On mount: load cached AI previews, then generate any missing ones sequentially
+  // On mount: priority order for each style's preview image:
+  //   1. Static pre-generated PNG from /public/style-previews/ (committed to repo — instant)
+  //   2. localStorage cache from a previous session
+  //   3. Freshly generate via Imagen API and cache to localStorage
+  //   4. SVG placeholder (always available as final fallback)
   useEffect(() => {
     cancelledRef.current = false;
 
-    // Load whatever is already cached in localStorage
-    const cached: Record<string, string> = {};
-    TATTOO_STYLES.forEach(s => {
-      const stored = localStorage.getItem(cacheKey(s.id));
-      if (stored) cached[s.id] = stored;
-    });
-    if (Object.keys(cached).length > 0) setCardImages(cached);
+    const loadAll = async () => {
+      // First pass: check localStorage cache
+      const fromStorage: Record<string, string> = {};
+      TATTOO_STYLES.forEach(s => {
+        const stored = localStorage.getItem(cacheKey(s.id));
+        if (stored) fromStorage[s.id] = stored;
+      });
 
-    // Sequentially generate the ones we don't have cached
-    const missing = TATTOO_STYLES.filter(s => !cached[s.id]);
-    if (missing.length === 0) return;
+      // Second pass: check static PNGs for anything not in localStorage
+      const needsGeneration: typeof TATTOO_STYLES = [];
+      const staticChecks = TATTOO_STYLES
+        .filter(s => !fromStorage[s.id])
+        .map(async s => {
+          const url = staticPng(s.id);
+          if (!url) { needsGeneration.push(s); return; }
+          try {
+            await tryLoad(url);
+            fromStorage[s.id] = url; // static PNG is available
+          } catch {
+            needsGeneration.push(s); // not available, queue for generation
+          }
+        });
 
-    const genQueue = async () => {
-      for (const style of missing) {
+      await Promise.all(staticChecks);
+
+      if (!cancelledRef.current && Object.keys(fromStorage).length > 0) {
+        setCardImages({ ...fromStorage });
+      }
+
+      // Third pass: generate remaining via API, one at a time
+      for (const style of needsGeneration) {
         if (cancelledRef.current) break;
         setGenerating(prev => new Set(prev).add(style.id));
         try {
@@ -50,7 +87,7 @@ export default function StyleSelectionPage() {
             setCardImages(prev => ({ ...prev, [style.id]: img }));
           }
         } catch {
-          // silently skip — SVG fallback will show
+          // silently skip — SVG fallback shows
         } finally {
           setGenerating(prev => {
             const next = new Set(prev);
@@ -61,7 +98,7 @@ export default function StyleSelectionPage() {
       }
     };
 
-    genQueue();
+    loadAll();
     return () => { cancelledRef.current = true; };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
