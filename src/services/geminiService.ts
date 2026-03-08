@@ -273,20 +273,52 @@ export async function generateTattooImage(prompt: string): Promise<string> {
   return imagenGenerate(prompt);
 }
 
+// 25 curated tattoo concept prompts — used when user clicks "Inspire Me" with no text
+const TATTOO_INSPIRATIONS = [
+  'A stoic wolf skull wrapped in geometric triangles, crescent moon rising behind it, representing solitude and inner transformation',
+  'Twin koi fish swimming in opposite directions within a circular frame, bold red and gold, the eternal balance between struggle and peace',
+  'A compass rose cracking open to reveal a roaring lion inside, black and grey realism, strength finally finding its direction',
+  'A moth drawn to a crumbling lighthouse flame, single-needle fine-line, the fatal pull of obsession and the call of the sea',
+  'An ouroboros serpent coiled into an infinity symbol, solid blackwork, eternally devouring itself as a symbol of endless rebirth',
+  'A samurai helmet cracked open with cherry blossoms growing through the fractures, Japanese irezumi, beauty born from broken things',
+  'A black bear standing still in a waterfall, dotwork stippling, the quiet endurance of wild and patient creatures',
+  'Antler crown with wildflowers woven through it and a raven perched at the top, neo-traditional, nature meeting mystery',
+  'A ribcage with a blooming rose garden growing from inside, micro-realism, life persisting where it has no right to',
+  "A woman's silhouette fading into smoke that becomes a flock of starlings, illustrative black and grey, releasing what no longer serves",
+  'A close-up tiger eye rendered in black and grey realism, framed by dense jungle leaves and razor grass',
+  'An anatomical heart with deep roots growing from the bottom and bare tree branches from the top, love as a living organism',
+  'Three stacked hourglasses where the sand in the last one becomes stars, representing lost time becoming something cosmic',
+  'A raven perched on an outstretched hand with one all-knowing eye open, neo-traditional jewel tones, the spirit animal always watching',
+  'A polar bear dissolving into northern lights at its edges, cold blues and greens, impermanence and beauty existing at the same moment',
+  'An octopus reaching its arms around a crescent moon from the ocean below, Japanese style, the deep-sea nature of the unconscious mind',
+  'A geometric mountain range with a thunderstorm cloud forming inside the tallest peak, the chaos hidden within apparent stillness',
+  'A serpent shedding its skin into wildflowers below it, heavy blackwork, the transformation that hurts and the beauty that follows pain',
+  'A full-face wolf portrait howling with a reflection of northern lights in its eye, black and grey photo-realism',
+  'A hand reaching down through storm clouds holding a single lit match, isolation discovering its own fire',
+  'Two open hands forming a circle with a solar eclipse suspended between them, sacred geometry, the alignment of self with universe',
+  'A chrysalis cracking open with galaxies spilling out instead of a butterfly, the extraordinary within the ordinary',
+  'A Viking longship crossing a storm sea made entirely of dense black ink, traditional style with dotwork wave texture',
+  'A fox curled sleeping with its tail forming a ring, constellation patterns mapped across its fur, knowing your place in the cosmos',
+  'A crumbling Greek column overgrown with vines, a single candle still burning at the top, what survives despite ruins',
+];
+
 /**
  * Generate or expand a tattoo concept prompt idea.
- * If the user has a rough idea, expands it. Otherwise creates something fresh.
+ * Empty state: instant random pick from curated list (no API call).
+ * With user hint: expands via Gemini.
  */
 export async function generatePromptIdea(hint: string): Promise<string> {
-  const instruction = hint.trim()
-    ? `Transform this rough idea into a vivid, specific tattoo concept prompt. Output ONE sentence (max 30 words) that names: (1) the exact subject/motif, (2) key visual elements, (3) the mood or symbolism. Make it specific enough to generate a tattoo from. Idea: "${hint.trim()}"`
-    : `Generate a single vivid tattoo concept prompt (max 30 words). Name a specific subject/motif, its key visual elements, and its mood. Examples of good output: "A stoic wolf skull wrapped in geometric triangles with a crescent moon, symbolizing solitude and transformation" or "A koi fish breaking through crashing waves mid-leap, bold red and gold, representing perseverance against adversity" or "Twin serpents coiling around a blooming rose, black and grey, representing the duality of beauty and danger". Generate a new original one.`;
+  if (!hint.trim()) {
+    // Instant — no API call needed, always works
+    return TATTOO_INSPIRATIONS[Math.floor(Math.random() * TATTOO_INSPIRATIONS.length)];
+  }
 
+  // Expand the user's rough idea into a vivid tattoo concept
   const response = await getAI().models.generateContent({
     model: 'gemini-2.5-flash',
-    contents: instruction,
+    contents: `The user has a rough tattoo idea: "${hint.trim()}". Transform it into a single vivid tattoo concept sentence (max 30 words). Name the exact visual subject, key design elements, and the symbolic meaning. Output ONLY the sentence.`,
     config: {
-      systemInstruction: 'You are a tattoo prompt writer. Output ONLY the concept prompt — one sentence, no labels, no intro, no quotes, no extra commentary. It must be vivid, specific, and usable to generate a tattoo image.',
+      systemInstruction: 'You are a tattoo concept writer. Output ONLY one sentence — no intro, no labels, no quotes. Vivid, specific, and ready to generate a tattoo from.',
       maxOutputTokens: 80,
     },
   });

@@ -1,70 +1,20 @@
-import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ChevronLeft, Sparkles, Check, Loader } from 'lucide-react';
+import { ChevronLeft, Sparkles, Check } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useApp } from '../context/AppContext';
-import { TATTOO_STYLES, STYLE_CARD_PROMPTS } from '../constants';
-import { generateStyleCardImage } from '../services/geminiService';
+import { TATTOO_STYLES, STYLE_SLUGS } from '../constants';
 
-const CACHE_VERSION = 'v6';
-const cacheKey = (id: string) => `inksight-style-preview-${CACHE_VERSION}-${id}`;
+/** Returns the URL of the pre-generated static preview, or null if no slug mapping. */
+function staticPreviewUrl(styleId: string): string | null {
+  const slug = STYLE_SLUGS[styleId];
+  return slug ? `/style-previews/${slug}.png` : null;
+}
 
 export default function StyleSelectionPage() {
   const navigate = useNavigate();
   const { questionnaire, setQuestionnaire, startParallelGeneration } = useApp();
 
-  // cardImages holds AI-generated previews (from localStorage or freshly generated)
-  const [cardImages, setCardImages] = useState<Record<string, string>>({});
-  // which styles are currently being generated
-  const [generating, setGenerating] = useState<Set<string>>(new Set());
-  const cancelledRef = useRef(false);
-
   const selectedStyle = TATTOO_STYLES.find(s => s.id === questionnaire.style);
-
-  // On mount: load cached previews then generate any missing ones
-  useEffect(() => {
-    cancelledRef.current = false;
-
-    // Load whatever is already in localStorage
-    const cached: Record<string, string> = {};
-    TATTOO_STYLES.forEach(s => {
-      const stored = localStorage.getItem(cacheKey(s.id));
-      if (stored) cached[s.id] = stored;
-    });
-    setCardImages(cached);
-
-    // Sequentially generate the missing ones
-    const missing = TATTOO_STYLES.filter(s => !cached[s.id]);
-    if (missing.length === 0) return;
-
-    const genQueue = async () => {
-      for (const style of missing) {
-        if (cancelledRef.current) break;
-        setGenerating(prev => new Set(prev).add(style.id));
-        try {
-          const img = await generateStyleCardImage(STYLE_CARD_PROMPTS[style.id]);
-          if (!cancelledRef.current) {
-            localStorage.setItem(cacheKey(style.id), img);
-            setCardImages(prev => ({ ...prev, [style.id]: img }));
-          }
-        } catch (err) {
-          console.warn(`Style card failed for ${style.id}:`, err);
-          // silently skip — SVG fallback will show
-        } finally {
-          setGenerating(prev => {
-            const next = new Set(prev);
-            next.delete(style.id);
-            return next;
-          });
-        }
-        // Small delay between requests to avoid rate limiting
-        await new Promise(r => setTimeout(r, 400));
-      }
-    };
-
-    genQueue();
-    return () => { cancelledRef.current = true; };
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleGenerate = () => {
     if (!questionnaire.style) return;
@@ -86,28 +36,18 @@ export default function StyleSelectionPage() {
         <ChevronLeft size={16} /> Back
       </button>
 
-      <div className="mb-8 flex items-end justify-between gap-4">
-        <div>
-          <h2 className="text-3xl font-light tracking-tight mb-2">Select Your Style</h2>
-          <p className="text-sm text-zinc-400">
-            Choose the aesthetic. This is used directly to generate your tattoo.
-          </p>
-        </div>
-        {generating.size > 0 && (
-          <div className="flex items-center gap-2 text-xs text-zinc-500 shrink-0">
-            <Loader size={12} className="animate-spin" />
-            Loading previews…
-          </div>
-        )}
+      <div className="mb-8">
+        <h2 className="text-3xl font-light tracking-tight mb-2">Select Your Style</h2>
+        <p className="text-sm text-zinc-400">
+          Choose the aesthetic. This is used directly to generate your tattoo.
+        </p>
       </div>
 
       {/* Style grid */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 mb-8">
         {TATTOO_STYLES.map((style) => {
           const isSelected = questionnaire.style === style.id;
-          const isGenerating = generating.has(style.id);
-          // Prefer AI-generated image, fall back to SVG placeholder
-          const imgSrc = cardImages[style.id] || style.imgSrc;
+          const staticUrl = staticPreviewUrl(style.id);
 
           return (
             <motion.div
@@ -121,27 +61,17 @@ export default function StyleSelectionPage() {
               }`}
             >
               <div className="aspect-square relative overflow-hidden bg-zinc-900">
-                {/* Image — fade in when AI preview loads */}
-                <motion.img
-                  key={imgSrc}
-                  src={imgSrc}
+                {/* Static pre-generated image — falls back to SVG if file not found */}
+                <img
+                  src={staticUrl ?? style.imgSrc}
                   alt={style.name}
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ duration: 0.4 }}
                   className="w-full h-full object-cover"
+                  onError={(e) => {
+                    if ((e.target as HTMLImageElement).src !== style.imgSrc) {
+                      (e.target as HTMLImageElement).src = style.imgSrc;
+                    }
+                  }}
                 />
-
-                {/* Shimmer while AI preview generating */}
-                {isGenerating && !cardImages[style.id] && (
-                  <div className="absolute inset-0 overflow-hidden">
-                    <motion.div
-                      className="absolute inset-0 bg-gradient-to-r from-transparent via-zinc-700/25 to-transparent"
-                      animate={{ x: ['-100%', '100%'] }}
-                      transition={{ duration: 1.4, repeat: Infinity, ease: 'linear' }}
-                    />
-                  </div>
-                )}
 
                 {/* Gradient overlay */}
                 <div className={`absolute inset-0 bg-gradient-to-t transition-opacity duration-300 ${
@@ -186,13 +116,16 @@ export default function StyleSelectionPage() {
             transition={{ duration: 0.2 }}
             className="mb-8 p-5 bg-zinc-900/60 border border-zinc-700 rounded-2xl flex items-center gap-5"
           >
-            <div
-              className="w-14 h-14 rounded-xl shrink-0 border border-zinc-700 overflow-hidden bg-zinc-900"
-            >
+            <div className="w-14 h-14 rounded-xl shrink-0 border border-zinc-700 overflow-hidden bg-zinc-900">
               <img
-                src={cardImages[selectedStyle.id] || selectedStyle.imgSrc}
+                src={staticPreviewUrl(selectedStyle.id) ?? selectedStyle.imgSrc}
                 alt={selectedStyle.name}
                 className="w-full h-full object-cover"
+                onError={(e) => {
+                  if ((e.target as HTMLImageElement).src !== selectedStyle.imgSrc) {
+                    (e.target as HTMLImageElement).src = selectedStyle.imgSrc;
+                  }
+                }}
               />
             </div>
             <div>

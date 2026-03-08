@@ -4,13 +4,15 @@
  * generating them at runtime.
  *
  * Usage:
- *   npm run gen-previews
+ *   VITE_GEMINI_API_KEY=your_key node scripts/generate-style-previews.mjs
+ *   — or —
+ *   npm run gen-previews   (reads .env automatically via --env-file flag)
  *
- * Already-existing images are skipped — safe to re-run after adding new styles.
+ * Already-existing images are skipped — safe to re-run.
  */
 
 import { GoogleGenAI } from '@google/genai';
-import { writeFileSync, mkdirSync, existsSync } from 'fs';
+import { writeFileSync, mkdirSync, existsSync, readFileSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 
@@ -20,118 +22,98 @@ const OUTPUT_DIR = join(ROOT, 'public', 'style-previews');
 
 if (!existsSync(OUTPUT_DIR)) mkdirSync(OUTPUT_DIR, { recursive: true });
 
-const apiKey = process.env.VITE_GEMINI_API_KEY;
-if (!apiKey || apiKey === 'your_gemini_api_key_here') {
-  console.error('Error: VITE_GEMINI_API_KEY is not set. Copy .env.example to .env and add your key.');
+// Try to read API key from env, then from .env file
+let apiKey = process.env.VITE_GEMINI_API_KEY;
+if (!apiKey) {
+  try {
+    const env = readFileSync(join(ROOT, '.env'), 'utf8');
+    const match = env.match(/VITE_GEMINI_API_KEY=(.+)/);
+    if (match) apiKey = match[1].trim().replace(/^["']|["']$/g, '');
+  } catch {}
+}
+if (!apiKey) {
+  console.error('Error: VITE_GEMINI_API_KEY not found in env or .env file.');
   process.exit(1);
 }
 
 const ai = new GoogleGenAI({ apiKey });
 
-// Must stay in sync with TATTOO_STYLES in App.tsx
 const STYLES = [
   {
-    id: 'American Traditional',
     slug: 'american-traditional',
-    prompt: 'American traditional old school tattoo flash: bold eagle clutching anchor surrounded by red roses, thick black outlines, flat red yellow green black only, white background.',
+    prompt: 'American Traditional old school flash art illustration of a bold eagle with banner scroll, pure white background, thick uniform black outlines, flat red yellow green fills, zero shading, classic sailor flash sheet style',
   },
   {
-    id: 'Neo-Traditional',
     slug: 'neo-traditional',
-    prompt: 'Neo-traditional tattoo: ornate purple rose bouquet with decorative filigree flourishes, jewel tones, bold and thin line variation, white background.',
+    prompt: 'Neo-Traditional decorative illustration of an ornate rose with filigree scrollwork, white background, jewel tone purples and teals, varied bold line weights, crisp white highlights',
   },
   {
-    id: 'Japanese (Irezumi)',
     slug: 'japanese-irezumi',
-    prompt: 'Japanese Irezumi tattoo: koi fish leaping through waves with cherry blossoms, bold black outlines, vivid red gold blue ink, traditional style, white background.',
+    prompt: 'Japanese Irezumi traditional art of a koi fish with waves and wind bars, white background, bold black outlines, vivid red and gold flat fills, flowing gakubori wave background elements',
   },
   {
-    id: 'Black & Grey Realism',
     slug: 'black-grey-realism',
-    prompt: 'Black and grey realism tattoo: photorealistic wolf portrait with grey wash shading, single light source from upper left, zero outlines, no color, white background.',
+    prompt: 'Black and grey realism illustration of a lion portrait, white background, zero outlines, smooth graywash shading only, single light source, photorealistic 3D volume, only black and grey tones',
   },
   {
-    id: 'Micro-Realism',
     slug: 'micro-realism',
-    prompt: 'Micro realism single-needle tattoo: tiny detailed hummingbird in flight, ultra-thin delicate lines only, miniature scale, high contrast, white background.',
+    prompt: 'Micro realism single-needle illustration of a detailed moth with spread wings showing fine vein patterns, pure white background, ultra-fine hairline strokes only, miniature hyper-detailed precision, extreme contrast between fine ink and white, no thick outlines anywhere',
   },
   {
-    id: 'Color Realism',
     slug: 'color-realism',
-    prompt: 'Color realism tattoo: vibrant painterly sunflower, no black outlines anywhere, saturated pigments blending, impressionistic and photorealistic, white background.',
+    prompt: 'Color realism painterly illustration of a vibrant tropical parrot portrait, pure white background, no black outlines anywhere, rich saturated luminous colors blending like oil paint, complementary orange and blue plumage, photorealistic feather texture',
   },
   {
-    id: 'Blackwork',
     slug: 'blackwork',
-    prompt: 'Blackwork tattoo: intricate solid black geometric mandala, pure black ink only, bold negative space, no grey or color, white background.',
+    prompt: 'Blackwork bold illustration of a geometric tiger face built entirely from solid black shapes and negative space, pure white background, only pure solid black ink no grey tones, sharp angular geometry, powerful negative space contrast, zero gradients zero color',
   },
   {
-    id: 'Cybersigilism',
     slug: 'cybersigilism',
-    prompt: 'Cybersigilism tattoo: ultra-thin sharp alien sigil with long tapering lines, needle-thin aggressive shapes, no fills, dark background.',
+    prompt: 'Cybersigilism biomechanical illustration of a vertebral spine merging with alien script circuits, pure white background, ultra-thin needle-sharp black lines only, aggressive organic geometry with long tapering stinger extensions, no fills anywhere, wiry alien calligraphy aesthetic',
   },
   {
-    id: 'Dotwork',
     slug: 'dotwork',
-    prompt: 'Dotwork stipple tattoo: sacred geometry mandala made entirely of stippled dots, no lines only dots of varying density, white background.',
+    prompt: 'Dotwork pointillist illustration of a geometric compass rose, pure white background, entire design built ONLY from individual stippled dots of varying density, dense dots for shadows sparse dots for highlights, no solid lines or fills anywhere, sacred geometry',
   },
   {
-    id: 'Trash Polka',
     slug: 'trash-polka',
-    prompt: 'Trash polka tattoo: chaotic collage using only black and red, realistic skull mixed with red paint splatters and bold graphic text, white background.',
+    prompt: 'Trash Polka collage illustration of a realistic human skull overlaid with dripping red paint splatters and torn geometric shapes, pure white background, ONLY black and red ink, bold sans-serif text fragments, chaotic aggressive layering, high contrast',
   },
   {
-    id: 'Ignorant Style',
     slug: 'ignorant-style',
-    prompt: 'Ignorant style hand-poked tattoo: shaky naive smiley face drawing, intentionally imperfect lines, flat childlike 2D, marker aesthetic, white background.',
+    prompt: 'Ignorant style hand-poked illustration of a wobbly cartoon cat face with big lopsided eyes, pure white background, intentionally shaky imperfect uneven lines, naive sharpie-on-skin aesthetic, flat 2D childlike drawing, wrong proportions, deliberately amateurish',
   },
   {
-    id: 'Patchwork',
     slug: 'patchwork',
-    prompt: 'Patchwork tattoo flash sheet: multiple small unrelated traditional flash designs arranged together — heart, star, dagger, rose, horseshoe — each with white border, white background.',
+    prompt: 'Patchwork traditional flash sheet illustration, pure white background, six separate small classic tattoo designs in a grid, each piece fully enclosed in a thick white border outline, motifs include anchor heart dagger horseshoe rose and snake, old school sailor flash style',
   },
 ];
 
 async function generate(style) {
   const filepath = join(OUTPUT_DIR, `${style.slug}.png`);
-
   if (existsSync(filepath)) {
-    console.log(`  ✓ ${style.id} — already exists, skipping`);
+    console.log(`  ✓ ${style.slug} — already exists`);
     return;
   }
 
-  console.log(`  ⏳ ${style.id}…`);
-  const response = await ai.models.generateContent({
-    model: 'gemini-3.1-flash-image-preview',
-    contents: { parts: [{ text: style.prompt }] },
-    config: { responseModalities: ['TEXT', 'IMAGE'] },
+  console.log(`  ⏳ ${style.slug}…`);
+  const response = await ai.models.generateImages({
+    model: 'imagen-4.0-generate-001',
+    prompt: style.prompt,
+    config: { numberOfImages: 1, aspectRatio: '1:1' },
   });
 
-  const parts = response.candidates?.[0]?.content?.parts ?? [];
-  for (const part of parts) {
-    if (part.inlineData?.data) {
-      writeFileSync(filepath, Buffer.from(part.inlineData.data, 'base64'));
-      console.log(`  ✅ ${style.id} → public/style-previews/${style.slug}.png`);
-      return;
-    }
-  }
-  throw new Error('No image in response');
+  const img = response.generatedImages?.[0]?.image;
+  if (!img?.imageBytes) throw new Error('No image in response');
+  writeFileSync(filepath, Buffer.from(img.imageBytes, 'base64'));
+  console.log(`  ✅ saved public/style-previews/${style.slug}.png`);
 }
 
-const BATCH = 3;
-console.log(`\nGenerating style previews → ${OUTPUT_DIR}\n`);
+console.log(`\nGenerating ${STYLES.length} style preview images → ${OUTPUT_DIR}\n`);
 
-for (let i = 0; i < STYLES.length; i += BATCH) {
-  const batch = STYLES.slice(i, i + BATCH);
-  await Promise.allSettled(
-    batch.map(s =>
-      generate(s).catch(err => console.error(`  ✗ ${s.id}: ${err.message}`))
-    )
-  );
-  if (i + BATCH < STYLES.length) {
-    // Small pause between batches to stay within rate limits
-    await new Promise(r => setTimeout(r, 1500));
-  }
+for (const style of STYLES) {
+  await generate(style).catch(err => console.error(`  ✗ ${style.slug}: ${err.message}`));
+  await new Promise(r => setTimeout(r, 600));
 }
 
-console.log('\nDone! Run `npm run dev` to see the new previews.\n');
+console.log('\nDone! Commit public/style-previews/ and run `npm run dev`.\n');
