@@ -89,31 +89,39 @@ const STYLES = [
   },
 ];
 
-async function generate(style) {
-  const filepath = join(OUTPUT_DIR, `${style.slug}.png`);
+const VARIANTS = 4; // number of preview images per style
+
+async function generate(slug, prompt, variantNum) {
+  const suffix = variantNum === 1 ? '' : `-${variantNum}`;
+  const filepath = join(OUTPUT_DIR, `${slug}${suffix}.png`);
   if (existsSync(filepath)) {
-    console.log(`  ✓ ${style.slug} — already exists`);
+    console.log(`  ✓ ${slug}${suffix} — already exists`);
     return;
   }
 
-  console.log(`  ⏳ ${style.slug}…`);
+  console.log(`  ⏳ ${slug}${suffix}…`);
   const response = await ai.models.generateImages({
     model: 'imagen-3.0-generate-001',
-    prompt: style.prompt,
+    prompt,
     config: { numberOfImages: 1, aspectRatio: '1:1' },
   });
 
   const img = response.generatedImages?.[0]?.image;
   if (!img?.imageBytes) throw new Error('No image in response');
   writeFileSync(filepath, Buffer.from(img.imageBytes, 'base64'));
-  console.log(`  ✅ saved public/style-previews/${style.slug}.png`);
+  console.log(`  ✅ saved public/style-previews/${slug}${suffix}.png`);
 }
 
-console.log(`\nGenerating ${STYLES.length} style preview images → ${OUTPUT_DIR}\n`);
+const total = STYLES.length * VARIANTS;
+console.log(`\nGenerating ${total} style preview images (${VARIANTS} per style) → ${OUTPUT_DIR}\n`);
 
 for (const style of STYLES) {
-  await generate(style).catch(err => console.error(`  ✗ ${style.slug}: ${err.message}`));
-  await new Promise(r => setTimeout(r, 600));
+  for (let v = 1; v <= VARIANTS; v++) {
+    await generate(style.slug, style.prompt, v).catch(err =>
+      console.error(`  ✗ ${style.slug}-${v}: ${err.message}`)
+    );
+    await new Promise(r => setTimeout(r, 600));
+  }
 }
 
 console.log('\nDone! Commit public/style-previews/ and run `npm run dev`.\n');

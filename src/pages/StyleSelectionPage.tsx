@@ -9,10 +9,16 @@ import { generateStyleCardImage } from '../services/geminiService';
 const CACHE_VERSION = 'v7';
 const cacheKey = (id: string) => `inksight-style-preview-${CACHE_VERSION}-${id}`;
 
-/** Returns path to pre-generated static PNG if it could exist */
-const staticPng = (id: string) => {
+/** Returns all possible static PNG paths for a style (up to 4 variants) */
+const staticPngVariants = (id: string): string[] => {
   const slug = STYLE_SLUGS[id];
-  return slug ? `/style-previews/${slug}.png` : null;
+  if (!slug) return [];
+  return [
+    `/style-previews/${slug}.png`,
+    `/style-previews/${slug}-2.png`,
+    `/style-previews/${slug}-3.png`,
+    `/style-previews/${slug}-4.png`,
+  ];
 };
 
 /** Try to load a URL, resolve with the URL if OK, reject if 404 */
@@ -33,6 +39,8 @@ export default function StyleSelectionPage() {
   const [previewIdx, setPreviewIdx] = useState<Record<string, number>>({});
   /** AI-generated preview images loaded from localStorage or freshly generated */
   const [cardImages, setCardImages] = useState<Record<string, string>>({});
+  /** Static pre-generated PNG variants per style (from /public/style-previews/) */
+  const [staticVariants, setStaticVariants] = useState<Record<string, string[]>>({});
   /** Which styles are currently being AI-generated */
   const [generating, setGenerating] = useState<Set<string>>(new Set());
   const cancelledRef = useRef(false);
@@ -55,20 +63,21 @@ export default function StyleSelectionPage() {
         if (stored) fromStorage[s.id] = stored;
       });
 
-      // Second pass: check static PNGs for anything not in localStorage
+      // Second pass: probe all static PNG variants for each style
       const needsGeneration: typeof TATTOO_STYLES = [];
-      const staticChecks = TATTOO_STYLES
-        .filter(s => !fromStorage[s.id])
-        .map(async s => {
-          const url = staticPng(s.id);
-          if (!url) { needsGeneration.push(s); return; }
-          try {
-            await tryLoad(url);
-            fromStorage[s.id] = url; // static PNG is available
-          } catch {
-            needsGeneration.push(s); // not available, queue for generation
-          }
-        });
+      const staticChecks = TATTOO_STYLES.map(async s => {
+        const urls = staticPngVariants(s.id);
+        const found: string[] = [];
+        await Promise.all(urls.map(url => tryLoad(url).then(u => found.push(u)).catch(() => {})));
+        // Sort so they appear in order (1, 2, 3, 4)
+        found.sort();
+        if (found.length > 0) {
+          setStaticVariants(prev => ({ ...prev, [s.id]: found }));
+          if (!fromStorage[s.id]) fromStorage[s.id] = found[0]; // ensure cardImages isn't needed
+        } else if (!fromStorage[s.id]) {
+          needsGeneration.push(s);
+        }
+      });
 
       await Promise.all(staticChecks);
 
@@ -109,15 +118,17 @@ export default function StyleSelectionPage() {
   };
 
   /**
-   * Variants for the carousel: AI-generated image first (if available),
-   * then the SVG placeholder variants so user can scroll and compare styles.
+   * Variants for the carousel: static PNGs first (if available),
+   * then AI-generated image, then SVG fallbacks.
    */
   const getVariants = (styleId: string): string[] => {
-    const svgVariants: string[] = STYLE_PREVIEW_VARIANTS[styleId] ?? [
+    const statics = staticVariants[styleId];
+    if (statics && statics.length > 0) return statics;
+    const svgFallbacks: string[] = STYLE_PREVIEW_VARIANTS[styleId] ?? [
       TATTOO_STYLES.find(s => s.id === styleId)!.imgSrc,
     ];
     const aiImg = cardImages[styleId];
-    return aiImg ? [aiImg, ...svgVariants] : svgVariants;
+    return aiImg ? [aiImg, ...svgFallbacks] : svgFallbacks;
   };
 
   const changePreview = (e: React.MouseEvent, styleId: string, dir: 1 | -1) => {
