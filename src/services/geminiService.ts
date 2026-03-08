@@ -308,22 +308,31 @@ const TATTOO_INSPIRATIONS = [
  * With user hint: expands via Gemini.
  */
 export async function generatePromptIdea(hint: string): Promise<string> {
+  const randomInspiration = () =>
+    TATTOO_INSPIRATIONS[Math.floor(Math.random() * TATTOO_INSPIRATIONS.length)];
+
   if (!hint.trim()) {
     // Instant — no API call needed, always works
-    return TATTOO_INSPIRATIONS[Math.floor(Math.random() * TATTOO_INSPIRATIONS.length)];
+    return randomInspiration();
   }
 
-  // Expand the user's rough idea into a vivid tattoo concept
-  const response = await getAI().models.generateContent({
-    model: 'gemini-2.5-flash',
-    contents: `The user has a rough tattoo idea: "${hint.trim()}". Transform it into a single vivid tattoo concept sentence (max 30 words). Name the exact visual subject, key design elements, and the symbolic meaning. Output ONLY the sentence.`,
-    config: {
-      systemInstruction: 'You are a tattoo concept writer. Output ONLY one sentence — no intro, no labels, no quotes. Vivid, specific, and ready to generate a tattoo from.',
-      maxOutputTokens: 80,
-    },
-  });
+  // Try to expand the user's rough idea into a vivid tattoo concept via Gemini.
+  // Always falls back to a random inspiration if the API call fails for any reason.
+  try {
+    const response = await getAI().models.generateContent({
+      model: 'gemini-2.5-flash',
+      contents: `The user has a rough tattoo idea: "${hint.trim()}". Transform it into a single vivid tattoo concept sentence (max 30 words). Name the exact visual subject, key design elements, and the symbolic meaning. Output ONLY the sentence.`,
+      config: {
+        systemInstruction: 'You are a tattoo concept writer. Output ONLY one sentence — no intro, no labels, no quotes. Vivid, specific, and ready to generate a tattoo from.',
+        maxOutputTokens: 80,
+      },
+    });
 
-  const text = response.text?.trim().replace(/^["']|["']$/g, '');
-  if (!text) throw new Error('No idea generated');
-  return text;
+    const text = response.text?.trim().replace(/^["']|["']$/g, '');
+    if (text) return text;
+  } catch {
+    // Silently fall back to random
+  }
+
+  return randomInspiration();
 }

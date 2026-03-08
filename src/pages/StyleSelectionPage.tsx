@@ -1,8 +1,9 @@
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ChevronLeft, Sparkles, Check } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Sparkles, Check } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useApp } from '../context/AppContext';
-import { TATTOO_STYLES, STYLE_SLUGS } from '../constants';
+import { TATTOO_STYLES, STYLE_SLUGS, STYLE_PREVIEW_VARIANTS } from '../constants';
 
 /** Returns the URL of the pre-generated static preview, or null if no slug mapping. */
 function staticPreviewUrl(styleId: string): string | null {
@@ -14,12 +15,47 @@ export default function StyleSelectionPage() {
   const navigate = useNavigate();
   const { questionnaire, setQuestionnaire, startParallelGeneration } = useApp();
 
+  /** Track which preview variant index is active per style card */
+  const [previewIdx, setPreviewIdx] = useState<Record<string, number>>({});
+  /** Track whether static PNG failed per style (avoid infinite retry) */
+  const [staticFailed, setStaticFailed] = useState<Record<string, boolean>>({});
+
   const selectedStyle = TATTOO_STYLES.find(s => s.id === questionnaire.style);
 
   const handleGenerate = () => {
     if (!questionnaire.style) return;
     startParallelGeneration();
     navigate('/results');
+  };
+
+  const getVariants = (styleId: string): string[] => {
+    const svgVariants = STYLE_PREVIEW_VARIANTS[styleId] ?? [
+      TATTOO_STYLES.find(s => s.id === styleId)!.imgSrc,
+    ];
+    const staticUrl = staticPreviewUrl(styleId);
+    // Prepend static PNG (if available and not failed) so AI-generated images show first
+    if (staticUrl && !staticFailed[styleId]) {
+      return [staticUrl, ...svgVariants];
+    }
+    return svgVariants;
+  };
+
+  const changePreview = (
+    e: React.MouseEvent,
+    styleId: string,
+    dir: 1 | -1,
+  ) => {
+    e.stopPropagation();
+    const variants = getVariants(styleId);
+    setPreviewIdx(prev => {
+      const cur = prev[styleId] ?? 0;
+      return { ...prev, [styleId]: (cur + dir + variants.length) % variants.length };
+    });
+  };
+
+  const setPreview = (e: React.MouseEvent, styleId: string, idx: number) => {
+    e.stopPropagation();
+    setPreviewIdx(prev => ({ ...prev, [styleId]: idx }));
   };
 
   return (
@@ -39,7 +75,7 @@ export default function StyleSelectionPage() {
       <div className="mb-8">
         <h2 className="text-3xl font-light tracking-tight mb-2">Select Your Style</h2>
         <p className="text-sm text-zinc-400">
-          Choose the aesthetic. This is used directly to generate your tattoo.
+          Choose the aesthetic. Scroll through each card to see different examples of that style.
         </p>
       </div>
 
@@ -47,7 +83,10 @@ export default function StyleSelectionPage() {
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 mb-8">
         {TATTOO_STYLES.map((style) => {
           const isSelected = questionnaire.style === style.id;
-          const staticUrl = staticPreviewUrl(style.id);
+          const variants = getVariants(style.id);
+          const idx = previewIdx[style.id] ?? 0;
+          const safeidx = Math.min(idx, variants.length - 1);
+          const currentSrc = variants[safeidx];
 
           return (
             <motion.div
@@ -56,27 +95,63 @@ export default function StyleSelectionPage() {
               whileHover={{ scale: 1.025 }}
               whileTap={{ scale: 0.975 }}
               transition={{ type: 'spring', stiffness: 400, damping: 28 }}
-              className={`cursor-pointer relative rounded-2xl overflow-hidden border-2 transition-colors ${
+              className={`cursor-pointer relative rounded-2xl overflow-hidden border-2 transition-colors group ${
                 isSelected ? 'border-zinc-200' : 'border-zinc-800 hover:border-zinc-600'
               }`}
             >
               <div className="aspect-square relative overflow-hidden bg-zinc-900">
-                {/* Static pre-generated image — falls back to SVG if file not found */}
-                <img
-                  src={staticUrl ?? style.imgSrc}
-                  alt={style.name}
-                  className="w-full h-full object-cover"
-                  onError={(e) => {
-                    if ((e.target as HTMLImageElement).src !== style.imgSrc) {
-                      (e.target as HTMLImageElement).src = style.imgSrc;
-                    }
-                  }}
-                />
+                {/* Current preview image */}
+                <AnimatePresence mode="wait" initial={false}>
+                  <motion.img
+                    key={`${style.id}-${safeidx}`}
+                    src={currentSrc}
+                    alt={`${style.name} preview ${safeidx + 1}`}
+                    className="w-full h-full object-cover absolute inset-0"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.2 }}
+                    onError={(e) => {
+                      const el = e.target as HTMLImageElement;
+                      // If static PNG failed, mark it and fall back to SVG variant 0
+                      const staticUrl = staticPreviewUrl(style.id);
+                      if (staticUrl && el.src.includes(staticUrl.replace(/^\//, ''))) {
+                        setStaticFailed(prev => ({ ...prev, [style.id]: true }));
+                        setPreviewIdx(prev => ({ ...prev, [style.id]: 0 }));
+                      } else {
+                        // Final fallback to base imgSrc
+                        el.src = style.imgSrc;
+                      }
+                    }}
+                  />
+                </AnimatePresence>
 
                 {/* Gradient overlay */}
-                <div className={`absolute inset-0 bg-gradient-to-t transition-opacity duration-300 ${
+                <div className={`absolute inset-0 bg-gradient-to-t transition-opacity duration-300 z-10 ${
                   isSelected ? 'from-black/75 via-black/10 to-black/15' : 'from-black/65 via-black/5 to-transparent'
                 }`} />
+
+                {/* Left arrow */}
+                {variants.length > 1 && (
+                  <button
+                    onClick={(e) => changePreview(e, style.id, -1)}
+                    className="absolute left-0 inset-y-0 w-7 flex items-center justify-center z-20 opacity-0 group-hover:opacity-100 transition-opacity bg-gradient-to-r from-black/40 to-transparent"
+                    aria-label="Previous preview"
+                  >
+                    <ChevronLeft size={13} className="text-white drop-shadow" />
+                  </button>
+                )}
+
+                {/* Right arrow */}
+                {variants.length > 1 && (
+                  <button
+                    onClick={(e) => changePreview(e, style.id, 1)}
+                    className="absolute right-0 inset-y-0 w-7 flex items-center justify-center z-20 opacity-0 group-hover:opacity-100 transition-opacity bg-gradient-to-l from-black/40 to-transparent"
+                    aria-label="Next preview"
+                  >
+                    <ChevronRight size={13} className="text-white drop-shadow" />
+                  </button>
+                )}
 
                 {/* Selected checkmark */}
                 <AnimatePresence>
@@ -86,15 +161,33 @@ export default function StyleSelectionPage() {
                       animate={{ scale: 1, opacity: 1 }}
                       exit={{ scale: 0, opacity: 0 }}
                       transition={{ type: 'spring', stiffness: 500, damping: 30 }}
-                      className="absolute top-2.5 right-2.5 w-6 h-6 bg-zinc-100 rounded-full flex items-center justify-center z-10"
+                      className="absolute top-2.5 right-2.5 w-6 h-6 bg-zinc-100 rounded-full flex items-center justify-center z-30"
                     >
                       <Check size={13} className="text-zinc-900 stroke-[3]" />
                     </motion.div>
                   )}
                 </AnimatePresence>
 
+                {/* Dot indicators */}
+                {variants.length > 1 && (
+                  <div className="absolute bottom-8 left-0 right-0 flex justify-center gap-1 z-20 pointer-events-none">
+                    {variants.map((_, i) => (
+                      <button
+                        key={i}
+                        onClick={(e) => setPreview(e, style.id, i)}
+                        className={`rounded-full transition-all duration-200 pointer-events-auto ${
+                          i === safeidx
+                            ? 'w-3 h-1.5 bg-white'
+                            : 'w-1.5 h-1.5 bg-white/40 hover:bg-white/70'
+                        }`}
+                        aria-label={`Preview ${i + 1}`}
+                      />
+                    ))}
+                  </div>
+                )}
+
                 {/* Style name */}
-                <div className="absolute bottom-0 left-0 right-0 p-3 z-10">
+                <div className="absolute bottom-0 left-0 right-0 p-3 z-20">
                   <h3 className="text-sm font-semibold text-white leading-tight drop-shadow">
                     {style.name}
                   </h3>
@@ -118,13 +211,18 @@ export default function StyleSelectionPage() {
           >
             <div className="w-14 h-14 rounded-xl shrink-0 border border-zinc-700 overflow-hidden bg-zinc-900">
               <img
-                src={staticPreviewUrl(selectedStyle.id) ?? selectedStyle.imgSrc}
+                src={
+                  getVariants(selectedStyle.id)[
+                    Math.min(
+                      previewIdx[selectedStyle.id] ?? 0,
+                      getVariants(selectedStyle.id).length - 1
+                    )
+                  ]
+                }
                 alt={selectedStyle.name}
                 className="w-full h-full object-cover"
                 onError={(e) => {
-                  if ((e.target as HTMLImageElement).src !== selectedStyle.imgSrc) {
-                    (e.target as HTMLImageElement).src = selectedStyle.imgSrc;
-                  }
+                  (e.target as HTMLImageElement).src = selectedStyle.imgSrc;
                 }}
               />
             </div>
