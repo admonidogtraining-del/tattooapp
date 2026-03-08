@@ -9,6 +9,7 @@ export default function InitialPage() {
   const navigate = useNavigate();
   const { prompt, setPrompt, images, handleImageUpload, removeImage, fileInputRef } = useApp();
   const [inspiring, setInspiring] = useState(false);
+  const [inspireError, setInspireError] = useState(false);
 
   const handleContinue = (e: React.FormEvent) => {
     e.preventDefault();
@@ -18,11 +19,13 @@ export default function InitialPage() {
 
   const handleInspire = async () => {
     setInspiring(true);
+    setInspireError(false);
     try {
       const idea = await generatePromptIdea(prompt);
       setPrompt(idea);
     } catch {
-      // silently fail — user still has their original text
+      setInspireError(true);
+      setTimeout(() => setInspireError(false), 3000);
     } finally {
       setInspiring(false);
     }
@@ -100,7 +103,11 @@ export default function InitialPage() {
               type="button"
               onClick={handleInspire}
               disabled={inspiring}
-              className="absolute bottom-3 right-3 flex items-center gap-1.5 px-3 py-1.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 hover:text-zinc-100 rounded-lg text-xs font-medium transition-all disabled:opacity-50"
+              className={`absolute bottom-3 right-3 flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all disabled:opacity-50 ${
+                inspireError
+                  ? 'bg-red-900/50 text-red-400'
+                  : 'bg-zinc-800 hover:bg-zinc-700 text-zinc-300 hover:text-zinc-100'
+              }`}
             >
               {inspiring ? (
                 <motion.span
@@ -111,7 +118,7 @@ export default function InitialPage() {
               ) : (
                 <Wand2 size={12} />
               )}
-              {inspiring ? 'Inspiring…' : 'Inspire me'}
+              {inspiring ? 'Inspiring…' : inspireError ? 'Failed — check API key' : 'Inspire me'}
             </button>
           </div>
           <button
