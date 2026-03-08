@@ -240,29 +240,21 @@ export async function generateTattooConsultation(
   return JSON.parse(response.text) as TattooConsultation;
 }
 
-const IMAGE_GEN_MODEL = 'gemini-2.0-flash-preview-image-generation';
-
-async function geminiGenerateImage(parts: object[]): Promise<string> {
-  const response = await ai.models.generateContent({
-    model: IMAGE_GEN_MODEL,
-    contents: { parts },
-    config: { responseModalities: ['TEXT', 'IMAGE'] },
+async function imagenGenerate(prompt: string): Promise<string> {
+  const response = await ai.models.generateImages({
+    model: 'imagen-4.0-generate-001',
+    prompt,
+    config: { numberOfImages: 1, aspectRatio: '1:1' },
   });
-  const responseParts = response.candidates?.[0]?.content?.parts || [];
-  for (const part of responseParts) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    if ((part as any).inlineData) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { mimeType, data } = (part as any).inlineData;
-      return `data:${mimeType};base64,${data}`;
-    }
-  }
-  throw new Error('No image in response');
+  const img = response.generatedImages?.[0]?.image;
+  if (!img?.imageBytes) throw new Error('No image in response');
+  const mime = img.mimeType ?? 'image/png';
+  return `data:${mime};base64,${img.imageBytes}`;
 }
 
-/** Generate a style card preview image (fast, text-only prompt). */
+/** Generate a style card preview image. */
 export async function generateStyleCardImage(prompt: string): Promise<string> {
-  return geminiGenerateImage([{ text: prompt }]);
+  return imagenGenerate(prompt);
 }
 
 /**
@@ -270,7 +262,7 @@ export async function generateStyleCardImage(prompt: string): Promise<string> {
  * Prompt is pre-built with full style rules by buildStylePrompt().
  */
 export async function generateTattooImage(prompt: string): Promise<string> {
-  return geminiGenerateImage([{ text: prompt }]);
+  return imagenGenerate(prompt);
 }
 
 /**
