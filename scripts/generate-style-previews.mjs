@@ -101,7 +101,7 @@ async function generate(slug, prompt, variantNum) {
 
   console.log(`  ⏳ ${slug}${suffix}…`);
   const response = await ai.models.generateImages({
-    model: 'imagen-3.0-generate-001',
+    model: 'imagen-4.0-generate-001',
     prompt,
     config: { numberOfImages: 1, aspectRatio: '1:1' },
   });
