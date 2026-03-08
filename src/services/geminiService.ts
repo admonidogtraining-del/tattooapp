@@ -316,10 +316,13 @@ export async function generatePromptIdea(hint: string): Promise<string> {
     return randomInspiration();
   }
 
-  // Try to expand the user's rough idea into a vivid tattoo concept via Gemini.
-  // Always falls back to a random inspiration if the API call fails for any reason.
+  // Try Gemini expansion with a 2-second hard timeout.
+  // Falls back instantly to random if API is slow, missing, or errors.
   try {
-    const response = await getAI().models.generateContent({
+    const timeout = new Promise<never>((_, reject) =>
+      setTimeout(() => reject(new Error('timeout')), 2000)
+    );
+    const gemini = getAI().models.generateContent({
       model: 'gemini-2.5-flash',
       contents: `The user has a rough tattoo idea: "${hint.trim()}". Transform it into a single vivid tattoo concept sentence (max 30 words). Name the exact visual subject, key design elements, and the symbolic meaning. Output ONLY the sentence.`,
       config: {
@@ -327,7 +330,7 @@ export async function generatePromptIdea(hint: string): Promise<string> {
         maxOutputTokens: 80,
       },
     });
-
+    const response = await Promise.race([gemini, timeout]);
     const text = response.text?.trim().replace(/^["']|["']$/g, '');
     if (text) return text;
   } catch {
