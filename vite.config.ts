@@ -7,4 +7,7 @@ export default defineConfig({
     tailwindcss(),
     react(),
   ],
+  optimizeDeps: {
+    include: ['@google/genai', 'p-retry', 'retry'],
+  },
 })
