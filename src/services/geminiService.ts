@@ -1,7 +1,15 @@
 import { GoogleGenAI, Type } from "@google/genai";
 
-// Uses Vite's env variable system — set VITE_GEMINI_API_KEY in your .env file
-const ai = new GoogleGenAI({ apiKey: import.meta.env.VITE_GEMINI_API_KEY });
+// Lazy singleton — avoids module-level throw when API key is absent at startup
+let _ai: GoogleGenAI | null = null;
+function getAI(): GoogleGenAI {
+  if (!_ai) {
+    const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
+    if (!apiKey) throw new Error('VITE_GEMINI_API_KEY is not set. Add it to your .env file.');
+    _ai = new GoogleGenAI({ apiKey });
+  }
+  return _ai;
+}
 
 const SYSTEM_INSTRUCTION = `You are "InkSight AI," a dual-specialized tattoo consultation system acting as both a Senior Tattoo Art Director and a Technical Prompt Architect. Your goal is to transform a user's personal story and emotions into a technically viable, aesthetically refined tattoo blueprint.
 
@@ -157,7 +165,7 @@ export async function generateTattooConsultation(
     }
   }
 
-  const response = await ai.models.generateContent({
+  const response = await getAI().models.generateContent({
     model: "gemini-2.5-flash",
     contents: { parts },
     config: {
@@ -241,7 +249,7 @@ export async function generateTattooConsultation(
 }
 
 async function imagenGenerate(prompt: string): Promise<string> {
-  const response = await ai.models.generateImages({
+  const response = await getAI().models.generateImages({
     model: 'imagen-4.0-generate-001',
     prompt,
     config: { numberOfImages: 1, aspectRatio: '1:1' },
@@ -274,7 +282,7 @@ export async function generatePromptIdea(hint: string): Promise<string> {
     ? `Take this rough tattoo idea and expand it into a rich, evocative 2-3 sentence concept description. Describe the visual elements, symbolism, and mood. Be specific and poetic. Idea: "${hint.trim()}"`
     : `Generate a creative, evocative tattoo concept description (2-3 sentences). Include specific visual elements, symbolism, and emotional mood. Make it personal and meaningful.`;
 
-  const response = await ai.models.generateContent({
+  const response = await getAI().models.generateContent({
     model: 'gemini-2.5-flash',
     contents: instruction,
     config: {
