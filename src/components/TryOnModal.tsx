@@ -1,6 +1,6 @@
 import { useEffect, useRef, useCallback } from 'react';
 import * as THREE from 'three';
-import { X, Save, RotateCcw, ZoomIn, ZoomOut } from 'lucide-react';
+import { X, Save, RotateCcw, ZoomIn, ZoomOut, Move, RotateCw } from 'lucide-react';
 import { motion } from 'motion/react';
 import { useApp } from '../context/AppContext';
 import { SKIN_TONES, extractPlacement } from '../constants';
@@ -10,7 +10,6 @@ import { SKIN_TONES, extractPlacement } from '../constants';
 function buildMannequin(skinHex: string): THREE.Group {
   const group = new THREE.Group();
 
-  // Neutral mannequin color — slightly tinted with skin tone for warmth
   const skinColor = new THREE.Color(skinHex);
   const baseColor = new THREE.Color(0.86, 0.83, 0.80);
   baseColor.lerp(skinColor, 0.18);
@@ -35,69 +34,103 @@ function buildMannequin(skinHex: string): THREE.Group {
     return m;
   };
 
-  // Head (smooth, featureless sphere)
-  add(new THREE.SphereGeometry(0.22, 36, 36), 0, 2.55, 0);
-  // Neck
-  add(new THREE.CylinderGeometry(0.1, 0.12, 0.18, 20), 0, 2.27, 0);
+  // Head — high segment sphere for smooth silhouette
+  add(new THREE.SphereGeometry(0.22, 48, 48), 0, 2.55, 0);
+  // Neck — smooth cylinder
+  add(new THREE.CylinderGeometry(0.1, 0.12, 0.18, 32), 0, 2.27, 0);
 
-  // Torso (chest + abdomen, slight taper)
-  add(new THREE.CylinderGeometry(0.37, 0.3, 0.85, 24), 0, 1.75, 0);
+  // Torso — smooth tapered cylinder
+  add(new THREE.CylinderGeometry(0.37, 0.3, 0.85, 32), 0, 1.75, 0);
   // Hips / pelvis
-  add(new THREE.CylinderGeometry(0.3, 0.28, 0.2, 20), 0, 1.28, 0);
+  add(new THREE.CylinderGeometry(0.3, 0.28, 0.2, 32), 0, 1.28, 0);
 
   // Shoulder joints
-  add(new THREE.SphereGeometry(0.115, 20, 20), -0.43, 2.1, 0); // L
-  add(new THREE.SphereGeometry(0.115, 20, 20),  0.43, 2.1, 0); // R
+  add(new THREE.SphereGeometry(0.115, 32, 32), -0.43, 2.1, 0);
+  add(new THREE.SphereGeometry(0.115, 32, 32),  0.43, 2.1, 0);
 
-  // Upper arms (T-pose — horizontal, rotated 90° on Z)
-  add(new THREE.CylinderGeometry(0.095, 0.085, 0.44, 16), -0.645, 2.1, 0, 0, 0,  Math.PI / 2);
-  add(new THREE.CylinderGeometry(0.095, 0.085, 0.44, 16),  0.645, 2.1, 0, 0, 0, -Math.PI / 2);
+  // Upper arms
+  add(new THREE.CylinderGeometry(0.095, 0.085, 0.44, 32), -0.645, 2.1, 0, 0, 0,  Math.PI / 2);
+  add(new THREE.CylinderGeometry(0.095, 0.085, 0.44, 32),  0.645, 2.1, 0, 0, 0, -Math.PI / 2);
 
   // Elbow joints
-  add(new THREE.SphereGeometry(0.08, 16, 16), -0.88, 2.1, 0);
-  add(new THREE.SphereGeometry(0.08, 16, 16),  0.88, 2.1, 0);
+  add(new THREE.SphereGeometry(0.08, 28, 28), -0.88, 2.1, 0);
+  add(new THREE.SphereGeometry(0.08, 28, 28),  0.88, 2.1, 0);
 
-  // Forearms (horizontal)
-  add(new THREE.CylinderGeometry(0.078, 0.068, 0.4, 16), -1.1, 2.1, 0, 0, 0,  Math.PI / 2);
-  add(new THREE.CylinderGeometry(0.078, 0.068, 0.4, 16),  1.1, 2.1, 0, 0, 0, -Math.PI / 2);
+  // Forearms
+  add(new THREE.CylinderGeometry(0.078, 0.068, 0.4, 32), -1.1, 2.1, 0, 0, 0,  Math.PI / 2);
+  add(new THREE.CylinderGeometry(0.078, 0.068, 0.4, 32),  1.1, 2.1, 0, 0, 0, -Math.PI / 2);
 
   // Wrist joints
-  add(new THREE.SphereGeometry(0.07, 14, 14), -1.32, 2.1, 0);
-  add(new THREE.SphereGeometry(0.07, 14, 14),  1.32, 2.1, 0);
+  add(new THREE.SphereGeometry(0.07, 24, 24), -1.32, 2.1, 0);
+  add(new THREE.SphereGeometry(0.07, 24, 24),  1.32, 2.1, 0);
 
-  // Hands
-  add(new THREE.SphereGeometry(0.085, 14, 14), -1.45, 2.1, 0);
-  add(new THREE.SphereGeometry(0.085, 14, 14),  1.45, 2.1, 0);
+  // Hands — smooth sphere
+  add(new THREE.SphereGeometry(0.085, 24, 24), -1.45, 2.1, 0);
+  add(new THREE.SphereGeometry(0.085, 24, 24),  1.45, 2.1, 0);
 
   // Thighs
-  add(new THREE.CylinderGeometry(0.13, 0.11, 0.52, 20), -0.17, 0.99, 0);
-  add(new THREE.CylinderGeometry(0.13, 0.11, 0.52, 20),  0.17, 0.99, 0);
+  add(new THREE.CylinderGeometry(0.13, 0.11, 0.52, 32), -0.17, 0.99, 0);
+  add(new THREE.CylinderGeometry(0.13, 0.11, 0.52, 32),  0.17, 0.99, 0);
 
   // Knee joints
-  add(new THREE.SphereGeometry(0.095, 16, 16), -0.17, 0.71, 0);
-  add(new THREE.SphereGeometry(0.095, 16, 16),  0.17, 0.71, 0);
+  add(new THREE.SphereGeometry(0.095, 28, 28), -0.17, 0.71, 0);
+  add(new THREE.SphereGeometry(0.095, 28, 28),  0.17, 0.71, 0);
 
   // Calves
-  add(new THREE.CylinderGeometry(0.095, 0.08, 0.5, 20), -0.17, 0.43, 0);
-  add(new THREE.CylinderGeometry(0.095, 0.08, 0.5, 20),  0.17, 0.43, 0);
+  add(new THREE.CylinderGeometry(0.095, 0.08, 0.5, 32), -0.17, 0.43, 0);
+  add(new THREE.CylinderGeometry(0.095, 0.08, 0.5, 32),  0.17, 0.43, 0);
 
   // Ankle joints
-  add(new THREE.SphereGeometry(0.075, 14, 14), -0.17, 0.16, 0);
-  add(new THREE.SphereGeometry(0.075, 14, 14),  0.17, 0.16, 0);
+  add(new THREE.SphereGeometry(0.075, 24, 24), -0.17, 0.16, 0);
+  add(new THREE.SphereGeometry(0.075, 24, 24),  0.17, 0.16, 0);
 
-  // Feet (simple box)
-  const footGeo = new THREE.BoxGeometry(0.14, 0.09, 0.28);
-  add(footGeo, -0.17, 0.05, 0.08);
-  add(footGeo,  0.17, 0.05, 0.08);
+  // Feet — rounded using sphere-ended capsule shape
+  const footGeo = new THREE.CapsuleGeometry(0.055, 0.22, 12, 24);
+  add(footGeo, -0.17, 0.06, 0.06, Math.PI / 2, 0, 0);
+  add(footGeo,  0.17, 0.06, 0.06, Math.PI / 2, 0, 0);
 
   return group;
+}
+
+// ─── Remove white/near-white background from tattoo image ─────────────────────
+
+async function buildTransparentTexture(dataUrl: string): Promise<THREE.Texture> {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      canvas.width = img.width;
+      canvas.height = img.height;
+      const ctx = canvas.getContext('2d')!;
+      ctx.drawImage(img, 0, 0);
+      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      const d = imageData.data;
+      for (let i = 0; i < d.length; i += 4) {
+        const r = d[i], g = d[i + 1], b = d[i + 2];
+        // Perceptual whiteness — all channels near 255
+        const whiteness = Math.min(r, g, b) / 255;
+        if (whiteness > 0.90) {
+          d[i + 3] = 0; // fully transparent
+        } else if (whiteness > 0.75) {
+          // Soft edge fade
+          d[i + 3] = Math.round(255 * (1 - (whiteness - 0.75) / 0.15));
+        }
+        // else keep original alpha
+      }
+      ctx.putImageData(imageData, 0, 0);
+      const tex = new THREE.CanvasTexture(canvas);
+      tex.colorSpace = THREE.SRGBColorSpace;
+      resolve(tex);
+    };
+    img.src = dataUrl;
+  });
 }
 
 // ─── Tattoo placement configs ─────────────────────────────────────────────────
 
 interface PlacementCfg {
   pos: [number, number, number];
-  rot: [number, number, number]; // euler XYZ
+  rot: [number, number, number];
   w: number;
   h: number;
 }
@@ -132,14 +165,20 @@ export default function TryOnModal() {
   const sceneRef     = useRef<THREE.Scene | null>(null);
   const cameraRef    = useRef<THREE.PerspectiveCamera | null>(null);
   const mannequinRef = useRef<THREE.Group | null>(null);
+  const tattooRef    = useRef<THREE.Mesh | null>(null);
   const frameIdRef   = useRef<number>(0);
 
-  // Interaction state (refs so animation loop sees latest values without re-renders)
+  // Body rotation interaction
   const isDragging   = useRef(false);
   const prevPointer  = useRef({ x: 0, y: 0 });
   const rotY         = useRef(0);
   const rotX         = useRef(0.08);
   const cameraZ      = useRef(4.5);
+
+  // Tattoo position offsets (in local plane space)
+  const tattooOffX   = useRef(0);
+  const tattooOffY   = useRef(0);
+  const tattooRotZ   = useRef(0);
 
   const skinHex   = SKIN_TONES.find(t => t.value === questionnaire.skinColor)?.color ?? '#C68642';
   const placement = result
@@ -151,113 +190,109 @@ export default function TryOnModal() {
     if (!showTryOn || !generatedImage || !containerRef.current) return;
 
     const container = containerRef.current;
-    let rafId: number;
     let ro: ResizeObserver | null = null;
 
-    const init = () => {
-    const w = container.clientWidth || window.innerWidth;
-    const h = container.clientHeight || Math.round(window.innerHeight * 0.7);
+    const init = async () => {
+      const w = container.clientWidth || window.innerWidth;
+      const h = container.clientHeight || Math.round(window.innerHeight * 0.7);
 
-    // Renderer
-    const renderer = new THREE.WebGLRenderer({ antialias: true });
-    renderer.setSize(w, h);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    renderer.outputColorSpace = THREE.SRGBColorSpace;
-    renderer.shadowMap.enabled = true;
-    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-    container.appendChild(renderer.domElement);
+      // Renderer
+      const renderer = new THREE.WebGLRenderer({ antialias: true });
+      renderer.setSize(w, h);
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      renderer.outputColorSpace = THREE.SRGBColorSpace;
+      renderer.shadowMap.enabled = true;
+      renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+      container.appendChild(renderer.domElement);
 
-    // Scene
-    const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x0a0a0a);
-    scene.fog = new THREE.Fog(0x0a0a0a, 8, 20);
+      // Scene
+      const scene = new THREE.Scene();
+      scene.background = new THREE.Color(0x0a0a0a);
+      scene.fog = new THREE.Fog(0x0a0a0a, 8, 20);
 
-    // Camera
-    const camera = new THREE.PerspectiveCamera(42, w / h, 0.01, 50);
-    camera.position.set(0, 1.4, cameraZ.current);
-    camera.lookAt(0, 1.4, 0);
+      // Camera
+      const camera = new THREE.PerspectiveCamera(42, w / h, 0.01, 50);
+      camera.position.set(0, 1.4, cameraZ.current);
+      camera.lookAt(0, 1.4, 0);
 
-    // Lighting
-    const ambient = new THREE.AmbientLight(0xffffff, 0.65);
-    scene.add(ambient);
+      // Lighting
+      scene.add(new THREE.AmbientLight(0xffffff, 0.65));
+      const keyLight = new THREE.DirectionalLight(0xffffff, 1.4);
+      keyLight.position.set(3, 5, 4);
+      keyLight.castShadow = true;
+      keyLight.shadow.mapSize.set(1024, 1024);
+      scene.add(keyLight);
+      const fillLight = new THREE.DirectionalLight(0x9ab4ff, 0.35);
+      fillLight.position.set(-3, 2, -3);
+      scene.add(fillLight);
+      const rimLight = new THREE.DirectionalLight(0xffeedd, 0.2);
+      rimLight.position.set(0, -1, -4);
+      scene.add(rimLight);
 
-    const keyLight = new THREE.DirectionalLight(0xffffff, 1.4);
-    keyLight.position.set(3, 5, 4);
-    keyLight.castShadow = true;
-    keyLight.shadow.mapSize.set(1024, 1024);
-    scene.add(keyLight);
+      // Ground
+      const ground = new THREE.Mesh(
+        new THREE.PlaneGeometry(10, 10),
+        new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 1 })
+      );
+      ground.rotation.x = -Math.PI / 2;
+      ground.receiveShadow = true;
+      scene.add(ground);
 
-    const fillLight = new THREE.DirectionalLight(0x9ab4ff, 0.35);
-    fillLight.position.set(-3, 2, -3);
-    scene.add(fillLight);
+      // Mannequin
+      const mannequin = buildMannequin(skinHex);
+      mannequin.rotation.y = rotY.current;
+      mannequin.rotation.x = rotX.current;
+      scene.add(mannequin);
+      mannequinRef.current = mannequin;
 
-    const rimLight = new THREE.DirectionalLight(0xffeedd, 0.2);
-    rimLight.position.set(0, -1, -4);
-    scene.add(rimLight);
-
-    // Ground (receives shadow only)
-    const groundGeo = new THREE.PlaneGeometry(10, 10);
-    const groundMat = new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 1 });
-    const ground = new THREE.Mesh(groundGeo, groundMat);
-    ground.rotation.x = -Math.PI / 2;
-    ground.receiveShadow = true;
-    scene.add(ground);
-
-    // Mannequin
-    const mannequin = buildMannequin(skinHex);
-    mannequin.rotation.y = rotY.current;
-    mannequin.rotation.x = rotX.current;
-    scene.add(mannequin);
-    mannequinRef.current = mannequin;
-
-    // Tattoo overlay
-    const cfg = getTattooCfg(placement);
-    const loader = new THREE.TextureLoader();
-    loader.load(generatedImage, (texture) => {
-      texture.colorSpace = THREE.SRGBColorSpace;
+      // Tattoo overlay — process white bg to transparent
+      const cfg = getTattooCfg(placement);
+      const texture = await buildTransparentTexture(generatedImage);
       const geo = new THREE.PlaneGeometry(cfg.w, cfg.h);
       const mat = new THREE.MeshBasicMaterial({
         map: texture,
         transparent: true,
-        blending: THREE.MultiplyBlending,
+        alphaTest: 0.01,
         depthWrite: false,
         side: THREE.DoubleSide,
       });
       const plane = new THREE.Mesh(geo, mat);
-      plane.position.set(...cfg.pos);
-      plane.rotation.set(...cfg.rot);
+      plane.position.set(
+        cfg.pos[0] + tattooOffX.current,
+        cfg.pos[1] + tattooOffY.current,
+        cfg.pos[2]
+      );
+      plane.rotation.set(cfg.rot[0], cfg.rot[1], cfg.rot[2] + tattooRotZ.current);
       plane.name = 'tattoo';
       mannequin.add(plane);
-    });
+      tattooRef.current = plane;
 
-    // Animation loop
-    const animate = () => {
-      frameIdRef.current = requestAnimationFrame(animate);
-      camera.position.z = cameraZ.current;
-      camera.lookAt(0, 1.4, 0);
-      renderer.render(scene, camera);
+      // Animation loop
+      const animate = () => {
+        frameIdRef.current = requestAnimationFrame(animate);
+        camera.position.z = cameraZ.current;
+        camera.lookAt(0, 1.4, 0);
+        renderer.render(scene, camera);
+      };
+      animate();
+
+      rendererRef.current = renderer;
+      sceneRef.current = scene;
+      cameraRef.current = camera;
+
+      ro = new ResizeObserver(() => {
+        const nw = container.clientWidth || window.innerWidth;
+        const nh = container.clientHeight || Math.round(window.innerHeight * 0.7);
+        renderer.setSize(nw, nh);
+        camera.aspect = nw / nh;
+        camera.updateProjectionMatrix();
+      });
+      ro.observe(container);
     };
-    animate();
 
-    rendererRef.current = renderer;
-    sceneRef.current = scene;
-    cameraRef.current = camera;
-
-    // Resize observer
-    ro = new ResizeObserver(() => {
-      const nw = container.clientWidth || window.innerWidth;
-      const nh = container.clientHeight || Math.round(window.innerHeight * 0.7);
-      renderer.setSize(nw, nh);
-      camera.aspect = nw / nh;
-      camera.updateProjectionMatrix();
-    });
-    ro.observe(container);
-    }; // end init
-
-    rafId = requestAnimationFrame(init);
+    init();
 
     return () => {
-      cancelAnimationFrame(rafId);
       cancelAnimationFrame(frameIdRef.current);
       ro?.disconnect();
       const renderer = rendererRef.current;
@@ -271,11 +306,12 @@ export default function TryOnModal() {
       sceneRef.current = null;
       cameraRef.current = null;
       mannequinRef.current = null;
+      tattooRef.current = null;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [showTryOn, generatedImage, skinHex, placement]);
 
-  // ── Pointer / mouse interaction ──────────────────────────────────────────────
+  // ── Body rotation via pointer drag ───────────────────────────────────────────
 
   const onPointerDown = useCallback((e: React.PointerEvent) => {
     isDragging.current = true;
@@ -288,39 +324,54 @@ export default function TryOnModal() {
     const dx = e.clientX - prevPointer.current.x;
     const dy = e.clientY - prevPointer.current.y;
     prevPointer.current = { x: e.clientX, y: e.clientY };
-
     rotY.current += dx * 0.012;
     rotX.current = Math.max(-0.5, Math.min(0.5, rotX.current + dy * 0.008));
-
     mannequinRef.current.rotation.y = rotY.current;
     mannequinRef.current.rotation.x = rotX.current;
   }, []);
 
-  const onPointerUp = useCallback(() => {
-    isDragging.current = false;
-  }, []);
+  const onPointerUp = useCallback(() => { isDragging.current = false; }, []);
 
   const onWheel = useCallback((e: React.WheelEvent) => {
     cameraZ.current = Math.max(2.2, Math.min(7.5, cameraZ.current + e.deltaY * 0.005));
   }, []);
 
-  const handleZoomIn = useCallback(() => {
-    cameraZ.current = Math.max(2.2, cameraZ.current - 0.4);
+  // ── Tattoo position/rotation controls ────────────────────────────────────────
+
+  const NUDGE = 0.03;
+  const moveTattoo = useCallback((dx: number, dy: number) => {
+    const plane = tattooRef.current;
+    if (!plane) return;
+    tattooOffX.current += dx;
+    tattooOffY.current += dy;
+    plane.position.x += dx;
+    plane.position.y += dy;
   }, []);
 
-  const handleZoomOut = useCallback(() => {
-    cameraZ.current = Math.min(7.5, cameraZ.current + 0.4);
+  const rotateTattoo = useCallback((delta: number) => {
+    const plane = tattooRef.current;
+    if (!plane) return;
+    tattooRotZ.current += delta;
+    plane.rotation.z += delta;
   }, []);
+
+  const handleZoomIn  = useCallback(() => { cameraZ.current = Math.max(2.2, cameraZ.current - 0.4); }, []);
+  const handleZoomOut = useCallback(() => { cameraZ.current = Math.min(7.5, cameraZ.current + 0.4); }, []);
 
   const handleReset = useCallback(() => {
-    rotY.current = 0;
-    rotX.current = 0.08;
-    cameraZ.current = 4.5;
+    rotY.current = 0; rotX.current = 0.08; cameraZ.current = 4.5;
+    tattooOffX.current = 0; tattooOffY.current = 0; tattooRotZ.current = 0;
     if (mannequinRef.current) {
       mannequinRef.current.rotation.y = 0;
       mannequinRef.current.rotation.x = 0.08;
     }
-  }, []);
+    const plane = tattooRef.current;
+    if (plane) {
+      const cfg = getTattooCfg(placement);
+      plane.position.set(cfg.pos[0], cfg.pos[1], cfg.pos[2]);
+      plane.rotation.set(cfg.rot[0], cfg.rot[1], cfg.rot[2]);
+    }
+  }, [placement]);
 
   const handleSave = useCallback(() => {
     const renderer = rendererRef.current;
@@ -332,14 +383,11 @@ export default function TryOnModal() {
       if (!blob) return;
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
-      a.href = url;
-      a.download = 'inksight-tryon-3d.png';
-      a.click();
+      a.href = url; a.download = 'inksight-tryon-3d.png'; a.click();
       URL.revokeObjectURL(url);
     }, 'image/png');
   }, []);
 
-  // Hooks must all be above any early return
   if (!showTryOn || !generatedImage) return null;
 
   const placementLabel = (placement.charAt(0).toUpperCase() + placement.slice(1)).replace(/_/g, ' ');
@@ -378,7 +426,6 @@ export default function TryOnModal() {
         onPointerLeave={onPointerUp}
         onWheel={onWheel}
       >
-        {/* Hint overlay */}
         <div className="absolute top-3 left-1/2 -translate-x-1/2 z-10 pointer-events-none">
           <div className="flex items-center gap-2 bg-black/50 backdrop-blur-sm px-3 py-1.5 rounded-full">
             <div className="w-1.5 h-1.5 rounded-full bg-white/60 animate-pulse" />
@@ -388,47 +435,52 @@ export default function TryOnModal() {
       </div>
 
       {/* Controls */}
-      <div className="shrink-0 px-4 py-3 border-t border-zinc-800/60 flex items-center gap-3">
-        {/* Zoom controls */}
-        <button
-          onClick={handleZoomOut}
-          className="w-9 h-9 rounded-full bg-zinc-800 text-white flex items-center justify-center hover:bg-zinc-700 transition-colors"
-          title="Zoom out"
-        >
+      <div className="shrink-0 px-4 py-3 border-t border-zinc-800/60 flex items-center gap-2 flex-wrap">
+        {/* Zoom */}
+        <button onClick={handleZoomOut} className="w-9 h-9 rounded-full bg-zinc-800 text-white flex items-center justify-center hover:bg-zinc-700 transition-colors" title="Zoom out">
           <ZoomOut size={16} />
         </button>
-        <button
-          onClick={handleZoomIn}
-          className="w-9 h-9 rounded-full bg-zinc-800 text-white flex items-center justify-center hover:bg-zinc-700 transition-colors"
-          title="Zoom in"
-        >
+        <button onClick={handleZoomIn} className="w-9 h-9 rounded-full bg-zinc-800 text-white flex items-center justify-center hover:bg-zinc-700 transition-colors" title="Zoom in">
           <ZoomIn size={16} />
         </button>
-
-        {/* Reset rotation */}
-        <button
-          onClick={handleReset}
-          className="w-9 h-9 rounded-full bg-zinc-800 text-white flex items-center justify-center hover:bg-zinc-700 transition-colors"
-          title="Reset view"
-        >
+        <button onClick={handleReset} className="w-9 h-9 rounded-full bg-zinc-800 text-white flex items-center justify-center hover:bg-zinc-700 transition-colors" title="Reset view">
           <RotateCcw size={15} />
         </button>
+
+        {/* Divider */}
+        <div className="w-px h-6 bg-zinc-700 mx-1" />
+
+        {/* Tattoo position label */}
+        <div className="flex items-center gap-1 text-zinc-500">
+          <Move size={12} />
+          <span className="text-xs">Tattoo</span>
+        </div>
+
+        {/* Arrow nudge controls */}
+        <div className="flex gap-1">
+          <button onClick={() => moveTattoo(-NUDGE, 0)} className="w-8 h-8 rounded-lg bg-zinc-800 text-zinc-300 flex items-center justify-center hover:bg-zinc-700 transition-colors text-sm font-bold" title="Move left">◀</button>
+          <button onClick={() => moveTattoo( NUDGE, 0)} className="w-8 h-8 rounded-lg bg-zinc-800 text-zinc-300 flex items-center justify-center hover:bg-zinc-700 transition-colors text-sm font-bold" title="Move right">▶</button>
+          <button onClick={() => moveTattoo(0,  NUDGE)} className="w-8 h-8 rounded-lg bg-zinc-800 text-zinc-300 flex items-center justify-center hover:bg-zinc-700 transition-colors text-sm font-bold" title="Move up">▲</button>
+          <button onClick={() => moveTattoo(0, -NUDGE)} className="w-8 h-8 rounded-lg bg-zinc-800 text-zinc-300 flex items-center justify-center hover:bg-zinc-700 transition-colors text-sm font-bold" title="Move down">▼</button>
+        </div>
+
+        {/* Rotate */}
+        <div className="flex gap-1">
+          <button onClick={() => rotateTattoo( Math.PI / 12)} className="w-8 h-8 rounded-lg bg-zinc-800 text-zinc-300 flex items-center justify-center hover:bg-zinc-700 transition-colors" title="Rotate counter-clockwise">
+            <RotateCcw size={14} />
+          </button>
+          <button onClick={() => rotateTattoo(-Math.PI / 12)} className="w-8 h-8 rounded-lg bg-zinc-800 text-zinc-300 flex items-center justify-center hover:bg-zinc-700 transition-colors" title="Rotate clockwise">
+            <RotateCw size={14} />
+          </button>
+        </div>
 
         <div className="flex-1" />
 
         {/* Save */}
-        <button
-          onClick={handleSave}
-          className="flex items-center gap-2 bg-zinc-800 text-zinc-100 rounded-xl px-4 py-2.5 text-sm font-medium hover:bg-zinc-700 transition-colors"
-        >
+        <button onClick={handleSave} className="flex items-center gap-2 bg-zinc-800 text-zinc-100 rounded-xl px-4 py-2.5 text-sm font-medium hover:bg-zinc-700 transition-colors">
           <Save size={15} /> Save
         </button>
-
-        {/* Close */}
-        <button
-          onClick={() => setShowTryOn(false)}
-          className="flex items-center gap-2 bg-zinc-900 border border-zinc-700 text-zinc-300 rounded-xl px-4 py-2.5 text-sm font-medium hover:border-zinc-500 transition-colors"
-        >
+        <button onClick={() => setShowTryOn(false)} className="flex items-center gap-2 bg-zinc-900 border border-zinc-700 text-zinc-300 rounded-xl px-4 py-2.5 text-sm font-medium hover:border-zinc-500 transition-colors">
           Done
         </button>
       </div>

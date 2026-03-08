@@ -2,19 +2,18 @@ import { useNavigate } from 'react-router-dom';
 import { ChevronLeft, Sparkles, Download, Maximize, Save, AlertTriangle } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useApp } from '../context/AppContext';
-import { TATTOO_STYLES, buildStylePrompt } from '../constants';
-import { generateTattooImage } from '../services/geminiService';
+import { TATTOO_STYLES } from '../constants';
 
 export default function ResultsPage() {
   const navigate = useNavigate();
   const {
-    result, questionnaire, setQuestionnaire,
-    generatedImage, setGeneratedImage,
+    result, questionnaire,
+    generatedImage,
     isGeneratingImage, isConsulting,
     setShowTryOn,
     tattooX, tattooY, setTattooScale,
     customImagePrompt, setCustomImagePrompt,
-    handleGenerateImage, handleReset,
+    handleGenerateImage, handleStyleSwitch, handleReset,
     error,
   } = useApp();
 
@@ -24,16 +23,6 @@ export default function ResultsPage() {
     return null;
   }
 
-  const handleStyleSwitch = (styleId: string) => {
-    setQuestionnaire(q => ({ ...q, style: styleId }));
-    setCustomImagePrompt('');
-    setGeneratedImage(null);
-    generateTattooImage(
-      buildStylePrompt(result?.image_generation.dalle_prompt ?? '', styleId)
-    )
-      .then(img => setGeneratedImage(img))
-      .catch(err => console.error('Style switch failed:', err));
-  };
 
   return (
     <motion.div
@@ -87,8 +76,9 @@ export default function ResultsPage() {
                     transition={{ duration: 1.2, repeat: Infinity, ease: 'linear' }}
                   />
                   <p className="text-sm text-zinc-400">
-                    Generating {questionnaire.style} tattoo…
+                    Generating a new design…
                   </p>
+                  <p className="text-xs text-zinc-500">{questionnaire.style}</p>
                   <p className="text-xs text-zinc-600">20–40 seconds</p>
                 </div>
               </div>

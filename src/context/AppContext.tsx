@@ -41,6 +41,7 @@ interface AppContextValue {
   handleDiscoveryAnswer: (question: string, answer: string) => void;
   handleReset: () => void;
   handleGenerateImage: () => Promise<void>;
+  handleStyleSwitch: (styleId: string) => void;
 }
 
 const AppContext = createContext<AppContextValue | null>(null);
@@ -151,6 +152,23 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     tattooY.set(0);
   };
 
+  const handleStyleSwitch = (styleId: string) => {
+    setQuestionnaire(q => ({ ...q, style: styleId }));
+    setCustomImagePrompt('');
+    setGeneratedImage(null);
+    setIsGeneratingImage(true);
+    setError(null);
+    generateTattooImage(
+      buildStylePrompt(result?.image_generation.dalle_prompt ?? '', styleId)
+    )
+      .then(img => setGeneratedImage(img))
+      .catch(err => {
+        console.error('Style switch failed:', err);
+        setError(err instanceof Error ? err.message : 'Style generation failed.');
+      })
+      .finally(() => setIsGeneratingImage(false));
+  };
+
   const handleGenerateImage = async () => {
     if (!result && !prompt) return;
     setIsGeneratingImage(true);
@@ -190,6 +208,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       handleDiscoveryAnswer,
       handleReset,
       handleGenerateImage,
+      handleStyleSwitch,
     }}>
       {children}
     </AppContext.Provider>

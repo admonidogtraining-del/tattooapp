@@ -279,19 +279,19 @@ export async function generateTattooImage(prompt: string): Promise<string> {
  */
 export async function generatePromptIdea(hint: string): Promise<string> {
   const instruction = hint.trim()
-    ? `Take this rough tattoo idea and expand it into a rich, evocative 2-3 sentence concept description. Describe the visual elements, symbolism, and mood. Be specific and poetic. Idea: "${hint.trim()}"`
-    : `Generate a creative, evocative tattoo concept description (2-3 sentences). Include specific visual elements, symbolism, and emotional mood. Make it personal and meaningful.`;
+    ? `Transform this rough idea into a vivid, specific tattoo concept prompt. Output ONE sentence (max 30 words) that names: (1) the exact subject/motif, (2) key visual elements, (3) the mood or symbolism. Make it specific enough to generate a tattoo from. Idea: "${hint.trim()}"`
+    : `Generate a single vivid tattoo concept prompt (max 30 words). Name a specific subject/motif, its key visual elements, and its mood. Examples of good output: "A stoic wolf skull wrapped in geometric triangles with a crescent moon, symbolizing solitude and transformation" or "A koi fish breaking through crashing waves mid-leap, bold red and gold, representing perseverance against adversity" or "Twin serpents coiling around a blooming rose, black and grey, representing the duality of beauty and danger". Generate a new original one.`;
 
   const response = await getAI().models.generateContent({
     model: 'gemini-2.5-flash',
     contents: instruction,
     config: {
-      systemInstruction: 'You are a tattoo concept writer. Output only the concept description — no labels, no intro, no extra commentary. Just the vivid description.',
-      maxOutputTokens: 200,
+      systemInstruction: 'You are a tattoo prompt writer. Output ONLY the concept prompt — one sentence, no labels, no intro, no quotes, no extra commentary. It must be vivid, specific, and usable to generate a tattoo image.',
+      maxOutputTokens: 80,
     },
   });
 
-  const text = response.text?.trim();
+  const text = response.text?.trim().replace(/^["']|["']$/g, '');
   if (!text) throw new Error('No idea generated');
   return text;
 }
