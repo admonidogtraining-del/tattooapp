@@ -211,7 +211,7 @@ async function generate(slug, prompt, variantNum) {
   const filepath = join(OUTPUT_DIR, `${slug}${suffix}.png`);
   if (existsSync(filepath)) {
     console.log(`  ✓ ${slug}${suffix} — already exists`);
-    return;
+    return false; // not newly generated
   }
 
   console.log(`  ⏳ ${slug}${suffix}…`);
@@ -225,18 +225,22 @@ async function generate(slug, prompt, variantNum) {
   if (!img?.imageBytes) throw new Error('No image in response');
   writeFileSync(filepath, Buffer.from(img.imageBytes, 'base64'));
   console.log(`  ✅ saved public/style-previews/${slug}${suffix}.png`);
+  return true; // newly generated
 }
 
+const TEST_MODE = process.argv.includes('--test');
 const total = STYLES.length * VARIANTS;
-console.log(`\nGenerating ${total} style preview images (${VARIANTS} per style) → ${OUTPUT_DIR}\n`);
+console.log(`\nGenerating ${TEST_MODE ? '1 test image' : `${total} style preview images (${VARIANTS} per style)`} → ${OUTPUT_DIR}\n`);
 
-for (const style of STYLES) {
+outer: for (const style of STYLES) {
   for (let v = 1; v <= VARIANTS; v++) {
     const prompt = style.prompts[v - 1] ?? style.prompts[0];
-    await generate(style.slug, prompt, v).catch(err =>
-      console.error(`  ✗ ${style.slug}-${v}: ${err.message}`)
-    );
+    const generated = await generate(style.slug, prompt, v).catch(err => {
+      console.error(`  ✗ ${style.slug}-${v}: ${err.message}`);
+      return false;
+    });
     await new Promise(r => setTimeout(r, 600));
+    if (TEST_MODE && generated) break outer; // stop after first newly generated image
   }
 }
 
