@@ -248,45 +248,43 @@ export async function generateTattooConsultation(
   return JSON.parse(response.text) as TattooConsultation;
 }
 
-// ── Model fallback chain ─────────────────────────────────────────────────────
-// Models are tried in order. When one hits its daily quota the next is used.
-const IMAGE_MODEL_CHAIN = [
-  'imagen-4.0-generate-001',
-  'imagen-4.0-fast-generate-001',
-] as const;
-
-const MODEL_LABELS: Record<string, string> = {
-  'imagen-4.0-generate-001': 'Imagen 4',
-  'imagen-4.0-fast-generate-001': 'Imagen 4 Fast',
-};
-
-const MODEL_IDX_KEY  = 'inksight-model-idx';
-const MODEL_DATE_KEY = 'inksight-model-date';
+// ── Image generation: multi-provider fallback chain ──────────────────────────
+// Providers are tried in order. Quota/rate errors advance to the next provider.
+// Google quotas reset daily (persisted in localStorage).
+// HF / Pollinations exhaustion is session-only.
 
 function todayStr(): string {
   return new Date().toISOString().slice(0, 10);
 }
 
-function getCurrentModelIndex(): number {
-  if (localStorage.getItem(MODEL_DATE_KEY) !== todayStr()) {
-    localStorage.setItem(MODEL_DATE_KEY, todayStr());
-    localStorage.setItem(MODEL_IDX_KEY, '0');
-    return 0;
-  }
-  return Math.min(
-    parseInt(localStorage.getItem(MODEL_IDX_KEY) ?? '0', 10),
-    IMAGE_MODEL_CHAIN.length - 1
-  );
+const _sessionExhausted = new Set<string>();
+
+function isExhausted(id: string, dailyReset: boolean): boolean {
+  if (_sessionExhausted.has(id)) return true;
+  if (dailyReset) return localStorage.getItem(`inksight-exhausted-${id}`) === todayStr();
+  return false;
 }
 
-function advanceModelIndex(current: number): number {
-  const next = current + 1;
-  localStorage.setItem(MODEL_IDX_KEY, String(next));
-  return next;
+function markExhausted(id: string, dailyReset: boolean): void {
+  _sessionExhausted.add(id);
+  if (dailyReset) localStorage.setItem(`inksight-exhausted-${id}`, todayStr());
 }
 
-function isQuotaError(err: unknown): boolean {
+/** Quota/rate errors AND model-not-found both warrant skipping to the next provider. */
+function isSkippable(err: unknown): boolean {
   const msg = err instanceof Error ? err.message : String(err);
+  if (msg.startsWith('QUOTA_EXCEEDED')) return true;
+  try {
+    const json = JSON.parse(msg.includes('{') ? msg.slice(msg.indexOf('{')) : '{}');
+    const code   = json?.error?.code   ?? json?.code;
+    const status = json?.error?.status ?? json?.status;
+    return code === 429 || status === 'RESOURCE_EXHAUSTED' || code === 404 || status === 'NOT_FOUND';
+  } catch { return false; }
+}
+
+function isQuotaErr(err: unknown): boolean {
+  const msg = err instanceof Error ? err.message : String(err);
+  if (msg.startsWith('QUOTA_EXCEEDED')) return true;
   try {
     const json = JSON.parse(msg.includes('{') ? msg.slice(msg.indexOf('{')) : '{}');
     const code   = json?.error?.code   ?? json?.code;
@@ -295,57 +293,136 @@ function isQuotaError(err: unknown): boolean {
   } catch { return false; }
 }
 
-function wrapImagenError(err: unknown): Error {
-  return err instanceof Error ? err : new Error(String(err));
+async function blobToDataUrl(blob: Blob): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onloadend = () => resolve(reader.result as string);
+    reader.onerror = reject;
+    reader.readAsDataURL(blob);
+  });
 }
+
+async function imagenCall(prompt: string, model: string): Promise<string> {
+  const response = await getAI().models.generateImages({
+    model,
+    prompt,
+    config: { numberOfImages: 1, aspectRatio: '1:1' },
+  });
+  const img = response.generatedImages?.[0]?.image;
+  if (!img?.imageBytes) throw new Error('No image in response');
+  const mime = img.mimeType ?? 'image/png';
+  return `data:${mime};base64,${img.imageBytes}`;
+}
+
+async function generateHuggingFace(prompt: string): Promise<string> {
+  const apiKey = import.meta.env.VITE_HF_API_KEY;
+  const response = await fetch(
+    'https://api-inference.huggingface.co/models/black-forest-labs/FLUX.2-dev',
+    {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ inputs: prompt }),
+    }
+  );
+  if (!response.ok) {
+    if (response.status === 429) throw new Error('QUOTA_EXCEEDED: Hugging Face rate limit');
+    let message = `Hugging Face error ${response.status}`;
+    try { const body = await response.json(); if (body.error) message = body.error; } catch { /* ignore */ }
+    throw new Error(message);
+  }
+  return blobToDataUrl(await response.blob());
+}
+
+async function generatePollinations(prompt: string): Promise<string> {
+  const seed = Math.floor(Math.random() * 1_000_000);
+  const url = `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=1024&height=1024&nologo=true&seed=${seed}`;
+  const response = await fetch(url);
+  if (!response.ok) throw new Error(`Pollinations error ${response.status}`);
+  return blobToDataUrl(await response.blob());
+}
+
+type Provider = {
+  id: string;
+  label: string;
+  dailyReset: boolean;
+  available: () => boolean;
+  generate: (prompt: string) => Promise<string>;
+};
+
+const PROVIDERS: Provider[] = [
+  {
+    id: 'imagen-4',
+    label: 'Imagen 4',
+    dailyReset: true,
+    available: () => !!import.meta.env.VITE_GEMINI_API_KEY,
+    generate: (p) => imagenCall(p, 'imagen-4.0-generate-001'),
+  },
+  {
+    id: 'imagen-4-fast',
+    label: 'Imagen 4 Fast',
+    dailyReset: true,
+    available: () => !!import.meta.env.VITE_GEMINI_API_KEY,
+    generate: (p) => imagenCall(p, 'imagen-4.0-fast-generate-001'),
+  },
+  {
+    id: 'flux2-dev',
+    label: 'FLUX.2',
+    dailyReset: false,
+    available: () => !!import.meta.env.VITE_HF_API_KEY,
+    generate: generateHuggingFace,
+  },
+  {
+    id: 'pollinations',
+    label: 'Pollinations AI',
+    dailyReset: false,
+    available: () => true,
+    generate: generatePollinations,
+  },
+];
 
 export interface ImageResult {
   dataUrl: string;
-  /** Set when the engine fell back to a lower-tier model due to quota. */
+  /** Set when generation fell back to a lower-tier provider due to quota. */
   fallbackMessage?: string;
 }
 
-async function imagenGenerate(prompt: string): Promise<ImageResult> {
-  let modelIdx = getCurrentModelIndex();
+async function generateWithFallback(prompt: string): Promise<ImageResult> {
+  const active = PROVIDERS.filter(p => p.available() && !isExhausted(p.id, p.dailyReset));
+  if (active.length === 0) {
+    throw new Error('No image generators are available. Please wait for quotas to reset or add a VITE_HF_API_KEY.');
+  }
+
   let fallbackMessage: string | undefined;
 
-  while (modelIdx < IMAGE_MODEL_CHAIN.length) {
-    const model = IMAGE_MODEL_CHAIN[modelIdx];
+  for (let i = 0; i < active.length; i++) {
+    const provider = active[i];
     try {
-      const response = await getAI().models.generateImages({
-        model,
-        prompt,
-        config: { numberOfImages: 1, aspectRatio: '1:1' },
-      });
-      const img = response.generatedImages?.[0]?.image;
-      if (!img?.imageBytes) throw new Error('No image in response');
-      const mime = img.mimeType ?? 'image/png';
-      return { dataUrl: `data:${mime};base64,${img.imageBytes}`, fallbackMessage };
+      const dataUrl = await provider.generate(prompt);
+      return { dataUrl, fallbackMessage };
     } catch (err) {
-      if (isQuotaError(err)) {
-        const exhausted = MODEL_LABELS[model] ?? model;
-        modelIdx = advanceModelIndex(modelIdx);
-        if (modelIdx < IMAGE_MODEL_CHAIN.length) {
-          const next = MODEL_LABELS[IMAGE_MODEL_CHAIN[modelIdx]] ?? IMAGE_MODEL_CHAIN[modelIdx];
-          fallbackMessage =
-            `${exhausted}'s daily limit has been reached. ` +
-            `Switched to ${next} — generates faster, very similar quality.`;
+      if (isSkippable(err)) {
+        if (isQuotaErr(err)) markExhausted(provider.id, provider.dailyReset);
+        if (i + 1 < active.length) {
+          const next = active[i + 1];
+          if (!fallbackMessage && isQuotaErr(err)) {
+            fallbackMessage = `${provider.label}'s daily limit has been reached. Switched to ${next.label}.`;
+          }
           continue;
         }
         throw new Error(
-          'All image generators have reached their daily limits (70 images/day each). ' +
-          'Quotas reset at midnight Pacific Time — please try again tomorrow.'
+          'All image generators have reached their limits. ' +
+          'Quotas reset at midnight Pacific Time — please try again later.'
         );
       }
-      throw wrapImagenError(err);
+      throw err instanceof Error ? err : new Error(String(err));
     }
   }
-  throw new Error('No image models available.');
+  throw new Error('Image generation failed.');
 }
 
 /** Generate a style card preview image. */
 export async function generateStyleCardImage(prompt: string): Promise<string> {
-  const result = await imagenGenerate(prompt);
+  const result = await generateWithFallback(prompt);
   return result.dataUrl;
 }
 
@@ -354,7 +431,7 @@ export async function generateStyleCardImage(prompt: string): Promise<string> {
  * Prompt is pre-built with full style rules by buildStylePrompt().
  */
 export async function generateTattooImage(prompt: string): Promise<ImageResult> {
-  return imagenGenerate(prompt);
+  return generateWithFallback(prompt);
 }
 
 // Curated tattoo concept prompts — used when user clicks "Inspire Me" with no text.
