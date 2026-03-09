@@ -252,12 +252,12 @@ export async function generateTattooConsultation(
 // Models are tried in order. When one hits its daily quota the next is used.
 const IMAGE_MODEL_CHAIN = [
   'imagen-4.0-generate-001',
-  'imagen-3.0-generate-001',
+  'imagen-4.0-fast-generate-001',
 ] as const;
 
 const MODEL_LABELS: Record<string, string> = {
   'imagen-4.0-generate-001': 'Imagen 4',
-  'imagen-3.0-generate-001': 'Imagen 3',
+  'imagen-4.0-fast-generate-001': 'Imagen 4 Fast',
 };
 
 const MODEL_IDX_KEY  = 'inksight-model-idx';
@@ -328,8 +328,8 @@ async function imagenGenerate(prompt: string): Promise<ImageResult> {
         if (modelIdx < IMAGE_MODEL_CHAIN.length) {
           const next = MODEL_LABELS[IMAGE_MODEL_CHAIN[modelIdx]] ?? IMAGE_MODEL_CHAIN[modelIdx];
           fallbackMessage =
-            `${exhausted}'s daily limit (70 images) has been reached. ` +
-            `Switched to ${next} — same great quality, slightly different rendering style.`;
+            `${exhausted}'s daily limit has been reached. ` +
+            `Switched to ${next} — generates faster, very similar quality.`;
           continue;
         }
         throw new Error(
