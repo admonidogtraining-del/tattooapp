@@ -151,7 +151,7 @@ export const buildStylePrompt = (dallePrompt: string, style: string): string => 
   const prefix = STYLE_IMAGE_PROMPTS[style] ?? '';
   // The suffix enforces presentation quality and anchors the subject
   const suffix =
-    ' The tattoo design must be completely standalone, finished artwork — full subject visible, not cropped, perfectly centered on a pure white background, presented as professional tattoo flash art. Do NOT deviate from the style rules above.';
+    ' The tattoo design must be completely standalone, finished artwork — full subject visible, not cropped, perfectly centered on a PURE WHITE (#FFFFFF) background. Present as professional tattoo flash art on paper. DO NOT show skin, body parts, arms, legs, or any human body context. The design should look like a sticker or flash sheet print — flat, 2D, isolated on white. Do NOT wrap, curve, or distort the design as if it is already on skin. Do NOT deviate from the style rules above.';
   return prefix
     ? `${prefix}\n\nTattoo concept to render in this exact style: "${dallePrompt}"${suffix}`
     : `Tattoo flash art design — concept: "${dallePrompt}". Pure white background, professional flash sheet, complete standalone design.`;
