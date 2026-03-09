@@ -9,6 +9,10 @@
  *   npm run gen-previews   (reads .env automatically via --env-file flag)
  *
  * Already-existing images are skipped — safe to re-run.
+ *
+ * To use a different model (e.g. when Imagen 4 quota is exhausted):
+ *   MODEL=imagen-3.0-generate-001 npm run gen-previews
+ * Default model: imagen-4.0-generate-001
  */
 
 import { GoogleGenAI } from '@google/genai';
@@ -37,6 +41,9 @@ if (!apiKey) {
 }
 
 const ai = new GoogleGenAI({ apiKey });
+
+const MODEL = process.env.MODEL || 'imagen-4.0-generate-001';
+console.log(`Using model: ${MODEL}`);
 
 const STYLES = [
   {
@@ -101,7 +108,7 @@ async function generate(slug, prompt, variantNum) {
 
   console.log(`  ⏳ ${slug}${suffix}…`);
   const response = await ai.models.generateImages({
-    model: 'imagen-4.0-generate-001',
+    model: MODEL,
     prompt,
     config: { numberOfImages: 1, aspectRatio: '1:1' },
   });
