@@ -248,49 +248,112 @@ export async function generateTattooConsultation(
   return JSON.parse(response.text) as TattooConsultation;
 }
 
-function parseImagenError(err: unknown): Error {
-  const msg = err instanceof Error ? err.message : String(err);
-  try {
-    // The SDK sometimes wraps the raw API JSON in the error message
-    const json = JSON.parse(msg.includes('{') ? msg.slice(msg.indexOf('{')) : '{}');
-    const code = json?.error?.code ?? json?.code;
-    const status = json?.error?.status ?? json?.status;
-    if (code === 429 || status === 'RESOURCE_EXHAUSTED') {
-      return new Error(
-        "Daily image generation limit reached (70 images/day). " +
-        "Your quota resets at midnight Pacific Time — try again tomorrow."
-      );
-    }
-  } catch { /* ignore parse errors */ }
-  return err instanceof Error ? err : new Error(msg);
+// ── Model fallback chain ─────────────────────────────────────────────────────
+// Models are tried in order. When one hits its daily quota the next is used.
+const IMAGE_MODEL_CHAIN = [
+  'imagen-4.0-generate-001',
+  'imagen-3.0-generate-001',
+] as const;
+
+const MODEL_LABELS: Record<string, string> = {
+  'imagen-4.0-generate-001': 'Imagen 4',
+  'imagen-3.0-generate-001': 'Imagen 3',
+};
+
+const MODEL_IDX_KEY  = 'inksight-model-idx';
+const MODEL_DATE_KEY = 'inksight-model-date';
+
+function todayStr(): string {
+  return new Date().toISOString().slice(0, 10);
 }
 
-async function imagenGenerate(prompt: string): Promise<string> {
-  try {
-    const response = await getAI().models.generateImages({
-      model: 'imagen-4.0-generate-001',
-      prompt,
-      config: { numberOfImages: 1, aspectRatio: '1:1' },
-    });
-    const img = response.generatedImages?.[0]?.image;
-    if (!img?.imageBytes) throw new Error('No image in response');
-    const mime = img.mimeType ?? 'image/png';
-    return `data:${mime};base64,${img.imageBytes}`;
-  } catch (err) {
-    throw parseImagenError(err);
+function getCurrentModelIndex(): number {
+  if (localStorage.getItem(MODEL_DATE_KEY) !== todayStr()) {
+    localStorage.setItem(MODEL_DATE_KEY, todayStr());
+    localStorage.setItem(MODEL_IDX_KEY, '0');
+    return 0;
   }
+  return Math.min(
+    parseInt(localStorage.getItem(MODEL_IDX_KEY) ?? '0', 10),
+    IMAGE_MODEL_CHAIN.length - 1
+  );
+}
+
+function advanceModelIndex(current: number): number {
+  const next = current + 1;
+  localStorage.setItem(MODEL_IDX_KEY, String(next));
+  return next;
+}
+
+function isQuotaError(err: unknown): boolean {
+  const msg = err instanceof Error ? err.message : String(err);
+  try {
+    const json = JSON.parse(msg.includes('{') ? msg.slice(msg.indexOf('{')) : '{}');
+    const code   = json?.error?.code   ?? json?.code;
+    const status = json?.error?.status ?? json?.status;
+    return code === 429 || status === 'RESOURCE_EXHAUSTED';
+  } catch { return false; }
+}
+
+function wrapImagenError(err: unknown): Error {
+  return err instanceof Error ? err : new Error(String(err));
+}
+
+export interface ImageResult {
+  dataUrl: string;
+  /** Set when the engine fell back to a lower-tier model due to quota. */
+  fallbackMessage?: string;
+}
+
+async function imagenGenerate(prompt: string): Promise<ImageResult> {
+  let modelIdx = getCurrentModelIndex();
+  let fallbackMessage: string | undefined;
+
+  while (modelIdx < IMAGE_MODEL_CHAIN.length) {
+    const model = IMAGE_MODEL_CHAIN[modelIdx];
+    try {
+      const response = await getAI().models.generateImages({
+        model,
+        prompt,
+        config: { numberOfImages: 1, aspectRatio: '1:1' },
+      });
+      const img = response.generatedImages?.[0]?.image;
+      if (!img?.imageBytes) throw new Error('No image in response');
+      const mime = img.mimeType ?? 'image/png';
+      return { dataUrl: `data:${mime};base64,${img.imageBytes}`, fallbackMessage };
+    } catch (err) {
+      if (isQuotaError(err)) {
+        const exhausted = MODEL_LABELS[model] ?? model;
+        modelIdx = advanceModelIndex(modelIdx);
+        if (modelIdx < IMAGE_MODEL_CHAIN.length) {
+          const next = MODEL_LABELS[IMAGE_MODEL_CHAIN[modelIdx]] ?? IMAGE_MODEL_CHAIN[modelIdx];
+          fallbackMessage =
+            `${exhausted}'s daily limit (70 images) has been reached. ` +
+            `Switched to ${next} — same great quality, slightly different rendering style.`;
+          continue;
+        }
+        throw new Error(
+          'All image generators have reached their daily limits (70 images/day each). ' +
+          'Quotas reset at midnight Pacific Time — please try again tomorrow.'
+        );
+      }
+      throw wrapImagenError(err);
+    }
+  }
+  throw new Error('No image models available.');
 }
 
 /** Generate a style card preview image. */
 export async function generateStyleCardImage(prompt: string): Promise<string> {
-  return imagenGenerate(prompt);
+  const result = await imagenGenerate(prompt);
+  return result.dataUrl;
 }
 
 /**
  * Generate the final tattoo design.
  * Prompt is pre-built with full style rules by buildStylePrompt().
  */
-export async function generateTattooImage(prompt: string): Promise<string> {
+export async function generateTattooImage(prompt: string): Promise<ImageResult> {
   return imagenGenerate(prompt);
 }
 

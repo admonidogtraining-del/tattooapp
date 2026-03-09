@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { ChevronLeft, Sparkles, Download, Maximize, Save, AlertTriangle } from 'lucide-react';
+import { ChevronLeft, Sparkles, Download, Maximize, Save, AlertTriangle, Info } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useApp } from '../context/AppContext';
 import { TATTOO_STYLES } from '../constants';
@@ -14,7 +14,7 @@ export default function ResultsPage() {
     tattooX, tattooY, setTattooScale,
     customImagePrompt, setCustomImagePrompt,
     handleGenerateImage, handleStyleSwitch, handleReset,
-    error,
+    error, fallbackMessage,
   } = useApp();
 
   // Guard: if nothing is loading and nothing is ready, user navigated here directly
@@ -258,6 +258,13 @@ export default function ResultsPage() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {fallbackMessage && (
+        <div className="p-4 bg-amber-950/30 border border-amber-800/50 rounded-xl text-amber-300 text-sm flex items-start gap-3">
+          <Info size={16} className="shrink-0 mt-0.5" />
+          <p>{fallbackMessage}</p>
+        </div>
+      )}
 
       {error && (
         <div className="p-4 bg-red-950/30 border border-red-900/50 rounded-xl text-red-400 text-sm flex items-start gap-3">

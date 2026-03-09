@@ -19,6 +19,7 @@ interface AppContextValue {
   result: TattooConsultation | null;
   error: string | null;
   setError: (v: string | null) => void;
+  fallbackMessage: string | null;
   generatedImage: string | null;
   setGeneratedImage: (v: string | null) => void;
   customImagePrompt: string;
@@ -58,6 +59,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [discoveryAnswers, setDiscoveryAnswers] = useState<Record<string, string>>({});
   const [result, setResult] = useState<TattooConsultation | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [fallbackMessage, setFallbackMessage] = useState<string | null>(null);
   const [generatedImage, setGeneratedImage] = useState<string | null>(null);
   const [customImagePrompt, setCustomImagePrompt] = useState('');
   const [isGeneratingImage, setIsGeneratingImage] = useState(false);
@@ -99,6 +101,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     setGeneratedImage(null);
     setResult(null);
     setError(null);
+    setFallbackMessage(null);
 
     // Snapshot current values immediately (avoids stale closure issues)
     const currentPrompt = prompt;
@@ -113,7 +116,10 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         currentStyle
       )
     )
-      .then(img => setGeneratedImage(img))
+      .then(({ dataUrl, fallbackMessage: msg }) => {
+        setGeneratedImage(dataUrl);
+        if (msg) setFallbackMessage(msg);
+      })
       .catch(err => {
         console.error('Image generation failed:', err);
         setError(err instanceof Error ? err.message : 'Image generation failed.');
@@ -145,6 +151,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     setCustomImagePrompt('');
     setIsGeneratingImage(false);
     setIsConsulting(false);
+    setFallbackMessage(null);
     setDiscoveryAnswers({});
     setShowTryOn(false);
     setTattooScale(1);
@@ -158,10 +165,14 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     setGeneratedImage(null);
     setIsGeneratingImage(true);
     setError(null);
+    setFallbackMessage(null);
     generateTattooImage(
       buildStylePrompt(result?.image_generation.dalle_prompt ?? '', styleId)
     )
-      .then(img => setGeneratedImage(img))
+      .then(({ dataUrl, fallbackMessage: msg }) => {
+        setGeneratedImage(dataUrl);
+        if (msg) setFallbackMessage(msg);
+      })
       .catch(err => {
         console.error('Style switch failed:', err);
         setError(err instanceof Error ? err.message : 'Style generation failed.');
@@ -173,11 +184,13 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     if (!result && !prompt) return;
     setIsGeneratingImage(true);
     setError(null);
+    setFallbackMessage(null);
     try {
       const basePrompt = result?.image_generation.dalle_prompt ?? prompt;
       const promptToUse = customImagePrompt.trim() || buildStylePrompt(basePrompt, questionnaire.style);
-      const img = await generateTattooImage(promptToUse);
-      setGeneratedImage(img);
+      const { dataUrl, fallbackMessage: msg } = await generateTattooImage(promptToUse);
+      setGeneratedImage(dataUrl);
+      if (msg) setFallbackMessage(msg);
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Failed to generate image. Please try again.';
       setError(message);
@@ -194,6 +207,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       discoveryAnswers,
       result,
       error, setError,
+      fallbackMessage,
       generatedImage, setGeneratedImage,
       customImagePrompt, setCustomImagePrompt,
       isGeneratingImage,
