@@ -268,7 +268,7 @@ function parseImagenError(err: unknown): Error {
 async function imagenGenerate(prompt: string): Promise<string> {
   try {
     const response = await getAI().models.generateImages({
-      model: 'imagen-3.0-generate-002',
+      model: 'imagen-3.0-generate-001',
       prompt,
       config: { numberOfImages: 1, aspectRatio: '1:1' },
     });
