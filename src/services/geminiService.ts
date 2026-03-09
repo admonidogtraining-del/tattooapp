@@ -466,6 +466,40 @@ const TATTOO_INSPIRATIONS = [
 ];
 
 /**
+ * Intelligently merge an original tattoo prompt with a user's tweak instruction.
+ * Preserves the core concept and applies the tweak naturally.
+ */
+export async function refineTattooPrompt(
+  originalPrompt: string,
+  tweak: string,
+  style: string
+): Promise<string> {
+  try {
+    const response = await getAI().models.generateContent({
+      model: 'gemini-2.5-flash',
+      contents: `Original tattoo prompt: "${originalPrompt}"\n\nTweak instruction: "${tweak}"\n\nTattoo style: "${style}"`,
+      config: {
+        systemInstruction: `You are a tattoo prompt engineer. Adjust an existing tattoo concept prompt based on a user's tweak instruction.
+
+Rules:
+- Preserve the core subject and composition of the original prompt
+- Apply the tweak naturally (e.g. "add a moon" → add moon, "more geometric" → add geometric elements, "black and grey" → remove color references)
+- Keep the result concise — max 50 words
+- Output ONLY the refined prompt. No quotes, no labels, no intro.
+- Do NOT include style names in the output (style is applied separately)`,
+        maxOutputTokens: 120,
+        temperature: 0.7,
+      },
+    });
+    const text = response.text?.trim().replace(/^["']|["']$/g, '');
+    if (text && text.length > 10) return text;
+  } catch {
+    // Fall back to original prompt if refinement fails
+  }
+  return originalPrompt;
+}
+
+/**
  * Generate or expand a tattoo concept prompt idea.
  * Empty state or already-inspired prompt: instant random pick from curated list (no API call).
  * With user's own typed hint: expands via Gemini.
