@@ -186,8 +186,9 @@ function buildArticulatedMannequin(skinHex: string): MannequinResult {
 // ─── White background removal (aggressive, with edge feathering) ──────────────
 
 async function buildTransparentTexture(dataUrl: string): Promise<THREE.Texture> {
-  return new Promise((resolve) => {
+  return new Promise((resolve, reject) => {
     const img = new Image();
+    img.onerror = () => reject(new Error('Image failed to load'));
     img.onload = () => {
       const canvas = document.createElement('canvas');
       canvas.width = img.width; canvas.height = img.height;
@@ -351,8 +352,10 @@ export default function TryOnModal() {
       const key = new THREE.DirectionalLight(0xfff6ee, 1.3);
       key.position.set(2.5, 5, 4); key.castShadow = true;
       key.shadow.mapSize.set(1024, 1024); scene.add(key);
-      scene.add(Object.assign(new THREE.DirectionalLight(0xaabbff, 0.35), { position: new THREE.Vector3(-3, 2, -2) }));
-      scene.add(Object.assign(new THREE.DirectionalLight(0xffeedd, 0.18), { position: new THREE.Vector3(0, -1, -4) }));
+      const fill = new THREE.DirectionalLight(0xaabbff, 0.35);
+      fill.position.set(-3, 2, -2); scene.add(fill);
+      const rim = new THREE.DirectionalLight(0xffeedd, 0.18);
+      rim.position.set(0, -1, -4); scene.add(rim);
 
       // Ground
       const ground = new THREE.Mesh(
@@ -364,9 +367,10 @@ export default function TryOnModal() {
       // Articulated mannequin
       const { group: mannequin, joints, meshToJoint } = buildArticulatedMannequin(skinHex);
       mannequin.rotation.y = rotY.current;
+      mannequin.rotation.x = rotX.current;
       scene.add(mannequin);
-      mannequinRef.current  = mannequin;
-      jointsRef.current     = joints;
+      mannequinRef.current   = mannequin;
+      jointsRef.current      = joints;
       meshToJointRef.current = meshToJoint;
 
       // Apply initial pose instantly
@@ -376,9 +380,40 @@ export default function TryOnModal() {
         joints[k].rotation.set(px, py, pz);
       }
 
-      // Tattoo — transparent texture on limb group
-      const pcfg    = cfg(placement);
-      const texture = await buildTransparentTexture(generatedImage);
+      // ── Start render loop NOW so the body is visible immediately ──
+      // Tattoo will be added async once its texture loads.
+      rendererRef.current = renderer; sceneRef.current = scene; cameraRef.current = camera;
+
+      const animate = () => {
+        frameIdRef.current = requestAnimationFrame(animate);
+        const j = jointsRef.current;
+        const tp = targetPoseRef.current;
+        if (j) {
+          for (const k of Object.keys(tp) as (keyof PoseAngles)[]) {
+            const [tx, ty, tz] = tp[k];
+            const joint = j[k];
+            joint.rotation.x += (tx - joint.rotation.x) * 0.1;
+            joint.rotation.y += (ty - joint.rotation.y) * 0.1;
+            joint.rotation.z += (tz - joint.rotation.z) * 0.1;
+          }
+        }
+        camera.position.z = cameraZ.current;
+        camera.lookAt(0, 1.45, 0);
+        renderer.render(scene, camera);
+      };
+      animate(); // body renders here — before texture loads
+
+      // ── Load tattoo texture async (body is already rendering above) ──
+      const pcfg = cfg(placement);
+      let texture: THREE.Texture;
+      try {
+        texture = await buildTransparentTexture(generatedImage);
+      } catch {
+        texture = new THREE.Texture(); // fallback: invisible plane
+      }
+
+      // Guard: if the component was unmounted while awaiting, bail out
+      if (!rendererRef.current) return;
 
       const tMat = new THREE.MeshBasicMaterial({
         map: texture,
@@ -391,7 +426,7 @@ export default function TryOnModal() {
         polygonOffsetUnits: -4,
       });
 
-      // Build plane with a slight UV inset to hide any edge artifacts / frame
+      // Slight UV inset to hide any edge artifacts / compressed border
       const geo = new THREE.PlaneGeometry(pcfg.w, pcfg.h);
       const uvAttr = geo.attributes.uv as THREE.BufferAttribute;
       const INSET = 0.025;
@@ -410,28 +445,6 @@ export default function TryOnModal() {
       plane.name = 'tattoo';
       joints[pcfg.joint].add(plane);
       tattooRef.current = plane;
-
-      // Animate loop — lerp joints toward target pose
-      const animate = () => {
-        frameIdRef.current = requestAnimationFrame(animate);
-        const j = jointsRef.current;
-        const tp = targetPoseRef.current;
-        if (j) {
-          for (const k of Object.keys(tp) as (keyof PoseAngles)[]) {
-            const [tx, ty, tz] = tp[k];
-            const joint = j[k];
-            joint.rotation.x += (tx - joint.rotation.x) * 0.1;
-            joint.rotation.y += (ty - joint.rotation.y) * 0.1;
-            joint.rotation.z += (tz - joint.rotation.z) * 0.1;
-          }
-        }
-        camera.position.z = cameraZ.current;
-        camera.lookAt(0, 1.45, 0);
-        renderer.render(scene, camera);
-      };
-      animate();
-
-      rendererRef.current = renderer; sceneRef.current = scene; cameraRef.current = camera;
 
       ro = new ResizeObserver(() => {
         const nw = container.clientWidth  || window.innerWidth;
