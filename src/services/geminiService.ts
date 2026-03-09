@@ -248,16 +248,37 @@ export async function generateTattooConsultation(
   return JSON.parse(response.text) as TattooConsultation;
 }
 
+function parseImagenError(err: unknown): Error {
+  const msg = err instanceof Error ? err.message : String(err);
+  try {
+    // The SDK sometimes wraps the raw API JSON in the error message
+    const json = JSON.parse(msg.includes('{') ? msg.slice(msg.indexOf('{')) : '{}');
+    const code = json?.error?.code ?? json?.code;
+    const status = json?.error?.status ?? json?.status;
+    if (code === 429 || status === 'RESOURCE_EXHAUSTED') {
+      return new Error(
+        "Daily image generation limit reached (70 images/day). " +
+        "Your quota resets at midnight Pacific Time — try again tomorrow."
+      );
+    }
+  } catch { /* ignore parse errors */ }
+  return err instanceof Error ? err : new Error(msg);
+}
+
 async function imagenGenerate(prompt: string): Promise<string> {
-  const response = await getAI().models.generateImages({
-    model: 'imagen-4.0-generate-001',
-    prompt,
-    config: { numberOfImages: 1, aspectRatio: '1:1' },
-  });
-  const img = response.generatedImages?.[0]?.image;
-  if (!img?.imageBytes) throw new Error('No image in response');
-  const mime = img.mimeType ?? 'image/png';
-  return `data:${mime};base64,${img.imageBytes}`;
+  try {
+    const response = await getAI().models.generateImages({
+      model: 'imagen-3.0-generate-002',
+      prompt,
+      config: { numberOfImages: 1, aspectRatio: '1:1' },
+    });
+    const img = response.generatedImages?.[0]?.image;
+    if (!img?.imageBytes) throw new Error('No image in response');
+    const mime = img.mimeType ?? 'image/png';
+    return `data:${mime};base64,${img.imageBytes}`;
+  } catch (err) {
+    throw parseImagenError(err);
+  }
 }
 
 /** Generate a style card preview image. */
@@ -306,16 +327,23 @@ const TATTOO_INSPIRATIONS = [
 
 /**
  * Generate or expand a tattoo concept prompt idea.
- * Empty state: instant random pick from curated list (no API call).
- * With user hint: expands via Gemini.
+ * Empty state or already-inspired prompt: instant random pick from curated list (no API call).
+ * With user's own typed hint: expands via Gemini.
  */
 export async function generatePromptIdea(hint: string): Promise<string> {
-  const randomInspiration = () =>
-    TATTOO_INSPIRATIONS[Math.floor(Math.random() * TATTOO_INSPIRATIONS.length)];
+  const randomInspiration = (exclude?: string) => {
+    const pool = exclude
+      ? TATTOO_INSPIRATIONS.filter(i => i !== exclude)
+      : TATTOO_INSPIRATIONS;
+    return pool[Math.floor(Math.random() * pool.length)];
+  };
 
-  if (!hint.trim()) {
-    // Instant — no API call needed, always works
-    return randomInspiration();
+  const trimmed = hint.trim();
+
+  // No hint OR the current text is already one of our curated inspirations
+  // → just pick a fresh random one (never the same as current)
+  if (!trimmed || TATTOO_INSPIRATIONS.includes(trimmed)) {
+    return randomInspiration(trimmed || undefined);
   }
 
   // Try Gemini expansion with a 3-second hard timeout.
@@ -354,5 +382,5 @@ Good examples:
     // Silently fall back to random
   }
 
-  return randomInspiration();
+  return randomInspiration(trimmed);
 }
