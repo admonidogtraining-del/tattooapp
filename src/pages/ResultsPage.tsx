@@ -148,28 +148,42 @@ export default function ResultsPage() {
               </div>
 
               {/* Redo prompt */}
-              <div className="flex gap-2 pt-1">
-                <input
-                  type="text"
+              <div
+                className="pt-1 rounded-xl overflow-hidden"
+                style={{ border: '1px solid #1e1e2e' }}
+              >
+                <textarea
                   value={customImagePrompt}
                   onChange={(e) => setCustomImagePrompt(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && (e.metaKey || e.ctrlKey) && !isGeneratingImage) {
+                      handleGenerateImage();
+                    }
+                  }}
                   placeholder="Tweak the prompt to regenerate…"
-                  className="flex-1 rounded-xl p-3 text-sm text-zinc-200 focus:outline-none transition-all placeholder:text-zinc-600"
+                  rows={3}
+                  className="w-full px-4 pt-3 pb-2 text-sm text-zinc-200 focus:outline-none resize-none placeholder:text-zinc-600 transition-all"
                   style={{
                     background: '#09090b',
-                    border: '1px solid #1e1e2e',
                     fontFamily: "'Chakra Petch', sans-serif",
+                    borderBottom: '1px solid #1e1e2e',
                   }}
-                  onFocus={e => { (e.target as HTMLElement).style.borderColor = '#7c3aed60'; }}
-                  onBlur={e => { (e.target as HTMLElement).style.borderColor = '#1e1e2e'; }}
                 />
-                <button
-                  onClick={handleGenerateImage}
-                  disabled={isGeneratingImage}
-                  className="btn-game flex items-center gap-2 px-4 py-3 rounded-xl text-sm shrink-0 cursor-pointer"
+                <div
+                  className="flex items-center justify-between px-3 py-2"
+                  style={{ background: '#0f0f1a' }}
                 >
-                  <RefreshCw size={14} /> Redo
-                </button>
+                  <span className="text-[10px] text-zinc-600 font-display uppercase tracking-wider">
+                    Ctrl+Enter to apply
+                  </span>
+                  <button
+                    onClick={handleGenerateImage}
+                    disabled={isGeneratingImage}
+                    className="btn-game flex items-center gap-2 px-4 py-2 rounded-lg text-xs cursor-pointer"
+                  >
+                    <RefreshCw size={13} /> Apply Changes
+                  </button>
+                </div>
               </div>
             </motion.div>
           )}
