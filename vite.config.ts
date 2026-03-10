@@ -7,6 +7,9 @@ export default defineConfig({
     tailwindcss(),
     react(),
   ],
+  server: {
+    host: true, // expose on local network so phones can connect
+  },
   optimizeDeps: {
     include: ['@google/genai', 'p-retry', 'retry'],
   },
