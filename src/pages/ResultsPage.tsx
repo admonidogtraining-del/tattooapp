@@ -20,7 +20,6 @@ export default function ResultsPage() {
 
   const [tweakInput, setTweakInput] = useState('');
 
-  // Pre-seed the textarea with the original prompt once it arrives
   useEffect(() => {
     if (result?.image_generation.dalle_prompt && !tweakInput) {
       setTweakInput(result.image_generation.dalle_prompt);
@@ -51,7 +50,7 @@ export default function ResultsPage() {
       {/* Back */}
       <button
         onClick={() => { handleReset(); navigate('/'); }}
-        className="flex items-center gap-1.5 text-xs text-[#666] hover:text-[#e8e4de] transition-colors cursor-pointer tracking-widest uppercase"
+        className="flex items-center gap-1.5 text-xs text-[#999] hover:text-[#e8e4de] transition-colors cursor-pointer tracking-widest uppercase"
       >
         <ChevronLeft size={13} /> Start over
       </button>
@@ -69,8 +68,8 @@ export default function ResultsPage() {
               transition={{ duration: 1.4, repeat: Infinity, ease: 'linear' }}
             />
             <div className="text-center space-y-1">
-              <p className="text-xs text-[#888] tracking-widest uppercase">Rendering your design</p>
-              <p className="text-[10px] text-[#555]">{questionnaire.style} · 20–40 sec</p>
+              <p className="text-xs text-[#bbb] tracking-widest uppercase">Rendering your design</p>
+              <p className="text-[11px] text-[#888]">{questionnaire.style} · 20–40 sec</p>
             </div>
           </div>
         )}
@@ -101,20 +100,20 @@ export default function ResultsPage() {
                 <a
                   href={generatedImage}
                   download="tattoo-concept.png"
-                  className="flex items-center gap-1.5 text-[10px] text-[#666] hover:text-[#e8e4de] transition-colors cursor-pointer tracking-widest uppercase"
+                  className="flex items-center gap-1.5 text-[11px] text-[#999] hover:text-[#e8e4de] transition-colors cursor-pointer tracking-widest uppercase"
                 >
                   <Download size={11} /> Download
                 </a>
                 <button
                   onClick={() => { tattooX.set(0); tattooY.set(0); setTattooScale(1); setShowTryOn(true); }}
-                  className="flex items-center gap-1.5 text-[10px] text-[#666] hover:text-[#e8e4de] transition-colors cursor-pointer tracking-widest uppercase"
+                  className="flex items-center gap-1.5 text-[11px] text-[#999] hover:text-[#e8e4de] transition-colors cursor-pointer tracking-widest uppercase"
                 >
                   <Maximize size={11} /> Try on body
                 </button>
               </div>
 
               {isGeneratingImage && (
-                <span className="text-[10px] text-[#555] tracking-widest uppercase flex items-center gap-1.5">
+                <span className="text-[11px] text-[#888] tracking-widest uppercase flex items-center gap-1.5">
                   <motion.span
                     className="inline-block w-1 h-1 rounded-full bg-[#c9a870]"
                     animate={{ opacity: [1, 0.2, 1] }}
@@ -141,11 +140,11 @@ export default function ResultsPage() {
                 <button
                   key={s.id}
                   onClick={() => handleStyleSwitch(s.id)}
-                  className="px-3 py-1 text-[10px] tracking-wider uppercase rounded-full transition-all cursor-pointer font-medium"
+                  className="px-3 py-1 text-[11px] tracking-wider uppercase rounded-full transition-all cursor-pointer font-medium"
                   style={{
                     background: active ? '#c9a87018' : 'transparent',
-                    border: active ? '1px solid #c9a87060' : '1px solid #2a2a2a',
-                    color: active ? '#c9a870' : '#555',
+                    border: active ? '1px solid #c9a87060' : '1px solid #333',
+                    color: active ? '#c9a870' : '#888',
                     fontFamily: "'Inter', sans-serif",
                     letterSpacing: '0.07em',
                   }}
@@ -174,7 +173,7 @@ export default function ResultsPage() {
           <>
             <div className="px-5 py-4" style={{ borderBottom: '1px solid #222' }}>
               <p className="label-overline mb-2">Interpretation</p>
-              <p className="font-display text-lg font-medium text-[#e8e4de] leading-snug">
+              <p className="font-display text-lg font-medium text-[#f0ece4] leading-snug">
                 {result.user_profile_analysis.interpreted_style}
               </p>
             </div>
@@ -190,7 +189,7 @@ export default function ResultsPage() {
                     style={{
                       background: '#1f1a13',
                       border: '1px solid #3a2e1a',
-                      color: '#c9a870',
+                      color: '#d4b87e',
                       fontFamily: "'Inter', sans-serif",
                     }}
                   >
@@ -229,7 +228,7 @@ export default function ResultsPage() {
           >
             <div className="px-5 py-3.5" style={{ borderBottom: '1px solid #222', background: '#161616' }}>
               <p className="font-display text-sm font-medium text-[#e8e4de]">Refine your design</p>
-              <p className="text-[10px] text-[#555] mt-0.5 tracking-wider">Edit the prompt below and regenerate</p>
+              <p className="text-[11px] text-[#888] mt-0.5 tracking-wider">Edit the prompt below and regenerate</p>
             </div>
 
             <textarea
@@ -239,7 +238,7 @@ export default function ResultsPage() {
                 if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) handleApplyTweak();
               }}
               rows={4}
-              className="w-full px-5 py-4 text-xs text-[#aaa] focus:outline-none resize-none leading-relaxed placeholder:text-[#444]"
+              className="w-full px-5 py-4 text-xs text-[#ccc] focus:outline-none resize-none leading-relaxed placeholder:text-[#666]"
               style={{
                 background: '#141414',
                 fontFamily: "'Inter', sans-serif",
@@ -249,7 +248,7 @@ export default function ResultsPage() {
             />
 
             <div className="px-5 py-3 flex items-center justify-between" style={{ background: '#161616' }}>
-              <span className="text-[10px] text-[#444] tracking-wider uppercase">⌘ Enter to apply</span>
+              <span className="text-[11px] text-[#777] tracking-wider uppercase">⌘ Enter to apply</span>
               <button
                 onClick={handleApplyTweak}
                 disabled={isGeneratingImage || !tweakInput.trim()}

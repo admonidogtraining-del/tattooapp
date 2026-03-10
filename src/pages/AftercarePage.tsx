@@ -37,15 +37,15 @@ export default function AftercarePage() {
       {/* Back */}
       <button
         onClick={() => navigate('/results')}
-        className="flex items-center gap-1.5 text-xs text-[#666] hover:text-[#e8e4de] transition-colors cursor-pointer tracking-widest uppercase"
+        className="flex items-center gap-1.5 text-xs text-[#999] hover:text-[#e8e4de] transition-colors cursor-pointer tracking-widest uppercase"
       >
         <ChevronLeft size={13} /> Back to Design
       </button>
 
       {/* Page title */}
       <div className="pb-1">
-        <h2 className="font-display text-2xl font-semibold text-[#e8e4de]">Placement & Aftercare</h2>
-        <p className="text-xs text-[#666] mt-1 tracking-wide">Everything you need before getting inked</p>
+        <h2 className="font-display text-2xl font-semibold text-[#f0ece4]">Placement & Aftercare</h2>
+        <p className="text-sm text-[#999] mt-1 tracking-wide">Everything you need before getting inked</p>
       </div>
 
       {/* ── PLACEMENT ── */}
@@ -58,9 +58,9 @@ export default function AftercarePage() {
             style={{ background: '#1f1a13', border: '1px solid #3a2e1a' }}>
             <MapPin size={13} style={{ color: '#c9a870' }} />
           </div>
-          <p className="font-display text-sm font-medium text-[#e8e4de]">Placement Recommendation</p>
+          <p className="font-display text-sm font-semibold text-[#f0ece4]">Placement Recommendation</p>
         </div>
-        <p className="text-sm text-[#aaa] leading-relaxed pl-0">
+        <p className="text-sm text-[#c8c4be] leading-relaxed">
           {user_profile_analysis.suggested_placement_logic}
         </p>
       </div>
@@ -73,7 +73,7 @@ export default function AftercarePage() {
         >
           <div className="flex items-center gap-2">
             <Clock size={13} style={{ color: '#c9a870' }} />
-            <p className="label-overline" style={{ color: '#666' }}>Longevity</p>
+            <p className="label-overline">Longevity</p>
           </div>
           <p className="text-sm text-[#e8e4de] font-medium leading-snug">
             {technical_brief.estimated_longevity}
@@ -86,7 +86,7 @@ export default function AftercarePage() {
         >
           <div className="flex items-center gap-2">
             <Droplets size={13} style={{ color: healingColor(aftercare_preview.healing_difficulty) }} />
-            <p className="label-overline" style={{ color: '#666' }}>Healing</p>
+            <p className="label-overline">Healing</p>
           </div>
           <div className="flex items-center gap-2">
             <span
@@ -100,7 +100,7 @@ export default function AftercarePage() {
         </div>
       </div>
 
-      {/* ── AFTERCARE NOTE ── */}
+      {/* ── LIFESTYLE WARNING ── */}
       <div
         className="rounded-2xl p-5 space-y-3"
         style={{ background: '#1a1a1a', border: '1px solid #2a2a2a' }}
@@ -110,9 +110,9 @@ export default function AftercarePage() {
             style={{ background: '#1a0e0e', border: '1px solid #3a1a1a' }}>
             <AlertCircle size={13} style={{ color: '#e07070' }} />
           </div>
-          <p className="font-display text-sm font-medium text-[#e8e4de]">Lifestyle Warning</p>
+          <p className="font-display text-sm font-semibold text-[#f0ece4]">Lifestyle Warning</p>
         </div>
-        <p className="text-sm text-[#aaa] leading-relaxed">
+        <p className="text-sm text-[#c8c4be] leading-relaxed">
           {aftercare_preview.lifestyle_warning}
         </p>
       </div>
@@ -122,8 +122,8 @@ export default function AftercarePage() {
         className="rounded-2xl p-5"
         style={{ background: '#1a1a1a', border: '1px solid #2a2a2a' }}
       >
-        <p className="label-overline mb-3">Design Complexity</p>
-        <p className="text-sm text-[#aaa]">{technical_brief.design_complexity}</p>
+        <p className="label-overline mb-2">Design Complexity</p>
+        <p className="text-sm text-[#c8c4be] leading-relaxed">{technical_brief.design_complexity}</p>
       </div>
 
       {/* ── SAVE CTA ── */}
