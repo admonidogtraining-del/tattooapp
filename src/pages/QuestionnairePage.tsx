@@ -40,94 +40,148 @@ export default function QuestionnairePage() {
     !!questionnaire.size,
   ][step];
 
+  const stepLabels = ['Skin Tone', 'Color Mode', 'Size'];
+
   const questions = [
     {
-      title: 'What\'s your skin tone?',
-      sub: 'Helps the AI recommend colors that look great on you.',
+      title: "Skin Tone",
+      sub: 'Helps the AI recommend colors that pop on your skin.',
       content: (
-        <div className="flex justify-center gap-5 flex-wrap">
-          {SKIN_TONES.map((tone) => (
-            <button
-              key={tone.value}
-              type="button"
-              onClick={() => { setQuestionnaire({ ...questionnaire, skinColor: tone.value }); }}
-              className="flex flex-col items-center gap-3 group"
-            >
-              <div
-                className={`w-16 h-16 rounded-full transition-all ${
-                  questionnaire.skinColor === tone.value
-                    ? 'ring-4 ring-offset-4 ring-offset-zinc-950 ring-zinc-200 scale-110'
-                    : 'opacity-60 hover:opacity-100 hover:scale-105'
-                }`}
-                style={{ backgroundColor: tone.color }}
-              />
-              <span className={`text-sm font-medium transition-colors ${questionnaire.skinColor === tone.value ? 'text-zinc-100' : 'text-zinc-500'}`}>
-                {tone.label}
-              </span>
-            </button>
-          ))}
+        <div className="flex justify-center gap-4 flex-wrap py-2">
+          {SKIN_TONES.map((tone) => {
+            const isSelected = questionnaire.skinColor === tone.value;
+            return (
+              <button
+                key={tone.value}
+                type="button"
+                onClick={() => { setQuestionnaire({ ...questionnaire, skinColor: tone.value }); }}
+                className="flex flex-col items-center gap-2 group cursor-pointer"
+              >
+                <div
+                  className="w-14 h-14 rounded-full transition-all"
+                  style={{
+                    backgroundColor: tone.color,
+                    boxShadow: isSelected
+                      ? `0 0 0 3px #09090b, 0 0 0 5px #a855f7, 0 0 15px #a855f760`
+                      : 'none',
+                    transform: isSelected ? 'scale(1.12)' : undefined,
+                    opacity: isSelected ? 1 : 0.55,
+                  }}
+                />
+                <span
+                  className="text-xs font-display uppercase tracking-wider transition-colors"
+                  style={{ color: isSelected ? '#a855f7' : '#52525b', letterSpacing: '0.1em' }}
+                >
+                  {tone.label}
+                </span>
+              </button>
+            );
+          })}
         </div>
       ),
     },
     {
-      title: 'Color or black & grey?',
+      title: "Color Mode",
       sub: 'This shapes the entire palette of your tattoo.',
       content: (
         <div className="flex flex-col gap-3">
           {[
-            { value: 'Black & Grey Only', emoji: '◾', desc: 'Timeless, works on all skin tones' },
-            { value: 'Full Color', emoji: '🎨', desc: 'Vibrant, painterly or traditional' },
-            { value: 'Black with Color Accents', emoji: '✦', desc: 'Best of both worlds' },
-          ].map(opt => (
-            <button
-              key={opt.value}
-              type="button"
-              onClick={() => { setQuestionnaire({ ...questionnaire, colorPreference: opt.value }); }}
-              className={`w-full p-5 rounded-2xl border-2 text-left transition-all flex items-center gap-4 ${
-                questionnaire.colorPreference === opt.value
-                  ? 'bg-zinc-800 border-zinc-400'
-                  : 'bg-zinc-900/40 border-zinc-800 hover:border-zinc-700'
-              }`}
-            >
-              <span className="text-2xl">{opt.emoji}</span>
-              <div>
-                <p className="text-base font-semibold text-zinc-100">{opt.value}</p>
-                <p className="text-sm text-zinc-500 mt-0.5">{opt.desc}</p>
-              </div>
-            </button>
-          ))}
+            { value: 'Black & Grey Only', icon: '◾', desc: 'Timeless, works on all skin tones' },
+            { value: 'Full Color', icon: '◈', desc: 'Vibrant, painterly or traditional' },
+            { value: 'Black with Color Accents', icon: '✦', desc: 'Best of both worlds' },
+          ].map(opt => {
+            const isSelected = questionnaire.colorPreference === opt.value;
+            return (
+              <button
+                key={opt.value}
+                type="button"
+                onClick={() => { setQuestionnaire({ ...questionnaire, colorPreference: opt.value }); }}
+                className="w-full p-4 rounded-xl text-left flex items-center gap-4 transition-all cursor-pointer relative overflow-hidden"
+                style={{
+                  background: isSelected
+                    ? 'linear-gradient(135deg, #1a0a2e 0%, #0f0f1a 100%)'
+                    : 'linear-gradient(135deg, #111118 0%, #0f0f1a 100%)',
+                  border: isSelected ? '1px solid #a855f7' : '1px solid #1e1e2e',
+                  boxShadow: isSelected ? '0 0 20px #7c3aed30' : 'none',
+                }}
+              >
+                {isSelected && (
+                  <div
+                    className="absolute left-0 top-0 bottom-0 w-1 rounded-l"
+                    style={{ background: 'linear-gradient(180deg, #a855f7, #ec4899)' }}
+                  />
+                )}
+                <span className="text-xl text-zinc-300 ml-1">{opt.icon}</span>
+                <div>
+                  <p className="text-sm font-semibold text-zinc-100">{opt.value}</p>
+                  <p className="text-xs text-zinc-500 mt-0.5">{opt.desc}</p>
+                </div>
+                {isSelected && (
+                  <div className="ml-auto">
+                    <div
+                      className="w-5 h-5 rounded-full flex items-center justify-center"
+                      style={{ background: '#7c3aed' }}
+                    >
+                      <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+                        <path d="M2 5l2.5 2.5L8 3" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                      </svg>
+                    </div>
+                  </div>
+                )}
+              </button>
+            );
+          })}
         </div>
       ),
     },
     {
-      title: 'How big should it be?',
+      title: "Tattoo Size",
       sub: 'Size affects detail, placement options, and healing.',
       content: (
         <div className="grid grid-cols-2 gap-3">
           {[
-            { value: 'Micro (Under 2 inches)', short: 'Micro', sub: 'Under 2 inches', size: 'w-7 h-7' },
-            { value: 'Small (2-4 inches)', short: 'Small', sub: '2–4 inches', size: 'w-9 h-9' },
-            { value: 'Medium (4-7 inches)', short: 'Medium', sub: '4–7 inches', size: 'w-11 h-11' },
-            { value: 'Large (7-12 inches)', short: 'Large', sub: '7–12 inches', size: 'w-14 h-14' },
-            { value: 'Extra Large (Full Sleeve/Back)', short: 'XL', sub: 'Full Sleeve / Back', size: 'w-16 h-16' },
-          ].map(opt => (
-            <button
-              key={opt.value}
-              type="button"
-              onClick={() => { setQuestionnaire({ ...questionnaire, size: opt.value }); }}
-              className={`p-4 rounded-2xl border-2 text-left transition-all flex flex-col items-center gap-2 ${
-                questionnaire.size === opt.value
-                  ? 'bg-zinc-800 border-zinc-400'
-                  : 'bg-zinc-900/40 border-zinc-800 hover:border-zinc-700'
-              }`}
-            >
-              <div className={`${opt.size} rounded-full border-2 ${
-                questionnaire.size === opt.value ? 'border-zinc-200 bg-zinc-600' : 'border-zinc-600 bg-zinc-800'
-              } transition-all`} />
-              <p className="text-sm font-semibold text-zinc-100">{opt.short}</p>
-              <p className="text-xs text-zinc-500">{opt.sub}</p>
-            </button>
-          ))}
+            { value: 'Micro (Under 2 inches)', short: 'Micro', sub: 'Under 2"', dotSize: 20 },
+            { value: 'Small (2-4 inches)', short: 'Small', sub: '2–4"', dotSize: 28 },
+            { value: 'Medium (4-7 inches)', short: 'Medium', sub: '4–7"', dotSize: 36 },
+            { value: 'Large (7-12 inches)', short: 'Large', sub: '7–12"', dotSize: 44 },
+            { value: 'Extra Large (Full Sleeve/Back)', short: 'XL', sub: 'Full Sleeve', dotSize: 52 },
+          ].map(opt => {
+            const isSelected = questionnaire.size === opt.value;
+            return (
+              <button
+                key={opt.value}
+                type="button"
+                onClick={() => { setQuestionnaire({ ...questionnaire, size: opt.value }); }}
+                className="p-4 rounded-xl text-left flex flex-col items-center gap-3 transition-all cursor-pointer relative"
+                style={{
+                  background: isSelected
+                    ? 'linear-gradient(135deg, #1a0a2e 0%, #0f0f1a 100%)'
+                    : 'linear-gradient(135deg, #111118 0%, #0f0f1a 100%)',
+                  border: isSelected ? '1px solid #a855f7' : '1px solid #1e1e2e',
+                  boxShadow: isSelected ? '0 0 20px #7c3aed30' : 'none',
+                }}
+              >
+                <div
+                  className="rounded-full transition-all"
+                  style={{
+                    width: `${opt.dotSize}px`,
+                    height: `${opt.dotSize}px`,
+                    background: isSelected
+                      ? 'linear-gradient(135deg, #7c3aed, #ec4899)'
+                      : '#1e1e2e',
+                    boxShadow: isSelected ? `0 0 ${opt.dotSize / 2}px #7c3aed50` : 'none',
+                    border: isSelected ? 'none' : '1px solid #3f3f46',
+                  }}
+                />
+                <div className="text-center">
+                  <p className="text-sm font-display uppercase tracking-wider text-zinc-100" style={{ letterSpacing: '0.08em' }}>
+                    {opt.short}
+                  </p>
+                  <p className="text-xs text-zinc-500 mt-0.5">{opt.sub}</p>
+                </div>
+              </button>
+            );
+          })}
         </div>
       ),
     },
@@ -140,61 +194,109 @@ export default function QuestionnairePage() {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -20 }}
-      className="max-w-lg mx-auto mt-8"
+      className="max-w-lg mx-auto"
     >
-      {/* Progress bar */}
-      <div className="flex items-center gap-2 mb-8">
-        <button
-          onClick={goBack}
-          className="text-sm text-zinc-400 hover:text-zinc-200 flex items-center gap-1 transition-colors shrink-0"
-        >
-          <ChevronLeft size={16} />
-        </button>
-        <div className="flex-1 flex gap-1.5">
-          {Array.from({ length: TOTAL_STEPS }).map((_, i) => (
-            <div
-              key={i}
-              className={`h-1 flex-1 rounded-full transition-all duration-300 ${
-                i <= step ? 'bg-zinc-200' : 'bg-zinc-800'
-              }`}
-            />
+      {/* XP-style progress bar */}
+      <div className="mb-8">
+        <div className="flex items-center gap-3 mb-3">
+          <button
+            onClick={goBack}
+            className="text-zinc-500 hover:text-purple-300 transition-colors cursor-pointer shrink-0"
+          >
+            <ChevronLeft size={18} />
+          </button>
+          <div className="flex-1 flex gap-1.5">
+            {Array.from({ length: TOTAL_STEPS }).map((_, i) => (
+              <div
+                key={i}
+                className="h-1.5 flex-1 rounded-full overflow-hidden"
+                style={{ background: '#1e1e2e' }}
+              >
+                <motion.div
+                  className="h-full rounded-full"
+                  initial={{ width: 0 }}
+                  animate={{ width: i <= step ? '100%' : '0%' }}
+                  transition={{ duration: 0.3, ease: 'easeOut' }}
+                  style={{
+                    background: i <= step
+                      ? 'linear-gradient(90deg, #7c3aed, #ec4899)'
+                      : 'transparent',
+                    boxShadow: i <= step ? '0 0 8px #7c3aed80' : 'none',
+                  }}
+                />
+              </div>
+            ))}
+          </div>
+          <span className="text-xs font-display text-zinc-600 shrink-0" style={{ letterSpacing: '0.1em' }}>
+            {step + 1}/{TOTAL_STEPS}
+          </span>
+        </div>
+
+        {/* Step labels */}
+        <div className="flex ml-8 gap-1.5">
+          {stepLabels.map((label, i) => (
+            <div key={label} className="flex-1 text-center">
+              <span
+                className="text-[9px] font-display uppercase tracking-widest"
+                style={{
+                  color: i <= step ? '#a855f7' : '#3f3f46',
+                  letterSpacing: '0.12em',
+                }}
+              >
+                {label}
+              </span>
+            </div>
           ))}
         </div>
-        <span className="text-xs text-zinc-500 shrink-0">{step + 1} / {TOTAL_STEPS}</span>
       </div>
 
       {/* Question content */}
-      <div className="overflow-hidden">
-        <AnimatePresence mode="wait" custom={dir}>
-          <motion.div
-            key={step}
-            custom={dir}
-            variants={variants}
-            initial="enter"
-            animate="center"
-            exit="exit"
-            transition={{ duration: 0.25, ease: 'easeInOut' }}
-          >
-            <div className="mb-8">
-              <h2 className="text-3xl font-light tracking-tight mb-2">{q.title}</h2>
-              <p className="text-sm text-zinc-400">{q.sub}</p>
-            </div>
-            {q.content}
-          </motion.div>
-        </AnimatePresence>
+      <div
+        className="rounded-2xl p-6 mb-5 relative overflow-hidden"
+        style={{
+          background: 'linear-gradient(135deg, #111118 0%, #0f0f1a 100%)',
+          border: '1px solid #1e1e2e',
+        }}
+      >
+        {/* Corner accents */}
+        <div className="absolute top-0 left-0 w-5 h-5 border-t-2 border-l-2 border-purple-700 rounded-tl-xl" />
+        <div className="absolute bottom-0 right-0 w-5 h-5 border-b-2 border-r-2 border-purple-700 rounded-br-xl" />
+
+        <div className="overflow-hidden">
+          <AnimatePresence mode="wait" custom={dir}>
+            <motion.div
+              key={step}
+              custom={dir}
+              variants={variants}
+              initial="enter"
+              animate="center"
+              exit="exit"
+              transition={{ duration: 0.25, ease: 'easeInOut' }}
+            >
+              <div className="mb-6">
+                <p className="text-[10px] font-display text-purple-400 uppercase tracking-[0.25em] mb-1">
+                  Step {step + 1} of {TOTAL_STEPS}
+                </p>
+                <h2 className="text-2xl font-display uppercase tracking-wider text-zinc-100" style={{ letterSpacing: '0.08em' }}>
+                  {q.title}
+                </h2>
+                <p className="text-sm text-zinc-500 mt-1">{q.sub}</p>
+              </div>
+              {q.content}
+            </motion.div>
+          </AnimatePresence>
+        </div>
       </div>
 
       {/* Next button */}
-      <div className="mt-8">
-        <button
-          onClick={goNext}
-          disabled={!stepComplete}
-          className="w-full bg-zinc-100 text-zinc-950 rounded-xl py-4 text-base font-medium hover:bg-white disabled:opacity-40 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2"
-        >
-          {step === TOTAL_STEPS - 1 ? 'Choose Style' : 'Next'}
-          <ChevronRight size={16} />
-        </button>
-      </div>
+      <button
+        onClick={goNext}
+        disabled={!stepComplete}
+        className="btn-game w-full rounded-xl py-4 text-sm flex items-center justify-center gap-2 cursor-pointer"
+      >
+        {step === TOTAL_STEPS - 1 ? 'Choose Style' : 'Next'}
+        <ChevronRight size={16} />
+      </button>
     </motion.div>
   );
 }

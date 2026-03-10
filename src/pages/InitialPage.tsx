@@ -31,12 +31,14 @@ export default function InitialPage() {
     }
   };
 
+  const canContinue = !!prompt.trim() || images.length > 0;
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -20 }}
-      className="max-w-2xl mx-auto mt-12"
+      className="max-w-2xl mx-auto"
     >
       <input
         type="file"
@@ -47,89 +49,161 @@ export default function InitialPage() {
         className="hidden"
       />
 
-      <h2 className="text-4xl font-light tracking-tight mb-4 text-center">
-        Begin Consultation
-      </h2>
-      <p className="text-zinc-400 text-center mb-12">
-        Upload reference photos or describe your concept to start.
-      </p>
-
-      <div className="space-y-8">
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-          {images.map((img, idx) => (
-            <div
-              key={idx}
-              className="relative aspect-square rounded-xl overflow-hidden bg-zinc-900 border border-zinc-800 group"
-            >
-              <img src={img.url} alt={`Upload ${idx + 1}`} className="w-full h-full object-cover" />
-              <button
-                onClick={() => removeImage(idx)}
-                className="absolute top-2 right-2 w-8 h-8 bg-black/60 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-500"
-              >
-                <X size={14} />
-              </button>
-            </div>
-          ))}
-          <div
-            onClick={() => fileInputRef.current?.click()}
-            className="aspect-square border-2 border-dashed border-zinc-800 rounded-xl flex flex-col items-center justify-center gap-2 cursor-pointer hover:bg-zinc-900/50 hover:border-zinc-700 transition-all group"
+      {/* Hero */}
+      <div className="text-center mb-10 relative">
+        {/* Decorative glow orb */}
+        <div
+          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-32 rounded-full pointer-events-none"
+          style={{
+            background: 'radial-gradient(ellipse, #7c3aed20 0%, transparent 70%)',
+            filter: 'blur(20px)',
+          }}
+        />
+        <p className="relative text-[10px] font-display text-purple-400 uppercase tracking-[0.3em] mb-3">
+          Ink Design Studio
+        </p>
+        <h2 className="relative text-4xl font-display uppercase tracking-widest text-zinc-100 mb-3" style={{ letterSpacing: '0.08em' }}>
+          Begin Your<br />
+          <span
+            className="text-transparent bg-clip-text"
+            style={{ backgroundImage: 'linear-gradient(135deg, #a855f7 0%, #ec4899 100%)' }}
           >
-            <div className="w-10 h-10 rounded-full bg-zinc-900 flex items-center justify-center text-zinc-500 group-hover:text-zinc-300 group-hover:scale-110 transition-all">
-              {images.length > 0 ? <Plus size={20} /> : <Upload size={20} />}
+            Consultation
+          </span>
+        </h2>
+        <p className="relative text-sm text-zinc-500 tracking-wide">
+          Upload reference photos or describe your concept.
+        </p>
+      </div>
+
+      <form onSubmit={handleContinue} className="space-y-5">
+        {/* Upload zone */}
+        <div
+          className="rounded-2xl p-4 relative"
+          style={{
+            background: 'linear-gradient(135deg, #111118 0%, #0f0f1a 100%)',
+            border: '1px solid #1e1e2e',
+          }}
+        >
+          <p className="text-[10px] font-display text-zinc-500 uppercase tracking-widest mb-3">
+            Reference Photos
+          </p>
+          <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
+            {images.map((img, idx) => (
+              <div
+                key={idx}
+                className="relative aspect-square rounded-xl overflow-hidden group"
+                style={{ border: '1px solid #7c3aed40' }}
+              >
+                <img src={img.url} alt={`Upload ${idx + 1}`} className="w-full h-full object-cover" />
+                <button
+                  type="button"
+                  onClick={() => removeImage(idx)}
+                  className="absolute top-1.5 right-1.5 w-6 h-6 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+                  style={{ background: '#ec4899', boxShadow: '0 0 8px #ec489980' }}
+                >
+                  <X size={12} className="text-white" />
+                </button>
+              </div>
+            ))}
+            <div
+              onClick={() => fileInputRef.current?.click()}
+              className="aspect-square rounded-xl flex flex-col items-center justify-center gap-2 cursor-pointer transition-all group"
+              style={{
+                border: '2px dashed #1e1e2e',
+                background: 'transparent',
+              }}
+              onMouseEnter={e => {
+                (e.currentTarget as HTMLElement).style.borderColor = '#7c3aed60';
+                (e.currentTarget as HTMLElement).style.background = '#7c3aed08';
+              }}
+              onMouseLeave={e => {
+                (e.currentTarget as HTMLElement).style.borderColor = '#1e1e2e';
+                (e.currentTarget as HTMLElement).style.background = 'transparent';
+              }}
+            >
+              <div
+                className="w-9 h-9 rounded-full flex items-center justify-center"
+                style={{ background: '#1a1a2e', border: '1px solid #7c3aed40' }}
+              >
+                {images.length > 0
+                  ? <Plus size={18} className="text-purple-400" />
+                  : <Upload size={18} className="text-purple-400" />
+                }
+              </div>
+              <p className="text-xs text-zinc-500 group-hover:text-purple-400 transition-colors">
+                {images.length > 0 ? 'Add More' : 'Upload'}
+              </p>
             </div>
-            <p className="text-xs font-medium text-zinc-400">
-              {images.length > 0 ? 'Add Photo' : 'Upload Photos'}
-            </p>
           </div>
         </div>
 
-        <div className="relative flex items-center py-4">
-          <div className="flex-grow border-t border-zinc-900" />
-          <span className="flex-shrink-0 mx-4 text-xs uppercase tracking-widest text-zinc-600">
-            And / Or
-          </span>
-          <div className="flex-grow border-t border-zinc-900" />
+        {/* Divider */}
+        <div className="flex items-center gap-3">
+          <div className="flex-1 h-px" style={{ background: 'linear-gradient(90deg, transparent, #1e1e2e 50%, transparent)' }} />
+          <span className="text-[10px] font-display text-zinc-600 uppercase tracking-[0.25em]">And / Or</span>
+          <div className="flex-1 h-px" style={{ background: 'linear-gradient(90deg, transparent, #1e1e2e 50%, transparent)' }} />
         </div>
 
-        <form onSubmit={handleContinue} className="space-y-3">
+        {/* Text prompt */}
+        <div
+          className="rounded-2xl p-4 relative"
+          style={{
+            background: 'linear-gradient(135deg, #111118 0%, #0f0f1a 100%)',
+            border: '1px solid #1e1e2e',
+          }}
+        >
+          <p className="text-[10px] font-display text-zinc-500 uppercase tracking-widest mb-3">
+            Describe Your Concept
+          </p>
           <div className="relative">
             <textarea
               value={prompt}
               onChange={(e) => setPrompt(e.target.value)}
               placeholder="Describe your story, emotions, or concept..."
-              className="w-full h-32 bg-zinc-900/50 border border-zinc-800 rounded-xl p-4 pb-12 text-sm focus:outline-none focus:ring-1 focus:ring-zinc-500 focus:border-zinc-500 transition-all resize-none placeholder:text-zinc-600"
+              className="w-full h-28 rounded-xl p-4 pb-12 text-sm focus:outline-none resize-none transition-all text-zinc-200 placeholder:text-zinc-600"
+              style={{
+                background: '#09090b',
+                border: '1px solid #1e1e2e',
+                fontFamily: "'Chakra Petch', sans-serif",
+              }}
+              onFocus={e => { (e.target as HTMLElement).style.borderColor = '#7c3aed60'; }}
+              onBlur={e => { (e.target as HTMLElement).style.borderColor = '#1e1e2e'; }}
             />
             <button
               type="button"
               onClick={handleInspire}
               disabled={inspiring}
-              className={`absolute bottom-3 right-3 flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all disabled:opacity-50 ${
+              className="absolute bottom-3 right-3 flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-display uppercase tracking-wider transition-all disabled:opacity-50 cursor-pointer"
+              style={
                 inspireError
-                  ? 'bg-red-900/50 text-red-400'
-                  : 'bg-zinc-800 hover:bg-zinc-700 text-zinc-300 hover:text-zinc-100'
-              }`}
+                  ? { background: '#450a0a', border: '1px solid #7f1d1d', color: '#fca5a5' }
+                  : { background: '#1a0a2e', border: '1px solid #7c3aed50', color: '#a855f7' }
+              }
             >
               {inspiring ? (
                 <motion.span
-                  className="inline-block w-3 h-3 border border-zinc-400 border-t-transparent rounded-full"
+                  className="inline-block w-3 h-3 border border-purple-400 border-t-transparent rounded-full"
                   animate={{ rotate: 360 }}
                   transition={{ duration: 0.8, repeat: Infinity, ease: 'linear' }}
                 />
               ) : (
                 <Wand2 size={12} />
               )}
-              {inspiring ? 'Inspiring…' : inspireError ? 'Failed — check API key' : 'Inspire me'}
+              {inspiring ? 'Inspiring…' : inspireError ? 'Failed — check API key' : 'Inspire Me'}
             </button>
           </div>
-          <button
-            type="submit"
-            disabled={!prompt.trim() && images.length === 0}
-            className="w-full bg-zinc-100 text-zinc-950 rounded-xl py-3.5 px-4 text-sm font-medium hover:bg-white disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2"
-          >
-            Continue to Details <ChevronRight size={16} />
-          </button>
-        </form>
-      </div>
+        </div>
+
+        {/* CTA button */}
+        <button
+          type="submit"
+          disabled={!canContinue}
+          className="btn-game w-full rounded-xl py-4 px-6 text-sm flex items-center justify-center gap-2 cursor-pointer"
+        >
+          Continue to Details <ChevronRight size={16} />
+        </button>
+      </form>
     </motion.div>
   );
 }
