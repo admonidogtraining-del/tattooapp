@@ -1,15 +1,16 @@
-@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Inter:wght@300;400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600&display=swap');
 @import "tailwindcss";
 
 @theme {
   --font-sans: 'Inter', system-ui, sans-serif;
-  --font-display: 'Cormorant Garamond', Georgia, serif;
-  --color-ink-bg: #0a0a0a;
-  --color-ink-surface: #111111;
-  --color-ink-border: #1f1f1f;
-  --color-ink-accent: #7c3aed;
-  --color-ink-rose: #c2185b;
-  --color-ink-muted: #3a3a3a;
+  --font-display: 'Space Grotesk', system-ui, sans-serif;
+  --color-bg: #121212;
+  --color-surface: #1a1a1a;
+  --color-surface-2: #222222;
+  --color-border: #2a2a2a;
+  --color-gold: #c9a870;
+  --color-gold-dim: #8a7050;
+  --color-violet: #8b6bd9;
 }
 
 @layer base {
@@ -18,97 +19,79 @@
   }
 
   body {
-    background-color: #0a0a0a;
-    color: #e0ddd8;
+    background-color: #121212;
+    color: #e8e4de;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
 
-  ::-webkit-scrollbar {
-    width: 3px;
-    height: 3px;
-  }
-
-  ::-webkit-scrollbar-track {
-    background: #111111;
-  }
-
-  ::-webkit-scrollbar-thumb {
-    background: #2e2e2e;
-    border-radius: 9999px;
-  }
-
-  ::-webkit-scrollbar-thumb:hover {
-    background: #444;
-  }
+  ::-webkit-scrollbar { width: 3px; height: 3px; }
+  ::-webkit-scrollbar-track { background: #1a1a1a; }
+  ::-webkit-scrollbar-thumb { background: #333; border-radius: 9999px; }
+  ::-webkit-scrollbar-thumb:hover { background: #4a4a4a; }
 }
 
 @layer utilities {
   .font-display {
-    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-family: 'Space Grotesk', system-ui, sans-serif;
   }
 
-  /* Artsy card — clean, editorial */
+  /* Cards */
   .ink-card {
-    background: #111111;
-    border: 1px solid #1f1f1f;
-    transition: border-color 0.25s ease;
-  }
-
-  .ink-card:hover {
-    border-color: #2e2e2e;
-  }
-
-  /* Primary action button — understated, refined */
-  .btn-ink {
     background: #1a1a1a;
-    border: 1px solid #2e2e2e;
-    color: #e0ddd8;
+    border: 1px solid #2a2a2a;
+  }
+
+  /* Label / overline text */
+  .label-overline {
+    font-family: 'Inter', sans-serif;
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #666;
+  }
+
+  /* Primary button — warm gold outline */
+  .btn-primary {
+    background: transparent;
+    border: 1px solid #c9a870;
+    color: #c9a870;
     font-family: 'Inter', sans-serif;
     font-weight: 500;
     font-size: 0.75rem;
-    letter-spacing: 0.06em;
+    letter-spacing: 0.07em;
     text-transform: uppercase;
     transition: all 0.2s ease;
   }
 
-  .btn-ink:hover:not(:disabled) {
-    background: #222;
-    border-color: #444;
-    color: #fff;
+  .btn-primary:hover:not(:disabled) {
+    background: #c9a87015;
+    color: #e0c898;
+    border-color: #e0c898;
   }
 
-  .btn-ink:active:not(:disabled) {
-    background: #1a1a1a;
-  }
-
-  .btn-ink:disabled {
+  .btn-primary:disabled {
     opacity: 0.3;
     cursor: not-allowed;
   }
 
-  /* CTA button — bold but artistic, no neon */
+  /* CTA button — filled gold */
   .btn-generate {
-    background: #1a0a0a;
-    border: 1px solid #5a1a2e;
-    color: #e8b4c4;
+    background: #c9a870;
+    border: 1px solid #c9a870;
+    color: #121212;
     font-family: 'Inter', sans-serif;
-    font-weight: 500;
-    font-size: 0.8rem;
-    letter-spacing: 0.08em;
+    font-weight: 600;
+    font-size: 0.78rem;
+    letter-spacing: 0.07em;
     text-transform: uppercase;
-    transition: all 0.25s ease;
+    transition: all 0.22s ease;
   }
 
   .btn-generate:hover:not(:disabled) {
-    background: #2a0f1a;
-    border-color: #8b2252;
-    color: #f5d0de;
-    box-shadow: 0 4px 20px rgba(139, 34, 82, 0.2);
-  }
-
-  .btn-generate:active:not(:disabled) {
-    background: #1a0a0a;
+    background: #dfc080;
+    border-color: #dfc080;
   }
 
   .btn-generate:disabled {
@@ -116,52 +99,27 @@
     cursor: not-allowed;
   }
 
-  /* Apply/regen button — accent purple, muted */
+  /* Secondary action button */
   .btn-game {
-    background: #18102a;
-    border: 1px solid #3d2a5e;
-    color: #c4b5fd;
+    background: #1f1f1f;
+    border: 1px solid #333;
+    color: #bbb;
     font-family: 'Inter', sans-serif;
     font-weight: 500;
-    font-size: 0.7rem;
+    font-size: 0.72rem;
     letter-spacing: 0.06em;
     text-transform: uppercase;
-    transition: all 0.2s ease;
+    transition: all 0.18s ease;
   }
 
   .btn-game:hover:not(:disabled) {
-    background: #21143a;
-    border-color: #6d45a0;
-    color: #ddd6fe;
+    background: #2a2a2a;
+    border-color: #555;
+    color: #e8e4de;
   }
 
   .btn-game:disabled {
     opacity: 0.3;
     cursor: not-allowed;
-  }
-
-  /* Subtle shimmer for loading */
-  @keyframes shimmer {
-    0%   { transform: translateX(-100%); }
-    100% { transform: translateX(100%); }
-  }
-
-  .shimmer {
-    animation: shimmer 1.8s ease-in-out infinite;
-  }
-
-  @keyframes pulse-soft {
-    0%, 100% { opacity: 1; }
-    50%       { opacity: 0.4; }
-  }
-
-  .pulse-soft {
-    animation: pulse-soft 1.8s ease-in-out infinite;
-  }
-
-  /* Divider line — thin, understated */
-  .ink-divider {
-    border: none;
-    border-top: 1px solid #1f1f1f;
   }
 }
