@@ -1,216 +1,167 @@
-@import url('https://fonts.googleapis.com/css2?family=Russo+One&family=Chakra+Petch:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Inter:wght@300;400;500;600&display=swap');
 @import "tailwindcss";
 
 @theme {
-  --font-sans: 'Chakra Petch', system-ui, sans-serif;
-  --font-display: 'Russo One', system-ui, sans-serif;
-  --color-game-bg: #09090b;
-  --color-game-surface: #111118;
-  --color-game-border: #1e1e2e;
-  --color-neon-purple: #7c3aed;
-  --color-neon-purple-bright: #a855f7;
-  --color-neon-pink: #ec4899;
-  --color-neon-cyan: #06b6d4;
-  --color-neon-gold: #f59e0b;
+  --font-sans: 'Inter', system-ui, sans-serif;
+  --font-display: 'Cormorant Garamond', Georgia, serif;
+  --color-ink-bg: #0a0a0a;
+  --color-ink-surface: #111111;
+  --color-ink-border: #1f1f1f;
+  --color-ink-accent: #7c3aed;
+  --color-ink-rose: #c2185b;
+  --color-ink-muted: #3a3a3a;
 }
 
 @layer base {
   html {
-    font-family: 'Chakra Petch', system-ui, sans-serif;
+    font-family: 'Inter', system-ui, sans-serif;
   }
 
   body {
-    background-color: #09090b;
-    color: #e2e8f0;
+    background-color: #0a0a0a;
+    color: #e0ddd8;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
 
   ::-webkit-scrollbar {
-    width: 4px;
-    height: 4px;
+    width: 3px;
+    height: 3px;
   }
 
   ::-webkit-scrollbar-track {
-    background: #0f0f1a;
+    background: #111111;
   }
 
   ::-webkit-scrollbar-thumb {
-    background: #7c3aed;
+    background: #2e2e2e;
     border-radius: 9999px;
   }
 
   ::-webkit-scrollbar-thumb:hover {
-    background: #a855f7;
+    background: #444;
   }
 }
 
 @layer utilities {
   .font-display {
-    font-family: 'Russo One', system-ui, sans-serif;
+    font-family: 'Cormorant Garamond', Georgia, serif;
   }
 
-  /* Neon glow effects */
-  .neon-purple {
-    box-shadow: 0 0 8px #7c3aed80, 0 0 20px #7c3aed40, inset 0 0 8px #7c3aed20;
+  /* Artsy card — clean, editorial */
+  .ink-card {
+    background: #111111;
+    border: 1px solid #1f1f1f;
+    transition: border-color 0.25s ease;
   }
 
-  .neon-purple-text {
-    text-shadow: 0 0 10px #a855f7, 0 0 30px #7c3aed80;
+  .ink-card:hover {
+    border-color: #2e2e2e;
   }
 
-  .neon-pink-text {
-    text-shadow: 0 0 10px #ec4899, 0 0 30px #ec489980;
-  }
-
-  .neon-border {
-    border-color: #7c3aed;
-    box-shadow: 0 0 0 1px #7c3aed40, 0 0 12px #7c3aed30;
-  }
-
-  .neon-border-pink {
-    border-color: #ec4899;
-    box-shadow: 0 0 0 1px #ec489940, 0 0 12px #ec489930;
-  }
-
-  /* Game card hover glow */
-  .game-card {
-    transition: all 0.2s ease;
-    border: 1px solid #1e1e2e;
-    background: linear-gradient(135deg, #111118 0%, #0f0f1a 100%);
-  }
-
-  .game-card:hover {
-    border-color: #7c3aed80;
-    box-shadow: 0 0 20px #7c3aed20, 0 4px 24px #00000080;
-  }
-
-  .game-card-selected {
-    border-color: #7c3aed !important;
-    box-shadow: 0 0 20px #7c3aed40, 0 0 40px #7c3aed20, inset 0 0 20px #7c3aed10 !important;
-  }
-
-  /* Scanline overlay */
-  .scanlines::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: repeating-linear-gradient(
-      0deg,
-      transparent,
-      transparent 2px,
-      rgba(0, 0, 0, 0.08) 2px,
-      rgba(0, 0, 0, 0.08) 4px
-    );
-    pointer-events: none;
-    z-index: 1;
-  }
-
-  /* XP progress bar */
-  .xp-bar {
-    background: linear-gradient(90deg, #7c3aed, #ec4899);
-    box-shadow: 0 0 8px #7c3aed80;
-  }
-
-  /* Game button */
-  .btn-game {
-    background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
-    border: 1px solid #a855f780;
-    box-shadow: 0 0 20px #7c3aed40, 0 4px 12px #00000060;
-    color: #fff;
-    font-family: 'Chakra Petch', sans-serif;
-    font-weight: 600;
-    letter-spacing: 0.05em;
+  /* Primary action button — understated, refined */
+  .btn-ink {
+    background: #1a1a1a;
+    border: 1px solid #2e2e2e;
+    color: #e0ddd8;
+    font-family: 'Inter', sans-serif;
+    font-weight: 500;
+    font-size: 0.75rem;
+    letter-spacing: 0.06em;
     text-transform: uppercase;
     transition: all 0.2s ease;
   }
 
-  .btn-game:hover:not(:disabled) {
-    background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
-    box-shadow: 0 0 30px #7c3aed60, 0 4px 16px #00000080;
-    transform: translateY(-1px);
+  .btn-ink:hover:not(:disabled) {
+    background: #222;
+    border-color: #444;
+    color: #fff;
   }
 
-  .btn-game:active:not(:disabled) {
-    transform: translateY(0);
-    box-shadow: 0 0 15px #7c3aed40;
+  .btn-ink:active:not(:disabled) {
+    background: #1a1a1a;
   }
 
-  .btn-game:disabled {
-    opacity: 0.35;
+  .btn-ink:disabled {
+    opacity: 0.3;
     cursor: not-allowed;
   }
 
-  /* Generate button (CTA - pink/rose) */
+  /* CTA button — bold but artistic, no neon */
   .btn-generate {
-    background: linear-gradient(135deg, #db2777 0%, #ec4899 50%, #7c3aed 100%);
-    border: 1px solid #ec489980;
-    box-shadow: 0 0 25px #ec489940, 0 0 50px #7c3aed20, 0 4px 16px #00000070;
-    color: #fff;
-    font-family: 'Chakra Petch', sans-serif;
-    font-weight: 700;
+    background: #1a0a0a;
+    border: 1px solid #5a1a2e;
+    color: #e8b4c4;
+    font-family: 'Inter', sans-serif;
+    font-weight: 500;
+    font-size: 0.8rem;
     letter-spacing: 0.08em;
     text-transform: uppercase;
     transition: all 0.25s ease;
   }
 
   .btn-generate:hover:not(:disabled) {
-    box-shadow: 0 0 40px #ec489960, 0 0 80px #7c3aed30, 0 6px 20px #00000090;
-    transform: translateY(-2px);
+    background: #2a0f1a;
+    border-color: #8b2252;
+    color: #f5d0de;
+    box-shadow: 0 4px 20px rgba(139, 34, 82, 0.2);
   }
 
   .btn-generate:active:not(:disabled) {
-    transform: translateY(0);
+    background: #1a0a0a;
   }
 
   .btn-generate:disabled {
-    opacity: 0.30;
+    opacity: 0.25;
     cursor: not-allowed;
   }
 
-  /* HUD panel */
-  .hud-panel {
-    background: linear-gradient(135deg, #111118 0%, #0f0f1a 100%);
-    border: 1px solid #1e1e2e;
-    position: relative;
+  /* Apply/regen button — accent purple, muted */
+  .btn-game {
+    background: #18102a;
+    border: 1px solid #3d2a5e;
+    color: #c4b5fd;
+    font-family: 'Inter', sans-serif;
+    font-weight: 500;
+    font-size: 0.7rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    transition: all 0.2s ease;
   }
 
-  /* Corner accent */
-  .corner-accent::before,
-  .corner-accent::after {
-    content: '';
-    position: absolute;
-    width: 12px;
-    height: 12px;
-    border-color: #7c3aed;
-    border-style: solid;
-  }
-  .corner-accent::before {
-    top: -1px;
-    left: -1px;
-    border-width: 2px 0 0 2px;
-  }
-  .corner-accent::after {
-    bottom: -1px;
-    right: -1px;
-    border-width: 0 2px 2px 0;
+  .btn-game:hover:not(:disabled) {
+    background: #21143a;
+    border-color: #6d45a0;
+    color: #ddd6fe;
   }
 
-  /* Glitch animation */
-  @keyframes glitch {
-    0%, 100% { clip-path: inset(0 0 98% 0); transform: translate(-2px, 0); }
-    20%       { clip-path: inset(30% 0 50% 0); transform: translate(2px, 0); }
-    40%       { clip-path: inset(60% 0 20% 0); transform: translate(-1px, 0); }
-    60%       { clip-path: inset(80% 0 5% 0);  transform: translate(1px, 0); }
-    80%       { clip-path: inset(10% 0 80% 0); transform: translate(-2px, 0); }
+  .btn-game:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
   }
 
-  @keyframes pulse-glow {
-    0%, 100% { box-shadow: 0 0 20px #7c3aed40, 0 0 40px #7c3aed20; }
-    50%       { box-shadow: 0 0 30px #7c3aed60, 0 0 60px #7c3aed30; }
+  /* Subtle shimmer for loading */
+  @keyframes shimmer {
+    0%   { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
   }
 
-  .pulse-glow {
-    animation: pulse-glow 2s ease-in-out infinite;
+  .shimmer {
+    animation: shimmer 1.8s ease-in-out infinite;
+  }
+
+  @keyframes pulse-soft {
+    0%, 100% { opacity: 1; }
+    50%       { opacity: 0.4; }
+  }
+
+  .pulse-soft {
+    animation: pulse-soft 1.8s ease-in-out infinite;
+  }
+
+  /* Divider line — thin, understated */
+  .ink-divider {
+    border: none;
+    border-top: 1px solid #1f1f1f;
   }
 }

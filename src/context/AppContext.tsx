@@ -3,7 +3,6 @@ import { useMotionValue, MotionValue } from 'motion/react';
 import {
   generateTattooConsultation,
   generateTattooImage,
-  refineTattooPrompt,
   TattooConsultation,
   QuestionnaireData,
 } from '../services/geminiService';
@@ -187,13 +186,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     setError(null);
     setFallbackMessage(null);
     try {
-      const basePrompt = result?.image_generation.dalle_prompt ?? prompt;
-      // If the user typed a tweak, ask Gemini to intelligently merge it with the
-      // original prompt — preserving the core concept while applying the change.
-      // Then wrap the result with the selected style rules as usual.
-      const effectivePrompt = customImagePrompt.trim()
-        ? await refineTattooPrompt(basePrompt, customImagePrompt.trim(), questionnaire.style)
-        : basePrompt;
+      // customImagePrompt now holds the full editable prompt (pre-seeded from the
+      // original dalle_prompt and directly edited by the user). Use it as-is.
+      const effectivePrompt = customImagePrompt.trim() || result?.image_generation.dalle_prompt || prompt;
       const { dataUrl, fallbackMessage: msg } = await generateTattooImage(
         buildStylePrompt(effectivePrompt, questionnaire.style)
       );
