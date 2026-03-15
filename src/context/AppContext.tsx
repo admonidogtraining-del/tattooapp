@@ -41,7 +41,7 @@ interface AppContextValue {
   startParallelGeneration: () => void;
   handleDiscoveryAnswer: (question: string, answer: string) => void;
   handleReset: () => void;
-  handleGenerateImage: () => Promise<void>;
+  handleGenerateImage: (explicitPrompt?: string) => Promise<void>;
   handleStyleSwitch: (styleId: string) => void;
 }
 
@@ -180,15 +180,13 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       .finally(() => setIsGeneratingImage(false));
   };
 
-  const handleGenerateImage = async () => {
+  const handleGenerateImage = async (explicitPrompt?: string) => {
     if (!result && !prompt) return;
     setIsGeneratingImage(true);
     setError(null);
     setFallbackMessage(null);
     try {
-      // customImagePrompt now holds the full editable prompt (pre-seeded from the
-      // original dalle_prompt and directly edited by the user). Use it as-is.
-      const effectivePrompt = customImagePrompt.trim() || result?.image_generation.dalle_prompt || prompt;
+      const effectivePrompt = explicitPrompt?.trim() || customImagePrompt.trim() || result?.image_generation.dalle_prompt || prompt;
       const { dataUrl, fallbackMessage: msg } = await generateTattooImage(
         buildStylePrompt(effectivePrompt, questionnaire.style)
       );

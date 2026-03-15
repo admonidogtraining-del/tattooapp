@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ChevronLeft, Download, Maximize, RefreshCw, ArrowRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
@@ -22,6 +22,7 @@ export default function ResultsPage() {
 
   const [tweakInput, setTweakInput] = useState('');
   const [showRatingModal, setShowRatingModal] = useState(false);
+  const promptInitialized = useRef(false);
 
   const handleAftercareClick = () => {
     if (generatedImage) {
@@ -50,17 +51,17 @@ export default function ResultsPage() {
   };
 
   useEffect(() => {
-    if (result?.image_generation.dalle_prompt && !tweakInput) {
+    if (result?.image_generation.dalle_prompt && !promptInitialized.current) {
+      promptInitialized.current = true;
       setTweakInput(result.image_generation.dalle_prompt);
       setCustomImagePrompt(result.image_generation.dalle_prompt);
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [result?.image_generation.dalle_prompt]);
+  }, [result?.image_generation.dalle_prompt, setCustomImagePrompt]);
 
   const handleApplyTweak = () => {
     if (!isGeneratingImage && tweakInput.trim()) {
       setCustomImagePrompt(tweakInput);
-      handleGenerateImage();
+      handleGenerateImage(tweakInput); // pass directly — avoids async state race
     }
   };
 
@@ -247,8 +248,8 @@ export default function ResultsPage() {
       </div>
 
       {/* ── PROMPT ── */}
-      <div className="rounded-2xl overflow-hidden" style={{ background: '#111111', border: '1px solid #222222' }}>
-        <div className="px-5 py-3" style={{ borderBottom: '1px solid #1e1e1e', background: '#0f0f0f' }}>
+      <div className="rounded-2xl" style={{ background: '#111111', border: '1px solid #222222' }}>
+        <div className="px-5 py-3" style={{ borderBottom: '1px solid #1e1e1e', background: '#0f0f0f', borderRadius: '16px 16px 0 0' }}>
           <p className="label-overline">Image Prompt</p>
           <p className="text-[11px] text-[#666] mt-0.5 tracking-wider">Type your own or edit — press Enter to regenerate</p>
         </div>
@@ -262,8 +263,16 @@ export default function ResultsPage() {
             }
           }}
           rows={4}
-          className="w-full px-5 py-4 text-xs text-[#ccc] focus:outline-none resize-none leading-relaxed placeholder:text-[#555]"
-          style={{ background: '#141414', fontFamily: "'Inter', sans-serif" }}
+          className="w-full px-5 py-4 text-xs text-[#ccc] resize-none leading-relaxed placeholder:text-[#555]"
+          style={{
+            background: '#141414',
+            fontFamily: "'Inter', sans-serif",
+            outline: 'none',
+            border: 'none',
+            borderBottom: '1px solid #1e1e1e',
+            display: 'block',
+            cursor: 'text',
+          }}
           placeholder="Type a custom image prompt here, or wait for the AI to fill it in…"
         />
         <div
