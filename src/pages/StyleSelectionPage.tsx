@@ -120,58 +120,6 @@ export default function StyleSelectionPage() {
       className="max-w-5xl mx-auto"
       style={{ animation: 'fade-in 0.35s ease both' }}
     >
-      {/* ── Sticky generate bar ── */}
-      <div
-        className="sticky top-0 z-20 mb-6 rounded-2xl overflow-hidden"
-        style={{
-          background: 'rgba(8,8,8,0.96)',
-          border: '1px solid rgba(201,168,112,0.25)',
-          backdropFilter: 'blur(14px)',
-          boxShadow: '0 4px 40px rgba(0,0,0,0.7)',
-        }}
-      >
-        <div style={{ height: '1px', background: 'linear-gradient(90deg, transparent, rgba(201,168,112,0.7) 40%, rgba(201,168,112,0.7) 60%, transparent)' }} />
-        <div className="px-4 py-3 flex items-center gap-4">
-          <div className="flex-1 min-w-0">
-            {selectedStyle ? (
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-lg shrink-0 overflow-hidden" style={{ border: '1px solid rgba(201,168,112,0.3)' }}>
-                  <img
-                    src={cardImages[selectedStyle.id] ?? selectedStyle.imgSrc}
-                    alt={selectedStyle.name}
-                    className="w-full h-full object-cover"
-                    onError={(e) => { (e.target as HTMLImageElement).src = selectedStyle.imgSrc; }}
-                  />
-                </div>
-                <div className="min-w-0">
-                  <p className="label-overline mb-0.5" style={{ color: 'rgba(201,168,112,0.6)' }}>Selected</p>
-                  <p className="font-ink text-xl text-[#f0ece4] truncate leading-none">{selectedStyle.name}</p>
-                </div>
-              </div>
-            ) : (
-              <div>
-                <p className="label-overline mb-0.5" style={{ color: '#333330' }}>No Style Selected</p>
-                <p className="text-sm" style={{ color: '#666660' }}>Choose a style below</p>
-              </div>
-            )}
-          </div>
-          {generating.size > 0 && (
-            <div className="flex items-center gap-1.5 shrink-0">
-              <Loader size={11} className="animate-spin" style={{ color: '#c9a870' }} />
-              <span className="hidden sm:inline" style={{ fontSize: '11px', color: '#888880' }}>Loading…</span>
-            </div>
-          )}
-          <button
-            onClick={handleGenerate}
-            disabled={!questionnaire.style}
-            className="btn-generate shrink-0 flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm"
-          >
-            <Sparkles size={14} />
-            <span>Generate</span>
-          </button>
-        </div>
-      </div>
-
       {/* ── Page heading ── */}
       <div className="mb-6 flex items-center gap-3">
         <button
@@ -353,6 +301,26 @@ export default function StyleSelectionPage() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* ── Generate button ── */}
+      <div className="flex items-center justify-between gap-4 pb-2">
+        {generating.size > 0 ? (
+          <div className="flex items-center gap-1.5 text-[11px]" style={{ color: '#888880' }}>
+            <Loader size={11} className="animate-spin" style={{ color: '#c9a870' }} />
+            Loading previews…
+          </div>
+        ) : (
+          <div />
+        )}
+        <button
+          onClick={handleGenerate}
+          disabled={!questionnaire.style}
+          className="btn-generate flex items-center gap-2 px-6 py-3 rounded-xl text-sm"
+        >
+          <Sparkles size={14} />
+          <span>Generate Tattoo</span>
+        </button>
+      </div>
     </motion.div>
   );
 }
