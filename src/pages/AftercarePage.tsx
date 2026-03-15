@@ -140,7 +140,7 @@ export default function AftercarePage() {
 
       {/* ── START OVER ── */}
       <button
-        onClick={() => { navigate('/'); handleReset(); }}
+        onClick={() => { handleReset(); window.location.href = '/'; }}
         className="btn-game w-full flex items-center justify-center gap-2 rounded-2xl py-4 px-6 cursor-pointer"
       >
         <RotateCcw size={14} /> Start a New Design
