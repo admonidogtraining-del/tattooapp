@@ -185,41 +185,6 @@ export default function ResultsPage() {
           </div>
         </div>
 
-        {/* Refine prompt — lives right under Style */}
-        <div style={{ borderBottom: '1px solid #222' }}>
-          <div className="px-5 pt-4 pb-2">
-            <p className="label-overline mb-0.5">Prompt</p>
-            <p className="text-[11px] text-[#666] tracking-wider">Edit and press Enter to regenerate</p>
-          </div>
-          <textarea
-            value={tweakInput}
-            onChange={(e) => setTweakInput(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                handleApplyTweak();
-              }
-            }}
-            rows={3}
-            className="w-full px-5 py-3 text-xs text-[#ccc] focus:outline-none resize-none leading-relaxed placeholder:text-[#555]"
-            style={{
-              background: '#0f0f0f',
-              fontFamily: "'Inter', sans-serif",
-            }}
-            placeholder={result ? '' : 'Prompt will appear once AI consultation finishes…'}
-          />
-          <div className="px-5 py-2.5 flex items-center justify-between" style={{ background: '#0a0a0a' }}>
-            <span className="text-[10px] text-[#444] tracking-wider uppercase">↵ Enter to regenerate · Shift+Enter for new line</span>
-            <button
-              onClick={handleApplyTweak}
-              disabled={isGeneratingImage || !tweakInput.trim()}
-              className="btn-game flex items-center gap-1.5 px-3 py-1.5 rounded-lg cursor-pointer text-[11px] disabled:opacity-40"
-            >
-              <RefreshCw size={10} /> Regenerate
-            </button>
-          </div>
-        </div>
-
         {/* Consultation loading skeletons */}
         {isConsulting && !result && (
           <div className="px-5 py-4 space-y-4">
@@ -281,6 +246,40 @@ export default function ResultsPage() {
         )}
       </div>
 
+      {/* ── PROMPT ── */}
+      <div className="rounded-2xl overflow-hidden" style={{ background: '#111111', border: '1px solid #222222' }}>
+        <div className="px-5 py-3" style={{ borderBottom: '1px solid #1e1e1e', background: '#0f0f0f' }}>
+          <p className="label-overline">Image Prompt</p>
+          <p className="text-[11px] text-[#666] mt-0.5 tracking-wider">Type your own or edit — press Enter to regenerate</p>
+        </div>
+        <textarea
+          value={tweakInput}
+          onChange={(e) => setTweakInput(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+              e.preventDefault();
+              handleApplyTweak();
+            }
+          }}
+          rows={4}
+          className="w-full px-5 py-4 text-xs text-[#ccc] focus:outline-none resize-none leading-relaxed placeholder:text-[#555]"
+          style={{ background: '#141414', fontFamily: "'Inter', sans-serif" }}
+          placeholder="Type a custom image prompt here, or wait for the AI to fill it in…"
+        />
+        <div
+          className="px-5 py-3 flex items-center justify-between"
+          style={{ borderTop: '1px solid #1e1e1e', background: '#0f0f0f' }}
+        >
+          <span className="text-[10px] text-[#555] tracking-wider uppercase">↵ Enter · Shift+Enter for new line</span>
+          <button
+            onClick={handleApplyTweak}
+            disabled={isGeneratingImage || !tweakInput.trim()}
+            className="btn-game flex items-center gap-1.5 px-3 py-1.5 rounded-lg cursor-pointer text-[11px] disabled:opacity-40"
+          >
+            <RefreshCw size={10} /> Regenerate
+          </button>
+        </div>
+      </div>
 
       {/* Errors / warnings */}
       {fallbackMessage && (
