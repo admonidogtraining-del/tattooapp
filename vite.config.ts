@@ -17,6 +17,6 @@ export default defineConfig({
     host: true, // expose on local network so phones can connect
   },
   optimizeDeps: {
-    include: ['@google/genai', 'p-retry', 'retry'],
+    include: ['@google/genai'],
   },
 })

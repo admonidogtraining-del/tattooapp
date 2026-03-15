@@ -177,7 +177,7 @@ function AppRoutes() {
       <ScrollToTop />
       <Header />
       <main className="px-6 py-10">
-        <AnimatePresence mode="wait">
+        <AnimatePresence mode="wait" initial={false}>
           <Routes location={location} key={location.pathname}>
             <Route path="/" element={<InitialPage />} />
             <Route path="/details" element={<QuestionnairePage />} />
