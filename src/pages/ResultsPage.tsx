@@ -4,6 +4,8 @@ import { ChevronLeft, Download, Maximize, RefreshCw, ArrowRight } from 'lucide-r
 import { motion, AnimatePresence } from 'motion/react';
 import { useApp } from '../context/AppContext';
 import { TATTOO_STYLES } from '../constants';
+import RatingModal from '../components/RatingModal';
+import { saveDesign } from '../lib/designCollection';
 
 export default function ResultsPage() {
   const navigate = useNavigate();
@@ -19,6 +21,33 @@ export default function ResultsPage() {
   } = useApp();
 
   const [tweakInput, setTweakInput] = useState('');
+  const [showRatingModal, setShowRatingModal] = useState(false);
+
+  const handleAftercareClick = () => {
+    if (generatedImage) {
+      setShowRatingModal(true);
+    } else {
+      navigate('/aftercare');
+    }
+  };
+
+  const handleRatingConfirm = (rating: number) => {
+    if (generatedImage) {
+      saveDesign({
+        style: questionnaire.style,
+        imageUrl: generatedImage,
+        rating,
+        prompt: result?.image_generation.dalle_prompt ?? '',
+      });
+    }
+    setShowRatingModal(false);
+    navigate('/aftercare');
+  };
+
+  const handleRatingSkip = () => {
+    setShowRatingModal(false);
+    navigate('/aftercare');
+  };
 
   useEffect(() => {
     if (result?.image_generation.dalle_prompt && !tweakInput) {
@@ -281,11 +310,20 @@ export default function ResultsPage() {
           <motion.button
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
-            onClick={() => navigate('/aftercare')}
+            onClick={handleAftercareClick}
             className="btn-generate w-full flex items-center justify-center gap-3 rounded-2xl py-4 px-6 cursor-pointer"
           >
             Placement &amp; Aftercare <ArrowRight size={15} />
           </motion.button>
+        )}
+      </AnimatePresence>
+      <AnimatePresence>
+        {showRatingModal && (
+          <RatingModal
+            onConfirm={handleRatingConfirm}
+            onSkip={handleRatingSkip}
+            onClose={() => setShowRatingModal(false)}
+          />
         )}
       </AnimatePresence>
     </motion.div>

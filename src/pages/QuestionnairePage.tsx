@@ -1,26 +1,19 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { motion, AnimatePresence } from 'motion/react';
+import { motion } from 'motion/react';
 import { useApp } from '../context/AppContext';
 import { SKIN_TONES } from '../constants';
 
 const TOTAL_STEPS = 3;
 const INK_EASE: [number, number, number, number] = [0.16, 1, 0.3, 1];
 
-const variants = {
-  enter: (dir: number) => ({ x: dir > 0 ? 64 : -64, opacity: 0 }),
-  center: { x: 0, opacity: 1 },
-  exit: (dir: number) => ({ x: dir > 0 ? -64 : 64, opacity: 0 }),
-};
-
 export default function QuestionnairePage() {
   const navigate = useNavigate();
   const { questionnaire, setQuestionnaire } = useApp();
   const [step, setStep] = useState(0);
-  const [dir, setDir] = useState(1);
 
-  const go = (next: number) => { setDir(next > step ? 1 : -1); setStep(next); };
+  const go = (next: number) => { setStep(next); };
   const goBack = () => { if (step === 0) navigate('/'); else go(step - 1); };
   const goNext = () => { if (step < TOTAL_STEPS - 1) go(step + 1); else navigate('/style'); };
 
@@ -86,14 +79,12 @@ export default function QuestionnairePage() {
               <motion.button
                 key={opt.value}
                 type="button"
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: i * 0.07, duration: 0.4, ease: INK_EASE }}
                 onClick={() => setQuestionnaire({ ...questionnaire, colorPreference: opt.value })}
                 whileHover={{ x: 3 }}
                 whileTap={{ scale: 0.98 }}
                 className="w-full p-4 rounded-xl text-left flex items-center gap-4 transition-all cursor-pointer relative overflow-hidden"
                 style={{
+                  animation: `slide-up 0.4s cubic-bezier(0.16,1,0.3,1) ${i * 0.07}s both`,
                   background: isSel ? '#1a150a' : '#0f0f0d',
                   border: isSel ? '1px solid rgba(201,168,112,0.55)' : '1px solid #1e1e1e',
                   boxShadow: isSel ? '0 0 20px rgba(201,168,112,0.12)' : 'none',
@@ -148,14 +139,12 @@ export default function QuestionnairePage() {
               <motion.button
                 key={opt.value}
                 type="button"
-                initial={{ opacity: 0, y: 18 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.06, duration: 0.4, ease: INK_EASE }}
                 onClick={() => setQuestionnaire({ ...questionnaire, size: opt.value })}
                 whileHover={{ y: -2 }}
                 whileTap={{ scale: 0.96 }}
                 className="p-4 rounded-xl flex flex-col items-center gap-3 cursor-pointer"
                 style={{
+                  animation: `slide-up 0.4s cubic-bezier(0.16,1,0.3,1) ${i * 0.06}s both`,
                   background: isSel ? '#1a150a' : '#0f0f0d',
                   border: isSel ? '1px solid rgba(201,168,112,0.55)' : '1px solid #1e1e1e',
                   boxShadow: isSel ? '0 0 20px rgba(201,168,112,0.12)' : 'none',
@@ -258,38 +247,22 @@ export default function QuestionnairePage() {
           <div className="absolute bottom-3 left-3 w-4 h-4 border-b border-l" style={{ borderColor: 'rgba(201,168,112,0.4)' }} />
           <div className="absolute bottom-3 right-3 w-4 h-4 border-b border-r" style={{ borderColor: 'rgba(201,168,112,0.4)' }} />
 
-          <div className="overflow-hidden">
-            <AnimatePresence mode="wait" custom={dir}>
-              <motion.div
-                key={step}
-                custom={dir}
-                variants={variants}
-                initial="enter"
-                animate="center"
-                exit="exit"
-                transition={{ duration: 0.28, ease: 'easeInOut' }}
-              >
-                <div className="mb-6">
-                  <p className="label-overline mb-1.5" style={{ color: 'rgba(201,168,112,0.55)' }}>
-                    Step {step + 1} of {TOTAL_STEPS}
-                  </p>
-                  {/* Bebas Neue step title */}
-                  <div style={{ overflow: 'hidden' }}>
-                    <motion.h2
-                      key={`title-${step}`}
-                      initial={{ y: '100%' }}
-                      animate={{ y: '0%' }}
-                      transition={{ duration: 0.45, ease: INK_EASE }}
-                      className="font-ink text-5xl text-[#f0ece4]"
-                    >
-                      {q.title}
-                    </motion.h2>
-                  </div>
-                  <p className="text-sm mt-1.5" style={{ color: '#888880' }}>{q.sub}</p>
-                </div>
-                {q.content}
-              </motion.div>
-            </AnimatePresence>
+          <div key={step} style={{ animation: 'fade-in 0.25s ease both' }}>
+            <div className="mb-6">
+              <p className="label-overline mb-1.5" style={{ color: 'rgba(201,168,112,0.55)' }}>
+                Step {step + 1} of {TOTAL_STEPS}
+              </p>
+              <div style={{ overflow: 'hidden' }}>
+                <h2
+                  className="font-ink text-5xl text-[#f0ece4]"
+                  style={{ animation: 'slide-up-text 0.45s cubic-bezier(0.16,1,0.3,1) both' }}
+                >
+                  {q.title}
+                </h2>
+              </div>
+              <p className="text-sm mt-1.5" style={{ color: '#888880' }}>{q.sub}</p>
+            </div>
+            {q.content}
           </div>
         </div>
       </div>
