@@ -5,9 +5,6 @@ import { motion } from 'motion/react';
 import { useApp } from '../context/AppContext';
 import { generatePromptIdea } from '../services/geminiService';
 
-/* Ease curve for "ink press" reveals */
-const INK_EASE: [number, number, number, number] = [0.16, 1, 0.3, 1];
-
 export default function InitialPage() {
   const navigate = useNavigate();
   const { prompt, setPrompt, images, handleImageUpload, removeImage, fileInputRef } = useApp();
@@ -36,13 +33,15 @@ export default function InitialPage() {
 
   const canContinue = !!prompt.trim() || images.length > 0;
 
+  /* CSS animation helpers */
+  const css = (animation: string) => ({ animation, animationFillMode: 'both' } as React.CSSProperties);
+
   return (
+    /* motion.div kept only for the EXIT animation when navigating away */
     <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
       exit={{ opacity: 0, y: -10 }}
-      transition={{ duration: 0.4 }}
-      className="max-w-2xl mx-auto"
+      transition={{ duration: 0.35 }}
+      style={{ maxWidth: '42rem', margin: '0 auto' }}
     >
       <input
         type="file"
@@ -50,110 +49,89 @@ export default function InitialPage() {
         onChange={handleImageUpload}
         accept="image/*"
         multiple
-        className="hidden"
+        style={{ display: 'none' }}
       />
 
       {/* ══════════════════════════════════════════
           HERO — Big ink typography
       ══════════════════════════════════════════ */}
-      <div className="text-center mb-10 pt-4">
+      <div style={{ textAlign: 'center', marginBottom: '2.5rem', paddingTop: '1rem' }}>
 
         {/* Animated flanking lines + studio label */}
-        <div className="flex items-center justify-center gap-3 mb-5">
-          <motion.div
-            initial={{ scaleX: 0, opacity: 0 }}
-            animate={{ scaleX: 1, opacity: 1 }}
-            transition={{ delay: 0.1, duration: 0.7, ease: INK_EASE }}
-            style={{
-              height: '1px',
-              width: 56,
-              background: 'linear-gradient(90deg, transparent, #c9a870)',
-              transformOrigin: 'right',
-            }}
-          />
-          <motion.span
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.35, duration: 0.4 }}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px', marginBottom: '20px' }}>
+          <div style={{
+            height: '1px', width: 56,
+            background: 'linear-gradient(90deg, transparent, #c9a870)',
+            transformOrigin: 'right',
+            ...css('line-draw 0.7s cubic-bezier(0.16,1,0.3,1) 0.1s'),
+          }} />
+          <span
             className="label-overline"
-            style={{ color: '#c9a870', letterSpacing: '0.22em' }}
+            style={{ color: '#c9a870', letterSpacing: '0.22em', ...css('fade-in 0.4s ease 0.35s') }}
           >
             ✦ Ink Design Studio ✦
-          </motion.span>
-          <motion.div
-            initial={{ scaleX: 0, opacity: 0 }}
-            animate={{ scaleX: 1, opacity: 1 }}
-            transition={{ delay: 0.1, duration: 0.7, ease: INK_EASE }}
-            style={{
-              height: '1px',
-              width: 56,
-              background: 'linear-gradient(90deg, #c9a870, transparent)',
-              transformOrigin: 'left',
-            }}
-          />
+          </span>
+          <div style={{
+            height: '1px', width: 56,
+            background: 'linear-gradient(90deg, #c9a870, transparent)',
+            transformOrigin: 'left',
+            ...css('line-draw 0.7s cubic-bezier(0.16,1,0.3,1) 0.1s'),
+          }} />
         </div>
 
-        {/* Big Bebas Neue headline — each word slides up */}
+        {/* Big Bebas Neue headline */}
         <div style={{ overflow: 'hidden', lineHeight: 1 }}>
-          <motion.h1
-            initial={{ y: '105%' }}
-            animate={{ y: '0%' }}
-            transition={{ delay: 0.18, duration: 0.65, ease: INK_EASE }}
-            className="font-ink text-[78px] sm:text-[96px] text-[#f0ece4] leading-none"
+          <h1
+            className="font-ink"
+            style={{
+              fontSize: 'clamp(72px, 10vw, 96px)',
+              color: '#f0ece4',
+              lineHeight: 1,
+              ...css('slide-up-text 0.65s cubic-bezier(0.16,1,0.3,1) 0.18s'),
+            }}
           >
             Begin Your
-          </motion.h1>
+          </h1>
         </div>
         <div style={{ overflow: 'hidden', lineHeight: 1 }}>
-          <motion.h1
-            initial={{ y: '105%' }}
-            animate={{ y: '0%' }}
-            transition={{ delay: 0.26, duration: 0.65, ease: INK_EASE }}
-            className="font-ink text-[78px] sm:text-[96px] leading-none"
-            style={{ color: '#c9a870' }}
+          <h1
+            className="font-ink"
+            style={{
+              fontSize: 'clamp(72px, 10vw, 96px)',
+              color: '#c9a870',
+              lineHeight: 1,
+              ...css('slide-up-text 0.65s cubic-bezier(0.16,1,0.3,1) 0.26s'),
+            }}
           >
             Consultation
-          </motion.h1>
+          </h1>
         </div>
 
         {/* Diamond divider */}
-        <motion.div
-          initial={{ opacity: 0, scaleX: 0 }}
-          animate={{ opacity: 1, scaleX: 1 }}
-          transition={{ delay: 0.5, duration: 0.5, ease: INK_EASE }}
-          className="flex items-center justify-center gap-3 mt-5"
-        >
+        <div style={{
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          gap: '12px', marginTop: '20px',
+          ...css('fade-in 0.5s ease 0.5s'),
+        }}>
           <div style={{ height: '1px', width: 48, background: 'linear-gradient(90deg, transparent, #2e2e2e)' }} />
           <span style={{ color: '#c9a870', fontSize: '9px', letterSpacing: '0.3em' }}>✦</span>
-          <motion.p
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.55, duration: 0.4 }}
-            className="text-sm"
-            style={{ color: '#888880' }}
-          >
+          <p style={{ color: '#888880', fontSize: '0.875rem', ...css('fade-in 0.4s ease 0.55s') }}>
             Upload references or describe your concept
-          </motion.p>
+          </p>
           <span style={{ color: '#c9a870', fontSize: '9px', letterSpacing: '0.3em' }}>✦</span>
           <div style={{ height: '1px', width: 48, background: 'linear-gradient(90deg, #2e2e2e, transparent)' }} />
-        </motion.div>
+        </div>
       </div>
 
       {/* ══════════════════════════════════════════
           FORM
       ══════════════════════════════════════════ */}
-      <form onSubmit={handleContinue} className="space-y-4">
+      <form onSubmit={handleContinue} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
 
         {/* ── Upload zone ── */}
-        <motion.div
-          initial={{ opacity: 0, y: 28 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.38, duration: 0.55, ease: INK_EASE }}
-        >
-          {/* flash-art gradient border wrapper */}
+        <div style={css('slide-up 0.55s cubic-bezier(0.16,1,0.3,1) 0.38s')}>
           <div className="flash-card">
             <div className="flash-card-inner p-4">
-              {/* Corner ornaments — needs relative parent (provided by flash-card-inner) */}
               <div className="absolute top-3 left-3 w-3 h-3 border-t border-l" style={{ borderColor: 'rgba(201,168,112,0.5)' }} />
               <div className="absolute top-3 right-3 w-3 h-3 border-t border-r" style={{ borderColor: 'rgba(201,168,112,0.5)' }} />
               <div className="absolute bottom-3 left-3 w-3 h-3 border-b border-l" style={{ borderColor: 'rgba(201,168,112,0.5)' }} />
@@ -166,7 +144,7 @@ export default function InitialPage() {
                     key={idx}
                     initial={{ opacity: 0, scale: 0.85 }}
                     animate={{ opacity: 1, scale: 1 }}
-                    transition={{ duration: 0.25, ease: INK_EASE }}
+                    transition={{ duration: 0.25 }}
                     className="relative aspect-square rounded-xl overflow-hidden group"
                     style={{ border: '1px solid #2a2a2a' }}
                   >
@@ -212,48 +190,40 @@ export default function InitialPage() {
               </div>
             </div>
           </div>
-        </motion.div>
+        </div>
 
         {/* ── Decorated divider ── */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.44, duration: 0.4 }}
-          className="flex items-center gap-3"
-        >
-          <div className="flex-1 h-px" style={{ background: 'linear-gradient(90deg, transparent, #1e1e1e 60%)' }} />
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', ...css('fade-in 0.4s ease 0.44s') }}>
+          <div style={{ flex: 1, height: '1px', background: 'linear-gradient(90deg, transparent, #1e1e1e 60%)' }} />
           <span style={{ fontSize: '10px', color: '#c9a870', letterSpacing: '0.2em' }}>✦</span>
           <span className="label-overline" style={{ color: '#333330' }}>And / Or</span>
           <span style={{ fontSize: '10px', color: '#c9a870', letterSpacing: '0.2em' }}>✦</span>
-          <div className="flex-1 h-px" style={{ background: 'linear-gradient(90deg, #1e1e1e 40%, transparent)' }} />
-        </motion.div>
+          <div style={{ flex: 1, height: '1px', background: 'linear-gradient(90deg, #1e1e1e 40%, transparent)' }} />
+        </div>
 
         {/* ── Text prompt ── */}
-        <motion.div
-          initial={{ opacity: 0, y: 28 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.46, duration: 0.55, ease: INK_EASE }}
-        >
+        <div style={css('slide-up 0.55s cubic-bezier(0.16,1,0.3,1) 0.46s')}>
           <div className="flash-card">
-            <div className="flash-card-inner p-4 relative">
-              {/* Corner ornaments */}
+            <div className="flash-card-inner p-4">
               <div className="absolute top-3 left-3 w-3 h-3 border-t border-l" style={{ borderColor: 'rgba(201,168,112,0.5)' }} />
               <div className="absolute top-3 right-3 w-3 h-3 border-t border-r" style={{ borderColor: 'rgba(201,168,112,0.5)' }} />
               <div className="absolute bottom-3 left-3 w-3 h-3 border-b border-l" style={{ borderColor: 'rgba(201,168,112,0.5)' }} />
               <div className="absolute bottom-3 right-3 w-3 h-3 border-b border-r" style={{ borderColor: 'rgba(201,168,112,0.5)' }} />
 
               <p className="label-overline mb-3">Describe Your Concept</p>
-              <div className="relative">
+              <div style={{ position: 'relative' }}>
                 <textarea
                   value={prompt}
                   onChange={(e) => setPrompt(e.target.value)}
                   placeholder="Describe your story, emotions, or concept..."
-                  className="w-full h-28 rounded-xl p-4 pb-12 text-sm focus:outline-none resize-none transition-all text-[#f0ece4] placeholder:text-[#333330]"
+                  className="w-full rounded-xl p-4 pb-12 text-sm focus:outline-none resize-none transition-all"
                   style={{
+                    height: '7rem',
                     background: '#0a0a0a',
                     border: '1px solid #1a1a1a',
                     fontFamily: "'Inter', sans-serif",
                     lineHeight: 1.7,
+                    color: '#f0ece4',
                   }}
                   onFocus={e => { (e.target as HTMLElement).style.borderColor = 'rgba(201,168,112,0.35)'; }}
                   onBlur={e => { (e.target as HTMLElement).style.borderColor = '#1a1a1a'; }}
@@ -291,20 +261,19 @@ export default function InitialPage() {
               </div>
             </div>
           </div>
-        </motion.div>
+        </div>
 
         {/* ── CTA ── */}
-        <motion.button
-          type="submit"
-          disabled={!canContinue}
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.52, duration: 0.45, ease: INK_EASE }}
-          whileTap={{ scale: canContinue ? 0.97 : 1 }}
-          className="btn-game w-full rounded-xl py-4 px-6 text-sm flex items-center justify-center gap-2"
-        >
-          Continue to Details <ChevronRight size={15} />
-        </motion.button>
+        <div style={css('slide-up 0.45s cubic-bezier(0.16,1,0.3,1) 0.52s')}>
+          <motion.button
+            type="submit"
+            disabled={!canContinue}
+            whileTap={{ scale: canContinue ? 0.97 : 1 }}
+            className="btn-game w-full rounded-xl py-4 px-6 text-sm flex items-center justify-center gap-2"
+          >
+            Continue to Details <ChevronRight size={15} />
+          </motion.button>
+        </div>
       </form>
     </motion.div>
   );
