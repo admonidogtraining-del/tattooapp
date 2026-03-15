@@ -71,10 +71,10 @@ export default function ResultsPage() {
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 12 }}
-      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -8 }}
       transition={{ duration: 0.35, ease: 'easeOut' }}
       className="max-w-2xl mx-auto space-y-5"
+      style={{ animation: 'fade-in 0.35s ease both' }}
     >
       {/* Back */}
       <button
