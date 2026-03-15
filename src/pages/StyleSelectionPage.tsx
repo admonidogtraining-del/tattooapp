@@ -92,11 +92,11 @@ export default function StyleSelectionPage() {
   };
 
   const getVariants = (styleId: string): string[] => {
-    const statics = staticVariants[styleId];
-    if (statics && statics.length > 0) return statics;
+    const statics = staticVariants[styleId] ?? [];
     const svgFallbacks: string[] = STYLE_PREVIEW_VARIANTS[styleId] ?? [TATTOO_STYLES.find(s => s.id === styleId)!.imgSrc];
     const aiImg = cardImages[styleId];
-    return aiImg ? [aiImg, ...svgFallbacks] : svgFallbacks;
+    const all = [...(aiImg ? [aiImg] : []), ...statics, ...svgFallbacks];
+    return all.length > 0 ? all : [TATTOO_STYLES.find(s => s.id === styleId)!.imgSrc];
   };
 
   const changePreview = (e: React.MouseEvent, styleId: string, dir: 1 | -1) => {
