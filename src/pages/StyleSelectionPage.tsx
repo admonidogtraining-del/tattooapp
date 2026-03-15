@@ -115,11 +115,10 @@ export default function StyleSelectionPage() {
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -12 }}
       transition={{ duration: 0.4, ease: INK_EASE }}
       className="max-w-5xl mx-auto"
+      style={{ animation: 'fade-in 0.35s ease both' }}
     >
       {/* ── Sticky generate bar ── */}
       <div
@@ -187,14 +186,12 @@ export default function StyleSelectionPage() {
         <div>
           {/* Bebas Neue heading with slide-up */}
           <div style={{ overflow: 'hidden' }}>
-            <motion.h2
-              initial={{ y: '100%' }}
-              animate={{ y: '0%' }}
-              transition={{ duration: 0.5, ease: INK_EASE }}
+            <h2
               className="font-ink text-5xl text-[#f0ece4] leading-none"
+              style={{ animation: 'slide-up-text 0.5s cubic-bezier(0.16,1,0.3,1) both' }}
             >
               Select <span style={{ color: '#c9a870' }}>Style</span>
-            </motion.h2>
+            </h2>
           </div>
           <p className="text-xs mt-1 uppercase tracking-wider" style={{ color: '#444440' }}>
             Swipe each card for examples
@@ -214,12 +211,10 @@ export default function StyleSelectionPage() {
           return (
             <motion.div
               key={style.id}
-              initial={{ opacity: 0, y: 32, scale: 0.92 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              transition={{ delay: index * 0.05, duration: 0.45, ease: INK_EASE }}
               onClick={() => setQuestionnaire({ ...questionnaire, style: style.id })}
               className="cursor-pointer relative rounded-xl overflow-hidden group"
               style={{
+                animation: `slide-up 0.45s cubic-bezier(0.16,1,0.3,1) ${index * 0.04}s both`,
                 border: isSel ? '2px solid rgba(201,168,112,0.75)' : '2px solid #1a1a1a',
                 boxShadow: isSel
                   ? '0 0 0 1px rgba(201,168,112,0.12), 0 0 30px rgba(201,168,112,0.2)'
