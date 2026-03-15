@@ -95,8 +95,8 @@ export default function StyleSelectionPage() {
     const statics = staticVariants[styleId] ?? [];
     const svgFallbacks: string[] = STYLE_PREVIEW_VARIANTS[styleId] ?? [TATTOO_STYLES.find(s => s.id === styleId)!.imgSrc];
     const aiImg = cardImages[styleId];
-    const all = [...(aiImg ? [aiImg] : []), ...statics, ...svgFallbacks];
-    return all.length > 0 ? all : [TATTOO_STYLES.find(s => s.id === styleId)!.imgSrc];
+    if (statics.length > 0) return [...statics, ...svgFallbacks];
+    return aiImg ? [aiImg, ...svgFallbacks] : svgFallbacks;
   };
 
   const changePreview = (e: React.MouseEvent, styleId: string, dir: 1 | -1) => {
