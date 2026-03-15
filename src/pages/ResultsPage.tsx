@@ -34,12 +34,16 @@ export default function ResultsPage() {
 
   const handleRatingConfirm = (rating: number) => {
     if (generatedImage) {
-      saveDesign({
-        style: questionnaire.style,
-        imageUrl: generatedImage,
-        rating,
-        prompt: result?.image_generation.dalle_prompt ?? '',
-      });
+      try {
+        saveDesign({
+          style: questionnaire.style,
+          imageUrl: generatedImage,
+          rating,
+          prompt: result?.image_generation.dalle_prompt ?? '',
+        });
+      } catch {
+        // Storage quota exceeded or similar — skip saving, still navigate
+      }
     }
     setShowRatingModal(false);
     navigate('/aftercare');
