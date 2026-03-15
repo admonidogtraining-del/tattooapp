@@ -4,41 +4,45 @@
 
 /* ─── shadcn/ui design tokens ────────────────────────────────────── */
 :root {
-  --background: #121212;
-  --foreground: #e8e4de;
-  --card: #1a1a1a;
-  --card-foreground: #e8e4de;
-  --popover: #1a1a1a;
-  --popover-foreground: #e8e4de;
+  --background: #0a0a0a;
+  --foreground: #f0ece4;
+  --card: #111111;
+  --card-foreground: #f0ece4;
+  --popover: #111111;
+  --popover-foreground: #f0ece4;
   --primary: #c9a870;
-  --primary-foreground: #121212;
-  --secondary: #1f1f1f;
-  --secondary-foreground: #bbbbbb;
-  --muted: #222222;
-  --muted-foreground: #999999;
-  --accent: #8b6bd9;
-  --accent-foreground: #e8e4de;
-  --destructive: #e53e3e;
-  --destructive-foreground: #e8e4de;
-  --border: #2a2a2a;
-  --input: #2a2a2a;
+  --primary-foreground: #0a0a0a;
+  --secondary: #1a1a1a;
+  --secondary-foreground: #a8a49e;
+  --muted: #181818;
+  --muted-foreground: #888880;
+  --accent: #c9a870;
+  --accent-foreground: #0a0a0a;
+  --destructive: #c84040;
+  --destructive-foreground: #f0ece4;
+  --border: #222222;
+  --input: #1a1a1a;
   --ring: #c9a870;
-  --radius: 0.5rem;
+  --radius: 0.625rem;
 }
 
-/* ─── Tailwind v4 theme — maps CSS vars to utility classes ───────── */
+/* ─── Tailwind v4 theme ───────────────────────────────────────────── */
 @theme inline {
-  /* App-specific tokens */
   --font-sans: 'Inter', system-ui, sans-serif;
   --font-display: 'Space Grotesk', system-ui, sans-serif;
-  --color-bg: #121212;
-  --color-surface: #1a1a1a;
-  --color-surface-2: #222222;
-  --color-gold: #c9a870;
-  --color-gold-dim: #8a7050;
-  --color-violet: #8b6bd9;
 
-  /* shadcn token bridge → Tailwind utilities (bg-background, text-foreground, etc.) */
+  /* App tokens */
+  --color-bg: #0a0a0a;
+  --color-surface: #111111;
+  --color-surface-2: #171717;
+  --color-surface-3: #1e1e1e;
+  --color-border: #222222;
+  --color-border-2: #2e2e2e;
+  --color-gold: #c9a870;
+  --color-gold-bright: #ddb96a;
+  --color-gold-dim: #8a7050;
+
+  /* shadcn bridge */
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -59,53 +63,93 @@
   --color-input: var(--input);
   --color-ring: var(--ring);
 
-  /* Border radius scale */
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
 }
 
+/* ─── Keyframes ──────────────────────────────────────────────────── */
+@keyframes gold-shimmer {
+  0%   { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+@keyframes pulse-gold {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.3; }
+}
+
+@keyframes spin-slow {
+  to { transform: rotate(360deg); }
+}
+
+/* ─── Base ───────────────────────────────────────────────────────── */
 @layer base {
   html {
     font-family: 'Inter', system-ui, sans-serif;
+    -webkit-tap-highlight-color: transparent;
   }
 
   body {
-    background-color: #121212;
-    color: #e8e4de;
+    background-color: #0a0a0a;
+    color: #f0ece4;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
 
   ::-webkit-scrollbar { width: 3px; height: 3px; }
-  ::-webkit-scrollbar-track { background: #1a1a1a; }
-  ::-webkit-scrollbar-thumb { background: #333; border-radius: 9999px; }
-  ::-webkit-scrollbar-thumb:hover { background: #4a4a4a; }
+  ::-webkit-scrollbar-track { background: #0a0a0a; }
+  ::-webkit-scrollbar-thumb { background: #2e2e2e; border-radius: 9999px; }
+  ::-webkit-scrollbar-thumb:hover { background: #c9a87050; }
 }
 
+/* ─── Utilities ──────────────────────────────────────────────────── */
 @layer utilities {
   .font-display {
     font-family: 'Space Grotesk', system-ui, sans-serif;
   }
 
-  /* Cards */
+  /* ── Cards ── */
   .ink-card {
-    background: #1a1a1a;
-    border: 1px solid #2a2a2a;
+    background: #111111;
+    border: 1px solid #222222;
   }
 
-  /* Label / overline text */
+  .ink-card-warm {
+    background: linear-gradient(135deg, #121208 0%, #0f0f0a 100%);
+    border: 1px solid #222222;
+  }
+
+  /* ── Label / overline ── */
   .label-overline {
     font-family: 'Inter', sans-serif;
     font-size: 10px;
     font-weight: 500;
-    letter-spacing: 0.12em;
+    letter-spacing: 0.14em;
     text-transform: uppercase;
-    color: #999;
+    color: #888880;
   }
 
-  /* Primary button — warm gold outline */
+  /* ── Gold shimmer loading bar ── */
+  .shimmer-gold {
+    position: relative;
+    overflow: hidden;
+  }
+  .shimmer-gold::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      rgba(201, 168, 112, 0.18) 50%,
+      transparent 100%
+    );
+    animation: gold-shimmer 1.6s ease-in-out infinite;
+  }
+
+  /* ── Primary button — gold outline ── */
   .btn-primary {
     background: transparent;
     border: 1px solid #c9a870;
@@ -113,66 +157,79 @@
     font-family: 'Inter', sans-serif;
     font-weight: 500;
     font-size: 0.75rem;
-    letter-spacing: 0.07em;
+    letter-spacing: 0.08em;
     text-transform: uppercase;
-    transition: all 0.2s ease;
+    transition: all 0.18s ease;
+    cursor: pointer;
   }
-
   .btn-primary:hover:not(:disabled) {
-    background: #c9a87015;
-    color: #e0c898;
-    border-color: #e0c898;
+    background: rgba(201, 168, 112, 0.08);
+    color: #ddb96a;
+    border-color: #ddb96a;
   }
-
+  .btn-primary:active:not(:disabled) {
+    transform: scale(0.97);
+  }
   .btn-primary:disabled {
     opacity: 0.3;
     cursor: not-allowed;
   }
 
-  /* CTA button — filled gold */
+  /* ── CTA button — filled gold ── */
   .btn-generate {
     background: #c9a870;
     border: 1px solid #c9a870;
-    color: #121212;
+    color: #0a0a0a;
     font-family: 'Inter', sans-serif;
     font-weight: 600;
     font-size: 0.78rem;
     letter-spacing: 0.07em;
     text-transform: uppercase;
-    transition: all 0.22s ease;
+    transition: all 0.18s ease;
+    cursor: pointer;
   }
-
   .btn-generate:hover:not(:disabled) {
-    background: #dfc080;
-    border-color: #dfc080;
+    background: #ddb96a;
+    border-color: #ddb96a;
+    box-shadow: 0 0 20px rgba(201, 168, 112, 0.25);
   }
-
+  .btn-generate:active:not(:disabled) {
+    transform: scale(0.97);
+  }
   .btn-generate:disabled {
     opacity: 0.25;
     cursor: not-allowed;
   }
 
-  /* Secondary action button */
+  /* ── Secondary action button ── */
   .btn-game {
-    background: #1f1f1f;
-    border: 1px solid #333;
-    color: #bbb;
+    background: #171717;
+    border: 1px solid #2e2e2e;
+    color: #a8a49e;
     font-family: 'Inter', sans-serif;
     font-weight: 500;
     font-size: 0.72rem;
-    letter-spacing: 0.06em;
+    letter-spacing: 0.07em;
     text-transform: uppercase;
     transition: all 0.18s ease;
+    cursor: pointer;
   }
-
   .btn-game:hover:not(:disabled) {
-    background: #2a2a2a;
-    border-color: #555;
-    color: #e8e4de;
+    background: #1e1e1e;
+    border-color: #c9a87050;
+    color: #f0ece4;
   }
-
+  .btn-game:active:not(:disabled) {
+    transform: scale(0.97);
+  }
   .btn-game:disabled {
     opacity: 0.3;
     cursor: not-allowed;
+  }
+
+  /* ── Gold glow card (selected state) ── */
+  .card-selected-gold {
+    border: 1px solid rgba(201, 168, 112, 0.5) !important;
+    box-shadow: 0 0 0 1px rgba(201, 168, 112, 0.15), 0 0 24px rgba(201, 168, 112, 0.12) !important;
   }
 }

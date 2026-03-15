@@ -51,7 +51,7 @@ export default function AftercarePage() {
       {/* ── PLACEMENT ── */}
       <div
         className="rounded-2xl p-5 space-y-3"
-        style={{ background: '#1a1a1a', border: '1px solid #2a2a2a' }}
+        style={{ background: '#111111', border: '1px solid #222222' }}
       >
         <div className="flex items-center gap-2.5">
           <div className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0"
@@ -69,7 +69,7 @@ export default function AftercarePage() {
       <div className="grid grid-cols-2 gap-3">
         <div
           className="rounded-2xl p-5 space-y-2"
-          style={{ background: '#1a1a1a', border: '1px solid #2a2a2a' }}
+          style={{ background: '#111111', border: '1px solid #222222' }}
         >
           <div className="flex items-center gap-2">
             <Clock size={13} style={{ color: '#c9a870' }} />
@@ -82,7 +82,7 @@ export default function AftercarePage() {
 
         <div
           className="rounded-2xl p-5 space-y-2"
-          style={{ background: '#1a1a1a', border: '1px solid #2a2a2a' }}
+          style={{ background: '#111111', border: '1px solid #222222' }}
         >
           <div className="flex items-center gap-2">
             <Droplets size={13} style={{ color: healingColor(aftercare_preview.healing_difficulty) }} />
@@ -103,7 +103,7 @@ export default function AftercarePage() {
       {/* ── LIFESTYLE WARNING ── */}
       <div
         className="rounded-2xl p-5 space-y-3"
-        style={{ background: '#1a1a1a', border: '1px solid #2a2a2a' }}
+        style={{ background: '#111111', border: '1px solid #222222' }}
       >
         <div className="flex items-center gap-2.5">
           <div className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0"
@@ -120,7 +120,7 @@ export default function AftercarePage() {
       {/* ── COMPLEXITY ── */}
       <div
         className="rounded-2xl p-5"
-        style={{ background: '#1a1a1a', border: '1px solid #2a2a2a' }}
+        style={{ background: '#111111', border: '1px solid #222222' }}
       >
         <p className="label-overline mb-2">Design Complexity</p>
         <p className="text-sm text-[#c8c4be] leading-relaxed">{technical_brief.design_complexity}</p>

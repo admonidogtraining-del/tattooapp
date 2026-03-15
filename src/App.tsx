@@ -179,8 +179,8 @@ function AppRoutes() {
 export default function App() {
   return (
     <div
-      className="min-h-screen selection:bg-[#3a2e1a] selection:text-[#e8e4de]"
-      style={{ background: '#121212' }}
+      className="min-h-screen selection:bg-[#2e2410] selection:text-[#f0ece4]"
+      style={{ background: '#0a0a0a' }}
     >
       <div className="relative z-[1]">
         <BrowserRouter>

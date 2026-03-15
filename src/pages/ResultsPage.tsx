@@ -56,13 +56,13 @@ export default function ResultsPage() {
       </button>
 
       {/* ── IMAGE CARD ── */}
-      <div className="rounded-2xl overflow-hidden" style={{ background: '#1a1a1a', border: '1px solid #2a2a2a' }}>
+      <div className="rounded-2xl overflow-hidden" style={{ background: '#111111', border: '1px solid #222222' }}>
 
         {/* Loading state */}
         {isGeneratingImage && !generatedImage && (
           <div className="aspect-square max-w-xs mx-auto flex flex-col items-center justify-center gap-4 py-16">
             <motion.div
-              className="w-8 h-8 rounded-full border border-[#2a2a2a]"
+              className="w-8 h-8 rounded-full border border-[#252525]"
               style={{ borderTopColor: '#c9a870' }}
               animate={{ rotate: 360 }}
               transition={{ duration: 1.4, repeat: Infinity, ease: 'linear' }}
@@ -94,7 +94,7 @@ export default function ResultsPage() {
             {/* Action row */}
             <div
               className="flex items-center justify-between px-4 py-3"
-              style={{ borderTop: '1px solid #2a2a2a', background: '#161616' }}
+              style={{ borderTop: '1px solid #1e1e1e', background: '#0f0f0f' }}
             >
               <div className="flex gap-5">
                 <a
@@ -128,7 +128,7 @@ export default function ResultsPage() {
       </div>
 
       {/* ── DESIGN INFO ── */}
-      <div className="rounded-2xl space-y-0 overflow-hidden" style={{ background: '#1a1a1a', border: '1px solid #2a2a2a' }}>
+      <div className="rounded-2xl space-y-0 overflow-hidden" style={{ background: '#111111', border: '1px solid #222222' }}>
 
         {/* Style switcher */}
         <div className="px-5 py-4" style={{ borderBottom: '1px solid #222' }}>
@@ -161,8 +161,8 @@ export default function ResultsPage() {
           <div className="px-5 py-4 space-y-4">
             {[140, 200, 120].map((w, i) => (
               <div key={i} className="space-y-1.5">
-                <div className="h-2 w-14 rounded animate-pulse" style={{ background: '#252525' }} />
-                <div className="h-3 rounded animate-pulse" style={{ width: w, maxWidth: '100%', background: '#1f1f1f' }} />
+                <div className="h-2 w-14 rounded shimmer-gold" style={{ background: '#1e1e1e' }} />
+                <div className="h-3 rounded shimmer-gold" style={{ width: w, maxWidth: '100%', background: '#181818' }} />
               </div>
             ))}
           </div>
@@ -224,9 +224,9 @@ export default function ResultsPage() {
             initial={{ opacity: 0, y: 6 }}
             animate={{ opacity: 1, y: 0 }}
             className="rounded-2xl overflow-hidden"
-            style={{ background: '#1a1a1a', border: '1px solid #2a2a2a' }}
+            style={{ background: '#111111', border: '1px solid #222222' }}
           >
-            <div className="px-5 py-3.5" style={{ borderBottom: '1px solid #222', background: '#161616' }}>
+            <div className="px-5 py-3.5" style={{ borderBottom: '1px solid #1e1e1e', background: '#0f0f0f' }}>
               <p className="font-display text-sm font-medium text-[#e8e4de]">Refine your design</p>
               <p className="text-[11px] text-[#888] mt-0.5 tracking-wider">Edit the prompt below and regenerate</p>
             </div>
@@ -247,7 +247,7 @@ export default function ResultsPage() {
               placeholder="Your prompt will appear here once the design loads…"
             />
 
-            <div className="px-5 py-3 flex items-center justify-between" style={{ background: '#161616' }}>
+            <div className="px-5 py-3 flex items-center justify-between" style={{ background: '#0f0f0f' }}>
               <span className="text-[11px] text-[#777] tracking-wider uppercase">⌘ Enter to apply</span>
               <button
                 onClick={handleApplyTweak}

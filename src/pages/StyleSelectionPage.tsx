@@ -43,14 +43,12 @@ export default function StyleSelectionPage() {
 
   useEffect(() => {
     cancelledRef.current = false;
-
     const loadAll = async () => {
       const fromStorage: Record<string, string> = {};
       TATTOO_STYLES.forEach(s => {
         const stored = localStorage.getItem(cacheKey(s.id));
         if (stored) fromStorage[s.id] = stored;
       });
-
       const needsGeneration: typeof TATTOO_STYLES = [];
       const staticChecks = TATTOO_STYLES.map(async s => {
         const urls = staticPngVariants(s.id);
@@ -64,13 +62,10 @@ export default function StyleSelectionPage() {
           needsGeneration.push(s);
         }
       });
-
       await Promise.all(staticChecks);
-
       if (!cancelledRef.current && Object.keys(fromStorage).length > 0) {
         setCardImages({ ...fromStorage });
       }
-
       for (const style of needsGeneration) {
         if (cancelledRef.current) break;
         setGenerating(prev => new Set(prev).add(style.id));
@@ -91,7 +86,6 @@ export default function StyleSelectionPage() {
         }
       }
     };
-
     loadAll();
     return () => { cancelledRef.current = true; };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
@@ -128,28 +122,31 @@ export default function StyleSelectionPage() {
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
+      initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -20 }}
+      exit={{ opacity: 0, y: -12 }}
+      transition={{ duration: 0.38, ease: [0.25, 0.1, 0.25, 1] }}
       className="max-w-5xl mx-auto"
     >
-      {/* ── STICKY GENERATE BAR ── */}
+      {/* ── Sticky generate bar ── */}
       <div
         className="sticky top-0 z-20 mb-6 rounded-2xl overflow-hidden"
         style={{
-          background: 'linear-gradient(135deg, #111118 0%, #0f0f1a 100%)',
-          border: '1px solid #7c3aed60',
-          boxShadow: '0 0 30px #7c3aed25, 0 4px 20px #00000070',
+          background: 'rgba(10,10,10,0.95)',
+          border: '1px solid rgba(201,168,112,0.3)',
+          backdropFilter: 'blur(12px)',
+          boxShadow: '0 4px 32px rgba(0,0,0,0.6), 0 0 0 1px rgba(201,168,112,0.08)',
         }}
       >
+        {/* Gold top accent line */}
+        <div style={{ height: '1px', background: 'linear-gradient(90deg, transparent 0%, rgba(201,168,112,0.6) 40%, rgba(201,168,112,0.6) 60%, transparent 100%)' }} />
         <div className="px-4 py-3 flex items-center gap-4">
-          {/* Selected style badge */}
           <div className="flex-1 min-w-0">
             {selectedStyle ? (
               <div className="flex items-center gap-3">
                 <div
-                  className="w-8 h-8 rounded-lg shrink-0 overflow-hidden border"
-                  style={{ borderColor: '#7c3aed60' }}
+                  className="w-8 h-8 rounded-lg shrink-0 overflow-hidden"
+                  style={{ border: '1px solid rgba(201,168,112,0.3)' }}
                 >
                   <img
                     src={cardImages[selectedStyle.id] ?? selectedStyle.imgSrc}
@@ -159,57 +156,63 @@ export default function StyleSelectionPage() {
                   />
                 </div>
                 <div className="min-w-0">
-                  <p className="text-[10px] text-purple-400 uppercase tracking-widest font-display">Selected Style</p>
-                  <p className="text-sm font-semibold text-zinc-100 truncate">{selectedStyle.name}</p>
+                  <p className="label-overline mb-0.5" style={{ color: 'rgba(201,168,112,0.7)' }}>Selected Style</p>
+                  <p className="text-sm font-semibold text-[#f0ece4] truncate">{selectedStyle.name}</p>
                 </div>
               </div>
             ) : (
               <div>
-                <p className="text-[10px] text-zinc-600 uppercase tracking-widest font-display">No Style Selected</p>
-                <p className="text-sm text-zinc-500">Choose a style from the grid below</p>
+                <p className="label-overline mb-0.5" style={{ color: '#444440' }}>No Style Selected</p>
+                <p className="text-sm" style={{ color: '#888880' }}>Choose a style from the grid below</p>
               </div>
             )}
           </div>
 
           {generating.size > 0 && (
-            <div className="flex items-center gap-1.5 text-xs text-zinc-500 shrink-0">
-              <Loader size={11} className="animate-spin text-purple-500" />
-              <span className="hidden sm:inline">Loading…</span>
+            <div className="flex items-center gap-1.5 shrink-0" style={{ color: '#888880' }}>
+              <Loader size={11} className="animate-spin" style={{ color: '#c9a870' }} />
+              <span className="hidden sm:inline" style={{ fontSize: '11px' }}>Loading…</span>
             </div>
           )}
 
           <button
             onClick={handleGenerate}
             disabled={!questionnaire.style}
-            className="btn-generate shrink-0 flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm cursor-pointer"
+            className="btn-generate shrink-0 flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm"
           >
-            <Sparkles size={15} />
+            <Sparkles size={14} />
             <span>Generate</span>
           </button>
         </div>
       </div>
 
-      {/* ── HEADER ── */}
+      {/* ── Header ── */}
       <div className="mb-6 flex items-center gap-3">
         <button
           onClick={() => navigate('/details')}
-          className="text-sm text-zinc-500 hover:text-purple-300 flex items-center gap-1 transition-colors cursor-pointer shrink-0"
+          className="transition-colors cursor-pointer shrink-0"
+          style={{ color: '#555550' }}
+          onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = '#c9a870'; }}
+          onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = '#555550'; }}
         >
-          <ChevronLeft size={16} />
+          <ChevronLeft size={18} />
         </button>
         <div>
-          <h2 className="text-2xl font-display uppercase tracking-widest text-zinc-100" style={{ letterSpacing: '0.12em' }}>
-            Select <span className="text-purple-400">Style</span>
+          <h2
+            className="font-display text-2xl uppercase text-[#f0ece4]"
+            style={{ letterSpacing: '0.1em' }}
+          >
+            Select <span style={{ color: '#c9a870' }}>Style</span>
           </h2>
-          <p className="text-xs text-zinc-500 mt-0.5 uppercase tracking-wider">
+          <p className="text-xs mt-0.5 uppercase tracking-wider" style={{ color: '#555550' }}>
             Scroll each card for examples
           </p>
         </div>
       </div>
 
-      {/* ── STYLE GRID ── */}
+      {/* ── Style grid — staggered reveal ── */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 mb-6">
-        {TATTOO_STYLES.map((style) => {
+        {TATTOO_STYLES.map((style, index) => {
           const isSelected = questionnaire.style === style.id;
           const isGenerating = generating.has(style.id);
           const variants = getVariants(style.id);
@@ -219,32 +222,36 @@ export default function StyleSelectionPage() {
           return (
             <motion.div
               key={style.id}
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: index * 0.04, duration: 0.32, ease: 'easeOut' }}
               onClick={() => setQuestionnaire({ ...questionnaire, style: style.id })}
-              whileHover={{ scale: 1.03 }}
-              whileTap={{ scale: 0.97 }}
-              transition={{ type: 'spring', stiffness: 400, damping: 28 }}
               className="cursor-pointer relative rounded-xl overflow-hidden group"
               style={{
-                border: isSelected ? '2px solid #a855f7' : '2px solid #1e1e2e',
+                border: isSelected
+                  ? '2px solid rgba(201,168,112,0.7)'
+                  : '2px solid #1e1e1e',
                 boxShadow: isSelected
-                  ? '0 0 20px #7c3aed50, 0 0 40px #7c3aed20'
-                  : '0 2px 8px #00000060',
-                transition: 'border-color 0.2s, box-shadow 0.2s',
+                  ? '0 0 0 1px rgba(201,168,112,0.1), 0 0 28px rgba(201,168,112,0.18)'
+                  : '0 2px 10px rgba(0,0,0,0.5)',
+                transition: 'border-color 0.2s, box-shadow 0.2s, transform 0.18s',
               }}
               onMouseEnter={e => {
                 if (!isSelected) {
-                  (e.currentTarget as HTMLElement).style.borderColor = '#7c3aed60';
-                  (e.currentTarget as HTMLElement).style.boxShadow = '0 0 15px #7c3aed20';
+                  (e.currentTarget as HTMLElement).style.borderColor = 'rgba(201,168,112,0.3)';
+                  (e.currentTarget as HTMLElement).style.boxShadow = '0 0 16px rgba(201,168,112,0.1)';
+                  (e.currentTarget as HTMLElement).style.transform = 'translateY(-2px)';
                 }
               }}
               onMouseLeave={e => {
                 if (!isSelected) {
-                  (e.currentTarget as HTMLElement).style.borderColor = '#1e1e2e';
-                  (e.currentTarget as HTMLElement).style.boxShadow = '0 2px 8px #00000060';
+                  (e.currentTarget as HTMLElement).style.borderColor = '#1e1e1e';
+                  (e.currentTarget as HTMLElement).style.boxShadow = '0 2px 10px rgba(0,0,0,0.5)';
+                  (e.currentTarget as HTMLElement).style.transform = 'translateY(0)';
                 }
               }}
             >
-              <div className="aspect-square relative overflow-hidden bg-zinc-900">
+              <div className="aspect-square relative overflow-hidden bg-[#0a0a0a]">
                 <AnimatePresence mode="wait" initial={false}>
                   <motion.img
                     key={currentSrc}
@@ -254,19 +261,14 @@ export default function StyleSelectionPage() {
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
-                    transition={{ duration: 0.3 }}
+                    transition={{ duration: 0.28 }}
                     onError={(e) => { (e.target as HTMLImageElement).src = style.imgSrc; }}
                   />
                 </AnimatePresence>
 
+                {/* Gold shimmer while generating */}
                 {isGenerating && !cardImages[style.id] && (
-                  <div className="absolute inset-0 overflow-hidden pointer-events-none z-10">
-                    <motion.div
-                      className="absolute inset-0 bg-gradient-to-r from-transparent via-purple-600/20 to-transparent"
-                      animate={{ x: ['-100%', '100%'] }}
-                      transition={{ duration: 1.4, repeat: Infinity, ease: 'linear' }}
-                    />
-                  </div>
+                  <div className="absolute inset-0 overflow-hidden pointer-events-none z-10 shimmer-gold" />
                 )}
 
                 {/* Gradient overlay */}
@@ -274,9 +276,9 @@ export default function StyleSelectionPage() {
                   className="absolute inset-0 z-10"
                   style={{
                     background: isSelected
-                      ? 'linear-gradient(to top, rgba(124,58,237,0.6) 0%, rgba(0,0,0,0.1) 50%, rgba(0,0,0,0.15) 100%)'
-                      : 'linear-gradient(to top, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0.05) 60%, transparent 100%)',
-                    transition: 'background 0.3s',
+                      ? 'linear-gradient(to top, rgba(201,168,112,0.35) 0%, rgba(0,0,0,0.05) 55%, rgba(0,0,0,0.1) 100%)'
+                      : 'linear-gradient(to top, rgba(0,0,0,0.78) 0%, rgba(0,0,0,0.02) 60%, transparent 100%)',
+                    transition: 'background 0.25s',
                   }}
                 />
 
@@ -286,7 +288,7 @@ export default function StyleSelectionPage() {
                     onClick={(e) => changePreview(e, style.id, -1)}
                     className="absolute left-0 inset-y-0 w-7 flex items-center justify-center z-20 opacity-0 group-hover:opacity-100 transition-opacity bg-gradient-to-r from-black/50 to-transparent cursor-pointer"
                   >
-                    <ChevronLeft size={13} className="text-white drop-shadow" />
+                    <ChevronLeft size={12} className="text-white drop-shadow" />
                   </button>
                 )}
 
@@ -296,7 +298,7 @@ export default function StyleSelectionPage() {
                     onClick={(e) => changePreview(e, style.id, 1)}
                     className="absolute right-0 inset-y-0 w-7 flex items-center justify-center z-20 opacity-0 group-hover:opacity-100 transition-opacity bg-gradient-to-l from-black/50 to-transparent cursor-pointer"
                   >
-                    <ChevronRight size={13} className="text-white drop-shadow" />
+                    <ChevronRight size={12} className="text-white drop-shadow" />
                   </button>
                 )}
 
@@ -307,11 +309,11 @@ export default function StyleSelectionPage() {
                       initial={{ scale: 0, opacity: 0 }}
                       animate={{ scale: 1, opacity: 1 }}
                       exit={{ scale: 0, opacity: 0 }}
-                      transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+                      transition={{ type: 'spring', stiffness: 500, damping: 28 }}
                       className="absolute top-2 right-2 w-6 h-6 rounded-full flex items-center justify-center z-30"
-                      style={{ background: '#7c3aed', boxShadow: '0 0 10px #a855f7' }}
+                      style={{ background: '#c9a870', boxShadow: '0 0 10px rgba(201,168,112,0.6)' }}
                     >
-                      <Check size={13} className="text-white stroke-[3]" />
+                      <Check size={12} style={{ color: '#0a0a0a', strokeWidth: 3 }} />
                     </motion.div>
                   )}
                 </AnimatePresence>
@@ -327,7 +329,7 @@ export default function StyleSelectionPage() {
                         style={{
                           width: i === idx ? '10px' : '5px',
                           height: '5px',
-                          background: i === idx ? '#a855f7' : 'rgba(255,255,255,0.35)',
+                          background: i === idx ? '#c9a870' : 'rgba(255,255,255,0.3)',
                         }}
                       />
                     ))}
@@ -336,7 +338,10 @@ export default function StyleSelectionPage() {
 
                 {/* Style name */}
                 <div className="absolute bottom-0 left-0 right-0 p-3 z-20">
-                  <h3 className="text-xs font-display uppercase tracking-wider text-white drop-shadow" style={{ letterSpacing: '0.1em' }}>
+                  <h3
+                    className="font-display uppercase text-white drop-shadow"
+                    style={{ fontSize: '11px', letterSpacing: '0.1em' }}
+                  >
                     {style.name}
                   </h3>
                 </div>
@@ -346,7 +351,7 @@ export default function StyleSelectionPage() {
         })}
       </div>
 
-      {/* Selected style detail */}
+      {/* ── Selected style detail ── */}
       <AnimatePresence mode="wait">
         {selectedStyle && (
           <motion.div
@@ -354,19 +359,18 @@ export default function StyleSelectionPage() {
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -8 }}
-            transition={{ duration: 0.2 }}
+            transition={{ duration: 0.22 }}
             className="mb-6 p-4 rounded-xl flex items-center gap-4 relative overflow-hidden"
             style={{
-              background: 'linear-gradient(135deg, #1a0a2e 0%, #0f0f1a 100%)',
-              border: '1px solid #7c3aed40',
+              background: '#1a150a',
+              border: '1px solid rgba(201,168,112,0.25)',
             }}
           >
-            {/* Purple glow blob */}
             <div
-              className="absolute -left-4 top-0 bottom-0 w-16 pointer-events-none"
-              style={{ background: 'linear-gradient(90deg, #7c3aed20 0%, transparent 100%)' }}
+              className="absolute left-0 top-0 bottom-0 w-0.5"
+              style={{ background: '#c9a870' }}
             />
-            <div className="w-12 h-12 rounded-lg shrink-0 overflow-hidden" style={{ border: '1px solid #7c3aed60' }}>
+            <div className="w-12 h-12 rounded-lg shrink-0 overflow-hidden ml-2" style={{ border: '1px solid rgba(201,168,112,0.3)' }}>
               <img
                 src={cardImages[selectedStyle.id] ?? selectedStyle.imgSrc}
                 alt={selectedStyle.name}
@@ -374,10 +378,15 @@ export default function StyleSelectionPage() {
                 onError={(e) => { (e.target as HTMLImageElement).src = selectedStyle.imgSrc; }}
               />
             </div>
-            <div className="relative">
-              <p className="text-[10px] font-display text-purple-400 uppercase tracking-widest mb-0.5">Selected</p>
-              <h3 className="text-base font-display uppercase tracking-wider text-zinc-100">{selectedStyle.name}</h3>
-              <p className="text-xs text-zinc-400 mt-0.5">{selectedStyle.desc}</p>
+            <div>
+              <p className="label-overline mb-0.5" style={{ color: 'rgba(201,168,112,0.6)' }}>Selected</p>
+              <h3
+                className="font-display uppercase text-[#f0ece4]"
+                style={{ fontSize: '15px', letterSpacing: '0.08em' }}
+              >
+                {selectedStyle.name}
+              </h3>
+              <p className="text-xs mt-0.5" style={{ color: '#888880' }}>{selectedStyle.desc}</p>
             </div>
           </motion.div>
         )}
