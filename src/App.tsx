@@ -1,7 +1,7 @@
 import { BrowserRouter, Routes, Route, useLocation, useNavigate, Navigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
-import { PenTool, QrCode, X, Wifi, Images } from 'lucide-react';
+import { PenTool, QrCode, X, Wifi, Images, Copy, Check, Share2 } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
 import { AppProvider, useApp } from './context/AppContext';
 import InitialPage from './pages/InitialPage';
@@ -25,6 +25,26 @@ function QRModal({ onClose }: { onClose: () => void }) {
 
   const defaultUrl = window.location.href;
   const [url, setUrl] = useState(defaultUrl);
+  const [copied, setCopied] = useState(false);
+  const canShare = typeof navigator.share === 'function';
+
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(url);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      // fallback: select the input
+    }
+  };
+
+  const handleShare = async () => {
+    try {
+      await navigator.share({ title: 'Tattoo Design', url });
+    } catch {
+      // user cancelled or not supported
+    }
+  };
 
   return (
     <div
@@ -67,17 +87,61 @@ function QRModal({ onClose }: { onClose: () => void }) {
 
         <div className="w-full space-y-1.5">
           <p className="label-overline">URL</p>
-          <input
-            type="text"
-            value={url}
-            onChange={e => setUrl(e.target.value)}
-            className="w-full text-xs font-mono rounded-lg px-3 py-2 text-[#ccc] focus:outline-none transition-colors"
-            style={{ background: '#141414', border: '1px solid #333' }}
-          />
+          <div className="flex gap-2">
+            <input
+              type="text"
+              value={url}
+              onChange={e => setUrl(e.target.value)}
+              className="flex-1 min-w-0 text-xs font-mono rounded-lg px-3 py-2 text-[#ccc] focus:outline-none transition-colors"
+              style={{ background: '#141414', border: '1px solid #333' }}
+            />
+            <button
+              onClick={handleCopy}
+              title="Copy link"
+              className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium shrink-0 cursor-pointer transition-all"
+              style={{
+                background: copied ? '#1a2a1a' : '#1a1a1a',
+                border: copied ? '1px solid rgba(100,200,100,0.4)' : '1px solid #333',
+                color: copied ? '#6dc96d' : '#c9a870',
+              }}
+            >
+              {copied ? <Check size={13} /> : <Copy size={13} />}
+              {copied ? 'Copied!' : 'Copy'}
+            </button>
+          </div>
+        </div>
+
+        <div className={`w-full grid gap-2 ${canShare ? 'grid-cols-2' : 'grid-cols-1'}`}>
+          <button
+            onClick={handleCopy}
+            className="flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-medium cursor-pointer transition-all"
+            style={{
+              background: copied ? '#1a2a1a' : '#141414',
+              border: copied ? '1px solid rgba(100,200,100,0.3)' : '1px solid #2a2a2a',
+              color: copied ? '#6dc96d' : '#e8e4de',
+            }}
+          >
+            {copied ? <Check size={14} /> : <Copy size={14} />}
+            {copied ? 'Link copied!' : 'Copy link'}
+          </button>
+          {canShare && (
+            <button
+              onClick={handleShare}
+              className="flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-medium cursor-pointer"
+              style={{
+                background: '#1a150a',
+                border: '1px solid rgba(201,168,112,0.35)',
+                color: '#c9a870',
+              }}
+            >
+              <Share2 size={14} />
+              Send to friend
+            </button>
+          )}
         </div>
 
         <p className="text-xs text-[#555] text-center leading-relaxed">
-          Make sure your phone is on the same Wi-Fi, then scan.
+          Scan to open on phone, or share the link with a friend.
         </p>
       </motion.div>
     </div>
