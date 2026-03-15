@@ -98,52 +98,69 @@ function Header() {
       <header
         className="sticky top-0 z-10 backdrop-blur-md"
         style={{
-          background: 'rgba(18,18,18,0.92)',
-          borderBottom: '1px solid #2a2a2a',
+          background: 'rgba(6,6,6,0.94)',
+          borderBottom: '1px solid #1a1a1a',
         }}
       >
-        {/* Thin gold top line */}
-        <div style={{ height: '1px', background: 'linear-gradient(90deg, transparent 0%, #c9a870 40%, #c9a870 60%, transparent 100%)' }} />
+        {/* Animated ink-draw gold top line */}
+        <motion.div
+          initial={{ scaleX: 0 }}
+          animate={{ scaleX: 1 }}
+          transition={{ duration: 1.1, ease: [0.16, 1, 0.3, 1] }}
+          style={{
+            height: '1px',
+            background: 'linear-gradient(90deg, transparent 0%, #c9a870 35%, #ddb96a 50%, #c9a870 65%, transparent 100%)',
+            transformOrigin: 'center',
+          }}
+        />
 
         <div className="max-w-7xl mx-auto px-6 py-3.5 flex items-center justify-between">
-          <div
+          <motion.div
             className="flex items-center gap-3 cursor-pointer group"
             onClick={onLogoClick}
+            initial={{ opacity: 0, x: -12 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.15, duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
           >
             <div
-              className="w-8 h-8 rounded-lg flex items-center justify-center transition-all"
-              style={{ background: '#1f1a13', border: '1px solid #3a2e1a' }}
+              className="w-8 h-8 rounded-lg flex items-center justify-center transition-all group-hover:border-[rgba(201,168,112,0.5)]"
+              style={{ background: '#1a150a', border: '1px solid #2e2410' }}
             >
-              <PenTool size={15} style={{ color: '#c9a870' }} strokeWidth={2} />
+              <PenTool size={14} style={{ color: '#c9a870' }} strokeWidth={2} />
             </div>
             <div>
               <h1
-                className="font-display text-sm font-semibold text-[#e8e4de] uppercase leading-none group-hover:text-[#c9a870] transition-colors"
-                style={{ letterSpacing: '0.1em' }}
+                className="font-ink text-xl leading-none text-[#f0ece4] group-hover:text-[#c9a870] transition-colors"
+                style={{ letterSpacing: '0.08em' }}
               >
                 InkSight <span style={{ color: '#c9a870' }}>AI</span>
               </h1>
-              <p className="text-[10px] text-[#555] mt-0.5 uppercase tracking-[0.18em]">
+              <p className="label-overline mt-0.5" style={{ color: '#333330', letterSpacing: '0.2em' }}>
                 Tattoo Design Studio
               </p>
             </div>
-          </div>
+          </motion.div>
 
-          <button
+          <motion.button
             onClick={() => setShowQR(true)}
-            className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-[#666] hover:text-[#e8e4de] transition-all text-xs cursor-pointer uppercase tracking-wider"
-            style={{ border: '1px solid #2a2a2a' }}
+            initial={{ opacity: 0, x: 12 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.2, duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+            className="flex items-center gap-2 px-3 py-1.5 rounded-lg transition-all text-xs cursor-pointer uppercase tracking-wider"
+            style={{ border: '1px solid #1e1e1e', color: '#555550' }}
             onMouseEnter={e => {
-              (e.currentTarget as HTMLElement).style.borderColor = '#444';
+              (e.currentTarget as HTMLElement).style.borderColor = 'rgba(201,168,112,0.4)';
+              (e.currentTarget as HTMLElement).style.color = '#f0ece4';
             }}
             onMouseLeave={e => {
-              (e.currentTarget as HTMLElement).style.borderColor = '#2a2a2a';
+              (e.currentTarget as HTMLElement).style.borderColor = '#1e1e1e';
+              (e.currentTarget as HTMLElement).style.color = '#555550';
             }}
             title="Open on phone"
           >
-            <QrCode size={14} />
+            <QrCode size={13} />
             <span className="hidden sm:inline">Phone</span>
-          </button>
+          </motion.button>
         </div>
       </header>
       <AnimatePresence>

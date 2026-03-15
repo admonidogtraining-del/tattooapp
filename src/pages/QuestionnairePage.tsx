@@ -6,11 +6,12 @@ import { useApp } from '../context/AppContext';
 import { SKIN_TONES } from '../constants';
 
 const TOTAL_STEPS = 3;
+const INK_EASE: [number, number, number, number] = [0.16, 1, 0.3, 1];
 
 const variants = {
-  enter: (dir: number) => ({ x: dir > 0 ? 56 : -56, opacity: 0 }),
+  enter: (dir: number) => ({ x: dir > 0 ? 64 : -64, opacity: 0 }),
   center: { x: 0, opacity: 1 },
-  exit: (dir: number) => ({ x: dir > 0 ? -56 : 56, opacity: 0 }),
+  exit: (dir: number) => ({ x: dir > 0 ? -64 : 64, opacity: 0 }),
 };
 
 export default function QuestionnairePage() {
@@ -19,20 +20,9 @@ export default function QuestionnairePage() {
   const [step, setStep] = useState(0);
   const [dir, setDir] = useState(1);
 
-  const go = (next: number) => {
-    setDir(next > step ? 1 : -1);
-    setStep(next);
-  };
-
-  const goBack = () => {
-    if (step === 0) navigate('/');
-    else go(step - 1);
-  };
-
-  const goNext = () => {
-    if (step < TOTAL_STEPS - 1) go(step + 1);
-    else navigate('/style');
-  };
+  const go = (next: number) => { setDir(next > step ? 1 : -1); setStep(next); };
+  const goBack = () => { if (step === 0) navigate('/'); else go(step - 1); };
+  const goNext = () => { if (step < TOTAL_STEPS - 1) go(step + 1); else navigate('/style'); };
 
   const stepComplete = [
     !!questionnaire.skinColor,
@@ -49,36 +39,33 @@ export default function QuestionnairePage() {
       content: (
         <div className="flex justify-center gap-5 flex-wrap py-2">
           {SKIN_TONES.map((tone) => {
-            const isSelected = questionnaire.skinColor === tone.value;
+            const isSel = questionnaire.skinColor === tone.value;
             return (
-              <button
+              <motion.button
                 key={tone.value}
                 type="button"
                 onClick={() => setQuestionnaire({ ...questionnaire, skinColor: tone.value })}
-                className="flex flex-col items-center gap-2 group cursor-pointer"
+                className="flex flex-col items-center gap-2 cursor-pointer"
+                whileHover={{ scale: 1.08 }}
+                whileTap={{ scale: 0.94 }}
               >
                 <div
-                  className="w-14 h-14 rounded-full transition-all duration-200"
+                  className="w-14 h-14 rounded-full transition-all duration-250"
                   style={{
                     backgroundColor: tone.color,
-                    boxShadow: isSelected
-                      ? `0 0 0 3px #0a0a0a, 0 0 0 5px #c9a870, 0 0 16px rgba(201,168,112,0.45)`
+                    boxShadow: isSel
+                      ? `0 0 0 3px #0a0a0a, 0 0 0 5px #c9a870, 0 0 20px rgba(201,168,112,0.5)`
                       : 'none',
-                    transform: isSelected ? 'scale(1.12)' : undefined,
-                    opacity: isSelected ? 1 : 0.5,
+                    opacity: isSel ? 1 : 0.45,
                   }}
                 />
                 <span
-                  className="text-xs font-display uppercase transition-colors duration-200"
-                  style={{
-                    color: isSelected ? '#c9a870' : '#444440',
-                    letterSpacing: '0.1em',
-                    fontSize: '10px',
-                  }}
+                  className="font-display uppercase transition-colors duration-200"
+                  style={{ fontSize: '9px', color: isSel ? '#c9a870' : '#444440', letterSpacing: '0.12em' }}
                 >
                   {tone.label}
                 </span>
-              </button>
+              </motion.button>
             );
           })}
         </div>
@@ -93,56 +80,52 @@ export default function QuestionnairePage() {
             { value: 'Black & Grey Only', icon: '◾', desc: 'Timeless, works on all skin tones' },
             { value: 'Full Color', icon: '◈', desc: 'Vibrant, painterly or traditional' },
             { value: 'Black with Color Accents', icon: '✦', desc: 'Best of both worlds' },
-          ].map(opt => {
-            const isSelected = questionnaire.colorPreference === opt.value;
+          ].map((opt, i) => {
+            const isSel = questionnaire.colorPreference === opt.value;
             return (
-              <button
+              <motion.button
                 key={opt.value}
                 type="button"
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: i * 0.07, duration: 0.4, ease: INK_EASE }}
                 onClick={() => setQuestionnaire({ ...questionnaire, colorPreference: opt.value })}
+                whileHover={{ x: 3 }}
+                whileTap={{ scale: 0.98 }}
                 className="w-full p-4 rounded-xl text-left flex items-center gap-4 transition-all cursor-pointer relative overflow-hidden"
                 style={{
-                  background: isSelected ? '#1a150a' : '#0f0f0d',
-                  border: isSelected ? '1px solid rgba(201,168,112,0.55)' : '1px solid #222222',
-                  boxShadow: isSelected ? '0 0 18px rgba(201,168,112,0.1)' : 'none',
-                }}
-                onMouseEnter={e => {
-                  if (!isSelected) {
-                    (e.currentTarget as HTMLElement).style.borderColor = 'rgba(201,168,112,0.2)';
-                    (e.currentTarget as HTMLElement).style.background = '#141410';
-                  }
-                }}
-                onMouseLeave={e => {
-                  if (!isSelected) {
-                    (e.currentTarget as HTMLElement).style.borderColor = '#222222';
-                    (e.currentTarget as HTMLElement).style.background = '#0f0f0d';
-                  }
+                  background: isSel ? '#1a150a' : '#0f0f0d',
+                  border: isSel ? '1px solid rgba(201,168,112,0.55)' : '1px solid #1e1e1e',
+                  boxShadow: isSel ? '0 0 20px rgba(201,168,112,0.12)' : 'none',
                 }}
               >
-                {isSelected && (
-                  <div
-                    className="absolute left-0 top-0 bottom-0 w-0.5 rounded-l"
+                {isSel && (
+                  <motion.div
+                    layoutId="color-accent-bar"
+                    className="absolute left-0 top-0 bottom-0 w-0.5"
                     style={{ background: '#c9a870' }}
                   />
                 )}
-                <span className="text-lg ml-1" style={{ color: isSelected ? '#c9a870' : '#555550' }}>
+                <span style={{ fontSize: '18px', color: isSel ? '#c9a870' : '#333330', marginLeft: 4 }}>
                   {opt.icon}
                 </span>
                 <div className="flex-1">
                   <p className="text-sm font-medium text-[#f0ece4]">{opt.value}</p>
                   <p className="text-xs mt-0.5" style={{ color: '#888880' }}>{opt.desc}</p>
                 </div>
-                {isSelected && (
-                  <div
+                {isSel && (
+                  <motion.div
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
                     className="w-5 h-5 rounded-full flex items-center justify-center shrink-0"
                     style={{ background: '#c9a870' }}
                   >
                     <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
                       <path d="M2 5l2.5 2.5L8 3" stroke="#0a0a0a" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
                     </svg>
-                  </div>
+                  </motion.div>
                 )}
-              </button>
+              </motion.button>
             );
           })}
         </div>
@@ -150,7 +133,7 @@ export default function QuestionnairePage() {
     },
     {
       title: 'Tattoo Size',
-      sub: 'Size affects detail, placement options, and healing.',
+      sub: 'Size affects detail, placement, and healing time.',
       content: (
         <div className="grid grid-cols-2 gap-2.5">
           {[
@@ -159,52 +142,46 @@ export default function QuestionnairePage() {
             { value: 'Medium (4-7 inches)', short: 'Medium', sub: '4–7"', dotSize: 36 },
             { value: 'Large (7-12 inches)', short: 'Large', sub: '7–12"', dotSize: 44 },
             { value: 'Extra Large (Full Sleeve/Back)', short: 'XL', sub: 'Full Sleeve', dotSize: 52 },
-          ].map(opt => {
-            const isSelected = questionnaire.size === opt.value;
+          ].map((opt, i) => {
+            const isSel = questionnaire.size === opt.value;
             return (
-              <button
+              <motion.button
                 key={opt.value}
                 type="button"
+                initial={{ opacity: 0, y: 18 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.06, duration: 0.4, ease: INK_EASE }}
                 onClick={() => setQuestionnaire({ ...questionnaire, size: opt.value })}
-                className="p-4 rounded-xl flex flex-col items-center gap-3 transition-all cursor-pointer"
+                whileHover={{ y: -2 }}
+                whileTap={{ scale: 0.96 }}
+                className="p-4 rounded-xl flex flex-col items-center gap-3 cursor-pointer"
                 style={{
-                  background: isSelected ? '#1a150a' : '#0f0f0d',
-                  border: isSelected ? '1px solid rgba(201,168,112,0.55)' : '1px solid #222222',
-                  boxShadow: isSelected ? '0 0 18px rgba(201,168,112,0.1)' : 'none',
-                }}
-                onMouseEnter={e => {
-                  if (!isSelected) {
-                    (e.currentTarget as HTMLElement).style.borderColor = 'rgba(201,168,112,0.2)';
-                    (e.currentTarget as HTMLElement).style.background = '#141410';
-                  }
-                }}
-                onMouseLeave={e => {
-                  if (!isSelected) {
-                    (e.currentTarget as HTMLElement).style.borderColor = '#222222';
-                    (e.currentTarget as HTMLElement).style.background = '#0f0f0d';
-                  }
+                  background: isSel ? '#1a150a' : '#0f0f0d',
+                  border: isSel ? '1px solid rgba(201,168,112,0.55)' : '1px solid #1e1e1e',
+                  boxShadow: isSel ? '0 0 20px rgba(201,168,112,0.12)' : 'none',
+                  transition: 'background 0.2s, border 0.2s, box-shadow 0.2s',
                 }}
               >
-                <div
-                  className="rounded-full transition-all duration-200"
+                <motion.div
+                  animate={{
+                    background: isSel ? '#c9a870' : '#1e1e1e',
+                    boxShadow: isSel ? `0 0 ${opt.dotSize / 2}px rgba(201,168,112,0.4)` : 'none',
+                  }}
+                  transition={{ duration: 0.25 }}
+                  className="rounded-full"
                   style={{
-                    width: `${opt.dotSize}px`,
-                    height: `${opt.dotSize}px`,
-                    background: isSelected ? '#c9a870' : '#1e1e1e',
-                    boxShadow: isSelected ? `0 0 ${opt.dotSize / 2}px rgba(201,168,112,0.35)` : 'none',
-                    border: isSelected ? 'none' : '1px solid #2e2e2e',
+                    width: opt.dotSize,
+                    height: opt.dotSize,
+                    border: isSel ? 'none' : '1px solid #2e2e2e',
                   }}
                 />
                 <div className="text-center">
-                  <p
-                    className="font-display uppercase text-[#f0ece4]"
-                    style={{ fontSize: '12px', letterSpacing: '0.09em' }}
-                  >
+                  <p className="font-display uppercase text-[#f0ece4]" style={{ fontSize: '12px', letterSpacing: '0.09em' }}>
                     {opt.short}
                   </p>
-                  <p className="text-xs mt-0.5" style={{ color: '#888880' }}>{opt.sub}</p>
+                  <p style={{ fontSize: '11px', color: '#888880' }}>{opt.sub}</p>
                 </div>
-              </button>
+              </motion.button>
             );
           })}
         </div>
@@ -216,10 +193,10 @@ export default function QuestionnairePage() {
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 16 }}
+      initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -12 }}
-      transition={{ duration: 0.38, ease: [0.25, 0.1, 0.25, 1] }}
+      transition={{ duration: 0.4, ease: INK_EASE }}
       className="max-w-lg mx-auto"
     >
       {/* ── Progress bar ── */}
@@ -228,36 +205,29 @@ export default function QuestionnairePage() {
           <button
             onClick={goBack}
             className="transition-colors cursor-pointer shrink-0"
-            style={{ color: '#555550' }}
+            style={{ color: '#444440' }}
             onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = '#c9a870'; }}
-            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = '#555550'; }}
+            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = '#444440'; }}
           >
             <ChevronLeft size={18} />
           </button>
           <div className="flex-1 flex gap-1.5">
             {Array.from({ length: TOTAL_STEPS }).map((_, i) => (
-              <div
-                key={i}
-                className="h-1 flex-1 rounded-full overflow-hidden"
-                style={{ background: '#1e1e1e' }}
-              >
+              <div key={i} className="h-1 flex-1 rounded-full overflow-hidden" style={{ background: '#1a1a1a' }}>
                 <motion.div
                   className="h-full rounded-full"
                   initial={{ width: 0 }}
                   animate={{ width: i <= step ? '100%' : '0%' }}
-                  transition={{ duration: 0.35, ease: 'easeOut' }}
+                  transition={{ duration: 0.45, ease: INK_EASE }}
                   style={{
                     background: i <= step ? '#c9a870' : 'transparent',
-                    boxShadow: i <= step ? '0 0 6px rgba(201,168,112,0.5)' : 'none',
+                    boxShadow: i <= step ? '0 0 8px rgba(201,168,112,0.55)' : 'none',
                   }}
                 />
               </div>
             ))}
           </div>
-          <span
-            className="font-display shrink-0"
-            style={{ fontSize: '11px', color: '#444440', letterSpacing: '0.12em' }}
-          >
+          <span className="font-display shrink-0" style={{ fontSize: '11px', color: '#333330', letterSpacing: '0.12em' }}>
             {step + 1}/{TOTAL_STEPS}
           </span>
         </div>
@@ -265,10 +235,10 @@ export default function QuestionnairePage() {
           {stepLabels.map((label, i) => (
             <div key={label} className="flex-1 text-center">
               <span
-                className="font-display uppercase transition-colors duration-200"
+                className="font-display uppercase transition-colors duration-300"
                 style={{
                   fontSize: '9px',
-                  color: i < step ? '#c9a87088' : i === step ? '#c9a870' : '#2e2e2e',
+                  color: i < step ? 'rgba(201,168,112,0.5)' : i === step ? '#c9a870' : '#252525',
                   letterSpacing: '0.12em',
                 }}
               >
@@ -280,43 +250,47 @@ export default function QuestionnairePage() {
       </div>
 
       {/* ── Question card ── */}
-      <div
-        className="rounded-2xl p-6 mb-4 relative overflow-hidden"
-        style={{ background: '#111111', border: '1px solid #222222' }}
-      >
-        {/* Gold corner accents */}
-        <div className="absolute top-0 left-0 w-4 h-4 border-t border-l rounded-tl-2xl" style={{ borderColor: 'rgba(201,168,112,0.4)' }} />
-        <div className="absolute bottom-0 right-0 w-4 h-4 border-b border-r rounded-br-2xl" style={{ borderColor: 'rgba(201,168,112,0.4)' }} />
+      <div className="flash-card mb-4">
+        <div className="flash-card-inner p-6 relative overflow-hidden">
+          {/* Corner ornaments */}
+          <div className="absolute top-3 left-3 w-4 h-4 border-t border-l" style={{ borderColor: 'rgba(201,168,112,0.4)' }} />
+          <div className="absolute top-3 right-3 w-4 h-4 border-t border-r" style={{ borderColor: 'rgba(201,168,112,0.4)' }} />
+          <div className="absolute bottom-3 left-3 w-4 h-4 border-b border-l" style={{ borderColor: 'rgba(201,168,112,0.4)' }} />
+          <div className="absolute bottom-3 right-3 w-4 h-4 border-b border-r" style={{ borderColor: 'rgba(201,168,112,0.4)' }} />
 
-        <div className="overflow-hidden">
-          <AnimatePresence mode="wait" custom={dir}>
-            <motion.div
-              key={step}
-              custom={dir}
-              variants={variants}
-              initial="enter"
-              animate="center"
-              exit="exit"
-              transition={{ duration: 0.26, ease: 'easeInOut' }}
-            >
-              <div className="mb-6">
-                <p
-                  className="label-overline mb-1.5"
-                  style={{ color: '#c9a87088' }}
-                >
-                  Step {step + 1} of {TOTAL_STEPS}
-                </p>
-                <h2
-                  className="font-display text-2xl uppercase text-[#f0ece4]"
-                  style={{ letterSpacing: '0.08em' }}
-                >
-                  {q.title}
-                </h2>
-                <p className="text-sm mt-1" style={{ color: '#888880' }}>{q.sub}</p>
-              </div>
-              {q.content}
-            </motion.div>
-          </AnimatePresence>
+          <div className="overflow-hidden">
+            <AnimatePresence mode="wait" custom={dir}>
+              <motion.div
+                key={step}
+                custom={dir}
+                variants={variants}
+                initial="enter"
+                animate="center"
+                exit="exit"
+                transition={{ duration: 0.28, ease: 'easeInOut' }}
+              >
+                <div className="mb-6">
+                  <p className="label-overline mb-1.5" style={{ color: 'rgba(201,168,112,0.55)' }}>
+                    Step {step + 1} of {TOTAL_STEPS}
+                  </p>
+                  {/* Bebas Neue step title */}
+                  <div style={{ overflow: 'hidden' }}>
+                    <motion.h2
+                      key={`title-${step}`}
+                      initial={{ y: '100%' }}
+                      animate={{ y: '0%' }}
+                      transition={{ duration: 0.45, ease: INK_EASE }}
+                      className="font-ink text-5xl text-[#f0ece4]"
+                    >
+                      {q.title}
+                    </motion.h2>
+                  </div>
+                  <p className="text-sm mt-1.5" style={{ color: '#888880' }}>{q.sub}</p>
+                </div>
+                {q.content}
+              </motion.div>
+            </AnimatePresence>
+          </div>
         </div>
       </div>
 
