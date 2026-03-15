@@ -95,7 +95,7 @@ export default function StyleSelectionPage() {
     const statics = staticVariants[styleId] ?? [];
     const svgFallbacks: string[] = STYLE_PREVIEW_VARIANTS[styleId] ?? [TATTOO_STYLES.find(s => s.id === styleId)!.imgSrc];
     const aiImg = cardImages[styleId];
-    if (statics.length > 0) return [...statics, ...svgFallbacks];
+    if (statics.length > 0) return statics;
     return aiImg ? [aiImg, ...svgFallbacks] : svgFallbacks;
   };
 
