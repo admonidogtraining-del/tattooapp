@@ -153,7 +153,7 @@ export default function InitialPage() {
           {/* flash-art gradient border wrapper */}
           <div className="flash-card">
             <div className="flash-card-inner p-4">
-              {/* Corner ornaments */}
+              {/* Corner ornaments — needs relative parent (provided by flash-card-inner) */}
               <div className="absolute top-3 left-3 w-3 h-3 border-t border-l" style={{ borderColor: 'rgba(201,168,112,0.5)' }} />
               <div className="absolute top-3 right-3 w-3 h-3 border-t border-r" style={{ borderColor: 'rgba(201,168,112,0.5)' }} />
               <div className="absolute bottom-3 left-3 w-3 h-3 border-b border-l" style={{ borderColor: 'rgba(201,168,112,0.5)' }} />
