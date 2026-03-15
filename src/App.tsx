@@ -4,6 +4,7 @@ import { AnimatePresence, motion } from 'motion/react';
 import { PenTool, QrCode, X, Wifi, Images, Copy, Check, Share2 } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
 import { AppProvider, useApp } from './context/AppContext';
+import { InksightLogo } from './components/InksightLogo';
 import InitialPage from './pages/InitialPage';
 import QuestionnairePage from './pages/QuestionnairePage';
 import StyleSelectionPage from './pages/StyleSelectionPage';
@@ -167,41 +168,39 @@ function Header() {
           borderBottom: '1px solid #1a1a1a',
         }}
       >
-        {/* Animated ink-draw gold top line */}
+        {/* Animated top line: purple → pink → gold */}
         <motion.div
           initial={{ scaleX: 0 }}
           animate={{ scaleX: 1 }}
           transition={{ duration: 1.1, ease: [0.16, 1, 0.3, 1] }}
           style={{
             height: '1px',
-            background: 'linear-gradient(90deg, transparent 0%, #c9a870 35%, #ddb96a 50%, #c9a870 65%, transparent 100%)',
+            background: 'linear-gradient(90deg, transparent 0%, #7B52C1 20%, #C05090 50%, #E84393 70%, #C9A870 88%, transparent 100%)',
             transformOrigin: 'center',
           }}
         />
 
-        <div className="max-w-7xl mx-auto px-6 py-3.5 flex items-center justify-between">
+        <div className="max-w-7xl mx-auto px-6 py-3 flex items-center justify-between">
           <motion.div
-            className="flex items-center gap-3 cursor-pointer group"
+            className="flex items-center gap-2.5 cursor-pointer group"
             onClick={onLogoClick}
             initial={{ opacity: 0, x: -12 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.15, duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
           >
-            <div
-              className="w-8 h-8 rounded-lg flex items-center justify-center transition-all group-hover:border-[rgba(201,168,112,0.5)]"
-              style={{ background: '#1a150a', border: '1px solid #2e2410' }}
-            >
-              <PenTool size={14} style={{ color: '#c9a870' }} strokeWidth={2} />
-            </div>
+            <InksightLogo size={46} className="transition-opacity group-hover:opacity-85" />
             <div>
               <h1
-                className="font-ink text-xl leading-none text-[#f0ece4] group-hover:text-[#c9a870] transition-colors"
-                style={{ letterSpacing: '0.08em' }}
+                className="font-ink leading-none text-[#f0ece4]"
+                style={{ fontSize: '20px', letterSpacing: '0.06em' }}
               >
-                InkSight <span style={{ color: '#c9a870' }}>AI</span>
+                INKSIGHT <span style={{ color: '#C9A870' }}>AI</span>
               </h1>
-              <p className="label-overline mt-0.5" style={{ color: '#333330', letterSpacing: '0.2em' }}>
-                Tattoo Design Studio
+              <p
+                className="label-overline mt-0.5"
+                style={{ color: '#7B52C1', letterSpacing: '0.18em', fontSize: '8px' }}
+              >
+                TATTOO DESIGN STUDIO
               </p>
             </div>
           </motion.div>
