@@ -1,7 +1,7 @@
 import { BrowserRouter, Routes, Route, useLocation, useNavigate, Navigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
-import { PenTool, QrCode, X, Wifi } from 'lucide-react';
+import { PenTool, QrCode, X, Wifi, Images } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
 import { AppProvider, useApp } from './context/AppContext';
 import InitialPage from './pages/InitialPage';
@@ -9,6 +9,7 @@ import QuestionnairePage from './pages/QuestionnairePage';
 import StyleSelectionPage from './pages/StyleSelectionPage';
 import ResultsPage from './pages/ResultsPage';
 import AftercarePage from './pages/AftercarePage';
+import GalleryPage from './pages/GalleryPage';
 import TryOnModal from './components/TryOnModal';
 
 function ScrollToTop() {
@@ -141,26 +142,49 @@ function Header() {
             </div>
           </motion.div>
 
-          <motion.button
-            onClick={() => setShowQR(true)}
-            initial={{ opacity: 0, x: 12 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.2, duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-            className="flex items-center gap-2 px-3 py-1.5 rounded-lg transition-all text-xs cursor-pointer uppercase tracking-wider"
-            style={{ border: '1px solid #1e1e1e', color: '#555550' }}
-            onMouseEnter={e => {
-              (e.currentTarget as HTMLElement).style.borderColor = 'rgba(201,168,112,0.4)';
-              (e.currentTarget as HTMLElement).style.color = '#f0ece4';
-            }}
-            onMouseLeave={e => {
-              (e.currentTarget as HTMLElement).style.borderColor = '#1e1e1e';
-              (e.currentTarget as HTMLElement).style.color = '#555550';
-            }}
-            title="Open on phone"
-          >
-            <QrCode size={13} />
-            <span className="hidden sm:inline">Phone</span>
-          </motion.button>
+          <div className="flex items-center gap-2">
+            <motion.button
+              onClick={() => navigate('/gallery')}
+              initial={{ opacity: 0, x: 12 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.18, duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+              className="flex items-center gap-2 px-3 py-1.5 rounded-lg transition-all text-xs cursor-pointer uppercase tracking-wider"
+              style={{ border: '1px solid #1e1e1e', color: '#555550' }}
+              onMouseEnter={e => {
+                (e.currentTarget as HTMLElement).style.borderColor = 'rgba(201,168,112,0.4)';
+                (e.currentTarget as HTMLElement).style.color = '#f0ece4';
+              }}
+              onMouseLeave={e => {
+                (e.currentTarget as HTMLElement).style.borderColor = '#1e1e1e';
+                (e.currentTarget as HTMLElement).style.color = '#555550';
+              }}
+              title="View collection"
+            >
+              <Images size={13} />
+              <span className="hidden sm:inline">Collection</span>
+            </motion.button>
+
+            <motion.button
+              onClick={() => setShowQR(true)}
+              initial={{ opacity: 0, x: 12 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.2, duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+              className="flex items-center gap-2 px-3 py-1.5 rounded-lg transition-all text-xs cursor-pointer uppercase tracking-wider"
+              style={{ border: '1px solid #1e1e1e', color: '#555550' }}
+              onMouseEnter={e => {
+                (e.currentTarget as HTMLElement).style.borderColor = 'rgba(201,168,112,0.4)';
+                (e.currentTarget as HTMLElement).style.color = '#f0ece4';
+              }}
+              onMouseLeave={e => {
+                (e.currentTarget as HTMLElement).style.borderColor = '#1e1e1e';
+                (e.currentTarget as HTMLElement).style.color = '#555550';
+              }}
+              title="Open on phone"
+            >
+              <QrCode size={13} />
+              <span className="hidden sm:inline">Phone</span>
+            </motion.button>
+          </div>
         </div>
       </header>
       <AnimatePresence>
@@ -184,6 +208,7 @@ function AppRoutes() {
             <Route path="/style" element={<StyleSelectionPage />} />
             <Route path="/results" element={<ResultsPage />} />
             <Route path="/aftercare" element={<AftercarePage />} />
+            <Route path="/gallery" element={<GalleryPage />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </AnimatePresence>
