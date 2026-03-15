@@ -214,7 +214,6 @@ export default function StyleSelectionPage() {
               onClick={() => setQuestionnaire({ ...questionnaire, style: style.id })}
               className="cursor-pointer relative rounded-xl overflow-hidden group"
               style={{
-                animation: `slide-up 0.45s cubic-bezier(0.16,1,0.3,1) ${index * 0.04}s both`,
                 border: isSel ? '2px solid rgba(201,168,112,0.75)' : '2px solid #1a1a1a',
                 boxShadow: isSel
                   ? '0 0 0 1px rgba(201,168,112,0.12), 0 0 30px rgba(201,168,112,0.2)'

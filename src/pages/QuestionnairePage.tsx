@@ -84,7 +84,6 @@ export default function QuestionnairePage() {
                 whileTap={{ scale: 0.98 }}
                 className="w-full p-4 rounded-xl text-left flex items-center gap-4 transition-all cursor-pointer relative overflow-hidden"
                 style={{
-                  animation: `slide-up 0.4s cubic-bezier(0.16,1,0.3,1) ${i * 0.07}s both`,
                   background: isSel ? '#1a150a' : '#0f0f0d',
                   border: isSel ? '1px solid rgba(201,168,112,0.55)' : '1px solid #1e1e1e',
                   boxShadow: isSel ? '0 0 20px rgba(201,168,112,0.12)' : 'none',
@@ -144,7 +143,6 @@ export default function QuestionnairePage() {
                 whileTap={{ scale: 0.96 }}
                 className="p-4 rounded-xl flex flex-col items-center gap-3 cursor-pointer"
                 style={{
-                  animation: `slide-up 0.4s cubic-bezier(0.16,1,0.3,1) ${i * 0.06}s both`,
                   background: isSel ? '#1a150a' : '#0f0f0d',
                   border: isSel ? '1px solid rgba(201,168,112,0.55)' : '1px solid #1e1e1e',
                   boxShadow: isSel ? '0 0 20px rgba(201,168,112,0.12)' : 'none',
