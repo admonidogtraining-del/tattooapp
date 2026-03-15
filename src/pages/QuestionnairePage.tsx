@@ -73,28 +73,23 @@ export default function QuestionnairePage() {
             { value: 'Black & Grey Only', icon: '◾', desc: 'Timeless, works on all skin tones' },
             { value: 'Full Color', icon: '◈', desc: 'Vibrant, painterly or traditional' },
             { value: 'Black with Color Accents', icon: '✦', desc: 'Best of both worlds' },
-          ].map((opt, i) => {
+          ].map((opt) => {
             const isSel = questionnaire.colorPreference === opt.value;
             return (
-              <motion.button
+              <button
                 key={opt.value}
                 type="button"
                 onClick={() => setQuestionnaire({ ...questionnaire, colorPreference: opt.value })}
-                whileHover={{ x: 3 }}
-                whileTap={{ scale: 0.98 }}
-                className="w-full p-4 rounded-xl text-left flex items-center gap-4 transition-all cursor-pointer relative overflow-hidden"
+                className="w-full p-4 rounded-xl text-left flex items-center gap-4 cursor-pointer relative overflow-hidden"
                 style={{
                   background: isSel ? '#1a150a' : '#0f0f0d',
                   border: isSel ? '1px solid rgba(201,168,112,0.55)' : '1px solid #1e1e1e',
                   boxShadow: isSel ? '0 0 20px rgba(201,168,112,0.12)' : 'none',
+                  transition: 'background 0.2s, border 0.2s, box-shadow 0.2s',
                 }}
               >
                 {isSel && (
-                  <motion.div
-                    layoutId="color-accent-bar"
-                    className="absolute left-0 top-0 bottom-0 w-0.5"
-                    style={{ background: '#c9a870' }}
-                  />
+                  <div className="absolute left-0 top-0 bottom-0 w-0.5" style={{ background: '#c9a870' }} />
                 )}
                 <span style={{ fontSize: '18px', color: isSel ? '#c9a870' : '#333330', marginLeft: 4 }}>
                   {opt.icon}
@@ -104,18 +99,13 @@ export default function QuestionnairePage() {
                   <p className="text-xs mt-0.5" style={{ color: '#888880' }}>{opt.desc}</p>
                 </div>
                 {isSel && (
-                  <motion.div
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    className="w-5 h-5 rounded-full flex items-center justify-center shrink-0"
-                    style={{ background: '#c9a870' }}
-                  >
+                  <div className="w-5 h-5 rounded-full flex items-center justify-center shrink-0" style={{ background: '#c9a870' }}>
                     <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
                       <path d="M2 5l2.5 2.5L8 3" stroke="#0a0a0a" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
                     </svg>
-                  </motion.div>
+                  </div>
                 )}
-              </motion.button>
+              </button>
             );
           })}
         </div>
@@ -132,15 +122,13 @@ export default function QuestionnairePage() {
             { value: 'Medium (4-7 inches)', short: 'Medium', sub: '4–7"', dotSize: 36 },
             { value: 'Large (7-12 inches)', short: 'Large', sub: '7–12"', dotSize: 44 },
             { value: 'Extra Large (Full Sleeve/Back)', short: 'XL', sub: 'Full Sleeve', dotSize: 52 },
-          ].map((opt, i) => {
+          ].map((opt) => {
             const isSel = questionnaire.size === opt.value;
             return (
-              <motion.button
+              <button
                 key={opt.value}
                 type="button"
                 onClick={() => setQuestionnaire({ ...questionnaire, size: opt.value })}
-                whileHover={{ y: -2 }}
-                whileTap={{ scale: 0.96 }}
                 className="p-4 rounded-xl flex flex-col items-center gap-3 cursor-pointer"
                 style={{
                   background: isSel ? '#1a150a' : '#0f0f0d',
@@ -149,17 +137,15 @@ export default function QuestionnairePage() {
                   transition: 'background 0.2s, border 0.2s, box-shadow 0.2s',
                 }}
               >
-                <motion.div
-                  animate={{
-                    background: isSel ? '#c9a870' : '#1e1e1e',
-                    boxShadow: isSel ? `0 0 ${opt.dotSize / 2}px rgba(201,168,112,0.4)` : 'none',
-                  }}
-                  transition={{ duration: 0.25 }}
+                <div
                   className="rounded-full"
                   style={{
                     width: opt.dotSize,
                     height: opt.dotSize,
+                    background: isSel ? '#c9a870' : '#1e1e1e',
+                    boxShadow: isSel ? `0 0 ${opt.dotSize / 2}px rgba(201,168,112,0.4)` : 'none',
                     border: isSel ? 'none' : '1px solid #2e2e2e',
+                    transition: 'background 0.25s, box-shadow 0.25s',
                   }}
                 />
                 <div className="text-center">
@@ -168,7 +154,7 @@ export default function QuestionnairePage() {
                   </p>
                   <p style={{ fontSize: '11px', color: '#888880' }}>{opt.sub}</p>
                 </div>
-              </motion.button>
+              </button>
             );
           })}
         </div>
