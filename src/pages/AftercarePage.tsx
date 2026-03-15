@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { ChevronLeft, Save, Droplets, Clock, MapPin, AlertCircle } from 'lucide-react';
+import { ChevronLeft, Save, Droplets, Clock, MapPin, AlertCircle, RotateCcw } from 'lucide-react';
 import { motion } from 'motion/react';
 import { useApp } from '../context/AppContext';
 
@@ -18,7 +18,7 @@ function healingColor(difficulty: string): string {
 
 export default function AftercarePage() {
   const navigate = useNavigate();
-  const { result, generatedImage } = useApp();
+  const { result, generatedImage, handleReset } = useApp();
 
   if (!result) {
     navigate('/results');
@@ -137,6 +137,14 @@ export default function AftercarePage() {
           <Save size={15} /> Save Your Design
         </a>
       )}
+
+      {/* ── START OVER ── */}
+      <button
+        onClick={() => { handleReset(); navigate('/'); }}
+        className="btn-game w-full flex items-center justify-center gap-2 rounded-2xl py-4 px-6 cursor-pointer"
+      >
+        <RotateCcw size={14} /> Start a New Design
+      </button>
     </motion.div>
   );
 }
