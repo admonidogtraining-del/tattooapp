@@ -31,7 +31,7 @@ export default function AftercarePage() {
     <motion.div
       exit={{ opacity: 0, y: -8 }}
       transition={{ duration: 0.35, ease: 'easeOut' }}
-      className="max-w-2xl mx-auto space-y-4"
+      className="max-w-2xl md:max-w-3xl mx-auto space-y-4"
       style={{ animation: 'fade-in 0.35s ease both' }}
     >
       {/* Back */}

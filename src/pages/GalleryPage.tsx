@@ -158,7 +158,7 @@ export default function GalleryPage() {
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.35, ease: 'easeOut' }}
-      className="max-w-2xl mx-auto space-y-4"
+      className="max-w-2xl md:max-w-3xl mx-auto space-y-4"
     >
       {/* Back */}
       <button

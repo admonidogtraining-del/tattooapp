@@ -129,6 +129,7 @@
     color: #f0ece4;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    min-width: 360px;
   }
 
   ::-webkit-scrollbar { width: 3px; height: 3px; }
