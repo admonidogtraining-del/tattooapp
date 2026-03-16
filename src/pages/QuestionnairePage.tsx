@@ -168,7 +168,7 @@ export default function QuestionnairePage() {
     <motion.div
       exit={{ opacity: 0, y: -12 }}
       transition={{ duration: 0.4, ease: INK_EASE }}
-      className="max-w-lg mx-auto"
+      className="max-w-lg md:max-w-2xl mx-auto"
       style={{ animation: 'fade-in 0.35s ease both' }}
     >
       {/* ── Progress bar ── */}

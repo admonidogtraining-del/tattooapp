@@ -26,7 +26,7 @@ export default function GeneratingPage() {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="max-w-md mx-auto mt-32 flex flex-col items-center justify-center space-y-10"
+      className="max-w-md md:max-w-lg mx-auto mt-32 flex flex-col items-center justify-center space-y-10"
     >
       {/* Spinner */}
       <div className="relative w-20 h-20">
